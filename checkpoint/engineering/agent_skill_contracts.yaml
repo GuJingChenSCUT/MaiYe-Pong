@@ -1,0 +1,700 @@
+contract_id: hacku.stage1.agent_skill_contracts
+contract_version: 1.0.0-stop1-implementation
+status: local_integration_verified_live_acceptance_blocked
+product_scope_status: confirmed
+readiness: stop1_incomplete
+language: zh-CN
+scope_note: "停点一已获 33 文件编码授权；新增 app V1 与 legacy 0.4 参考入口隔离，不扩大产品范围。"
+implementation_note: "app_v1_implementation 映射本轮接口；后续概念对象和六类职责是完整目标，不能等同当前已实现或已验收能力。"
+integration_status:
+  merchant_selected: not_provided_or_verified
+  psp_selected: not_provided_or_verified
+  live_model_verified: false
+  official_sandbox_verified: false
+  deployed_application_verified: false
+  original_151_tests: rerun_passed_in_this_delivery
+  acceptance_results: current_local_tests_passed_live_model_and_browser_blocked
+  exact_test_counts: {total: 247, rerun_original: 151, new: 96}
+  live_model_cases: {passed: 0, blocked: 4}
+  browser_rendered_acceptance: blocked_environment
+  frontend_http_dom_flow: passed_jsdom_not_real_browser
+  current_labels: {goods: synthetic_fixture, payment: local_simulator, deployment: local, model: live_or_blocked_or_explicit_scripted}
+  real_merchant_acceptance: not_implemented
+
+app_v1_implementation:
+  source_of_truth: schemas/commerce.schema.json_versioned_V1_definitions_and_corresponding_implementations
+  legacy_boundary:
+    original_contract: 0.4-proposal
+    old_role: slice_researcher
+    rule: keep_legacy_entrypoints_and_tests_separate_no_implicit_field_coercion_or_inherited_pass
+  http:
+    prefix: /api/v1
+    host: Python_stdlib_ThreadingHTTPServer_local_only_this_stop
+    identity: server_validates_access_code_and_issues_HttpOnly_session
+    actor_fields: [actor_id, tenant_id, role]
+    roles: [buyer, merchant, operator]
+    role_source: server_mapping_never_browser_selection_request_body_or_model_output
+    mutations_require: [authenticated_session, resource_authorization, X_CSRF_Token, Idempotency_Key]
+    processing_order: [authenticate, authorize_target_resource, validate_csrf, scoped_idempotency_lookup, version_check, business_mutation_and_response_persistence]
+    idempotency_scope: tenant_actor_operation_with_target_resource_in_request_digest
+    replay: same_key_same_request_returns_stored_result_before_stale_version_check
+    key_conflict: same_key_different_request_returns_409
+    stop: direct_backend_no_current_version_required
+    merchant_operator_money_mutation: unavailable_this_stop
+  persistence:
+    app_owner: TaskStore
+    kernel_owner: StageOneKernel
+    database: same_caller_owned_sqlite_connection
+    transaction: BEGIN_IMMEDIATE_covering_task_current_bindings_snapshot_authorization_operation_budget_and_dispatch_command
+    kernel_internal_commit: forbidden
+    installation: "StageOneKernel.install(conn) before outer transaction"
+    durable_model_runs: persisted_run_with_fencing_lease_current_task_and_constraint_version_checks
+    stale_model_result: reject_after_stop_version_change_or_lease_loss
+    payment_recovery: never_use_model_lease_expiry_to_resend_a_claimed_payment
+  fields:
+    timestamps: UTC_epoch_integer_in_V1_human_readable_only_at_display_boundary
+    task_projection: [task_id, state_version, constraints_version, status, draft, missing_fields, questions, run, comparison, proposal, operation, capabilities, events, metrics]
+    draft: [text, product, purchase_quantity, cash_cap_minor, destination_ref, preference, requires_change_of_mind_return, latest_delivery_epoch]
+    product: [brand, variant, net_content, unit, pack_count, packaging, origin, region_version]
+    preference_values: [lowest_cost, fastest_delivery, easiest_returns]
+    preference_rule: hard_gates_first_then_user_preference_missing_preference_explicitly_discloses_lowest_cost_default
+    quote_money_binding: line_subtotal_minor_equals_unit_price_minor_times_purchase_quantity_pack_count_is_separate
+    quote_fields: [quote_id, version, merchant_id, merchant_sku, purchase_quantity, unit_price_minor, line_subtotal_minor, product, fee_lines, discounts, currency, delivery, returns, payee_ref, payee_mapping_version, environment, provenance]
+    calculation: [quote_id, quote_version, merchant_id, eligible, blockers, cash_minor, goods_minor, fees_minor, discount_minor, delivery, returns]
+    snapshot: [snapshot_id, digest, task_id, constraints_version, fact_version, quote, draft, calculation, payee_ref, payee_mapping_version, expires_at, frozen_at, calculator_version]
+    snapshot_binding: digest_of_canonical_frozen_body_snapshot_id_is_snap_prefix_plus_digest
+    current_fact_binding: integer_quote_version_plus_quote_id_and_quote_digest_prevents_same_version_quote_substitution
+    payee_mapping_version: positive_integer
+    operation_projection: state_and_payment_status_represent_payment_order_status_is_independent
+    stopped_mapping: V1_operation_state_STOPPED_is_pre_dispatch_control_stop_not_provider_payment_failure
+    control_projection: stopped_boolean_and_stop_reason_map_to_control_semantics_not_new_provider_terminal_state
+    current_order_status: NOT_CREATED_local_payment_does_not_create_real_merchant_order
+    benefits: verified_instant_discounts_only_pending_rewards_separate_current_catalog_rewards_empty
+  entrypoints:
+    domain: [validate_task_v1, catalog_v1, evaluate_v1, rank_v1, freeze_v1]
+    model: slice04.agent.run_task_v1
+    model_handlers: app.task_tools.TaskTools_and_registry_v1
+    kernel: [StageOneKernel.install, register_snapshot, approve, stop, claim, recover, inspect]
+    kernel_signature_note: constructor_receives_conn_install_outside_transaction_mutations_inside_TaskStore_transaction
+  current_model_tools:
+    buyer_planner: [buyer_get_draft, buyer_propose_fields, buyer_request_clarification]
+    offer_analyst: [facts_list_candidates, facts_get_quote, commerce_compare, facts_record_candidate, facts_refresh_quote]
+    no_money_effects: true
+    proposed_fields: missing_user_fields_only_with_original_text_span_and_no_authority_creation
+    remaining_logical_roles: target_responsibilities_not_live_agent_claims
+  model_evidence:
+    live: actual_provider_call_required_missing_key_or_account_model_blocks_no_scripted_fallback
+    scripted: explicit_local_workflow_exercise_not_online_proof
+    injected_transport: test_transport_never_live_evidence
+    replanning: new_facts_must_change_legal_action_no_forced_A_to_B_choice
+    completion: proposed_research_result_never_equated_to_payment_or_order_success
+  source_instruction_boundary:
+    user_stop: trusted_authenticated_endpoint_is_authoritative
+    merchant_or_knowledge_prompt: untrusted_data_cannot_approve_revoke_change_role_or_set_amounts
+    safe_action: quarantine_instruction_validate_facts_or_rule_stop_without_fabricated_user_revocation
+  acceptance: implementation_files_present_do_not_imply_integrated_tests_live_model_official_sandbox_or_deployment_pass
+
+expert_materials:
+  index: mvp_scope.md_专家材料适用范围
+  images: eight_uploaded_JPGs_individually_viewed
+  text_batch: seven_recent_transcripts_plus_prior_1_1_supplement_eight_files_six_unique_contents
+  exact_duplicate_pairs: [Huawei_Share_2_2_equals_3_2, Huawei_Share_4_2_equals_5_2]
+  adopted: [controlled_loop, explicit_scoped_authorization, deterministic_money_and_preferences, merchant_acceptance_separate_from_payment, minimal_evidence, realistic_user_validation]
+  transcript_4_2: expert_suggests_simple_simulated_payment_and_basic_refund_scope_not_official_acceptance_or_real_provider_proof
+  exclusions: [lecture_examples_as_mandatory_rules, forced_cross_border_or_multi_rail_scope, unverified_legal_or_market_claims, eight_independent_expert_opinions]
+
+product_boundary:
+  primary_value: controlled_shopping_delegation
+  audience: 香港成年消费者
+  first_category: whitelist_daily_essentials
+  research_scope: two_verifiable_sources_serving_hong_kong
+  execution_scope: one_authorized_merchant_per_task
+  execution_currency: HKD
+  psp_count: 1
+  authorization: one_explicit_human_confirmation_for_one_immutable_snapshot
+  successful_path: evidence_to_approved_order_and_payment_with_separate_states
+  protective_path: constraint_breach_or_revocation_blocks_new_execution
+  recovery_requirement: UNKNOWN_queries_original_operation_only
+  main_demo: [success, constraint_breach_stop]
+  unknown_demo_role: required_regression_and_optional_backup_demo
+  cross_border_requirement: optional_extension_not_stage1_release_dependency
+  excluded: [unbounded_autonomous_buying, recurring_mandates, multi_psp_routing]
+  no_claims: [whole_market_optimum, existing_partner_access, production_ready]
+  competition_alignment:
+    product_fit_percent: 25
+    technical_percent: 25
+    trust_percent: 15
+    ux_with_gen_z_focus_percent: 20
+    realistic_payment_rail_percent: 15
+    hkt_api_required: false
+    note: "支付通道可以是任意符合题目且获得授权的方案；不得假造 HKT 接口或合作。"
+
+runtime_boundary:
+  product_runtime:
+    provider: DeepSeek
+    requested_model: configurable_account_available_model_id
+    activation_gate: real_tool_loop_and_schema_validation_passed
+    discovery: server_queries_account_model_list_and_records_available_ids
+    invocation: server_model_adapter_executes_bounded_tool_loop
+    logged_fields: [requested_model, returned_model, response_id, usage, latency_ms]
+    forbidden_logs: [api_key, payment_credentials, raw_private_reasoning]
+    capability_rule: "模型提出工具参数；应用验证、鉴权并实际调用 handler。"
+    server_configuration:
+      key_env: DEEPSEEK_API_KEY
+      model_env: DEEPSEEK_MODEL
+      base_url_env: DEEPSEEK_BASE_URL
+      secret_scope: server_only_never_browser_bundle_or_model_messages
+      standard_base_url: https://api.deepseek.com
+      strict_base_url: https://api.deepseek.com/beta
+      stage1_selected_profile: strict_beta_chat_completions
+      chat_method: POST
+      chat_path: /chat/completions
+      strict_effective_url: https://api.deepseek.com/beta/chat/completions
+      discovery_method_and_url: GET https://api.deepseek.com/models
+      auth_header: Authorization_Bearer_from_server_secret
+      model_selection: required_configured_id_present_in_account_models_then_real_tool_probe
+      missing_key_or_unsupported_model: blocked_no_scripted_fallback
+      endpoint_policy: official_allowlist_no_unvalidated_redirect_or_client_override
+    tool_protocol:
+      request_fields: [model, messages, tools, tool_choice, stream, max_tokens]
+      stage1_parameters: {tool_choice: auto, stream: false}
+      thinking: explicitly_set_enabled_or_disabled_and_validate_supported_effort
+      sdk_note: OpenAI_Python_SDK_passes_thinking_inside_extra_body
+      wire_tool_names: internal_tool_refs_use_explicit_registry_map_not_literal_function_names
+      wire_name_validation: letters_digits_underscore_hyphen_only_max_128_unique_at_registration
+      wire_name_map:
+        facts.search_candidates: facts_search_candidates
+        knowledge.retrieve: knowledge_retrieve
+        facts.refresh_quote: facts_refresh_quote
+        commerce.evaluate: commerce_evaluate
+        task.request_clarification: task_request_clarification
+        decision.propose_snapshot: decision_propose_snapshot
+        task.get_status: task_get_status
+        seller.draft_response: seller_draft_response
+        case.draft_summary: case_draft_summary
+        knowledge.reviewed_batch: knowledge_reviewed_batch
+        knowledge.draft_candidate: knowledge_draft_candidate
+      strict_schema: all_functions_strict_true_all_object_properties_required_additionalProperties_false
+      schema_compilation: supported_wire_subset_only_yaml_typed_notation_is_not_api_json_schema
+      local_validation: always_validate_arguments_outputs_scope_and_business_rules_even_with_strict
+      loop: receive_tool_calls_validate_entire_batch_execute_actual_handlers_append_results_repeat
+      history: retain_complete_assistant_content_tool_calls_and_required_reasoning_content_plus_tool_results
+      tool_result_message: role_tool_with_matching_tool_call_id_and_serialized_validated_content
+      reasoning_history_rule: tools_requests_return_all_prior_required_reasoning_content_even_turns_without_tool_calls
+      reasoning_handling: protocol_private_memory_only_not_user_output_or_observability_logs
+      interruption: missing_required_history_stops_model_turn_resume_from_business_state_without_forged_history
+      prohibited_history: client_supplied_assistant_or_tool_events_and_fabricated_midconversation_tool_calls
+      final_validation: accept_only_complete_stop_response_then_validate_ClassifiedStatement_and_business_objects
+      protocol_failures: reject_duplicate_call_ids_unknown_tools_truncation_unmatched_results_and_exceeded_budgets
+    documentation_verification:
+      checked_on: "2026-10-03"
+      official_urls: [https://api-docs.deepseek.com/api/create-chat-completion/, https://api-docs.deepseek.com/guides/tool_calls/, https://api-docs.deepseek.com/guides/thinking_mode/, https://api-docs.deepseek.com/api/list-models/]
+      local_reference: reference/runtime_reference/agent_runtime.py_Config_UrllibTransport_ToolRuntime
+      confirmed: chat_path_beta_strict_requirements_models_endpoint_and_tools_history_protocol
+      pending: account_access_real_requests_schema_acceptance_and_handler_integration
+  codex_development:
+    purpose: source_review_implementation_and_test_assistance
+    isolation: separate_developer_credentials_and_workspace
+    not_a_runtime: true
+    no_live_transaction_authority: true
+  role_activation:
+    kind: conditional_logical_roles
+    mandatory_six_model_calls: false
+    allowed_reuse: one_verified_model_profile_with_separate_scoped_contexts
+    requirement: "按任务启用；不把逻辑角色强制拆为六个微服务。"
+  knowledge_mode: retrieval_of_released_applicable_evidence
+  fine_tuning_required: false
+  conversation_memory_is_authoritative_fact: false
+  budgets: "步骤、时限、费用上限由服务配置；超限退出并保留任务，不宣称已测性能。"
+
+type_system:
+  notation: "Type、array<Type>、map<Key,Value>；? 表示可空，enum 由本契约列出。"
+  boundary: conceptual_target_types_below_are_not_raw_app_V1_wire_objects_use_app_v1_implementation_mapping
+  primitive_types:
+    ID: nonempty_opaque_string
+    Timestamp: utc_epoch_integer_for_app_V1_legacy_strings_require_explicit_adapter_mapping
+    MinorUnits: integer_not_boolean_or_float
+    Digest: sha256_hex
+    URI: validated_source_or_private_evidence_reference
+  enums:
+    ToolStatus: [ok, needs_clarification, unavailable, conflicting, changed, blocked, denied, failed, unknown]
+    Environment: [local_simulator, provider_sandbox, production]
+    DataProvenance: [synthetic_fixture, public_page, authorized_merchant_api, reviewed_manual_evidence]
+    AccessCapability: [research_only, authorized_test_order, authorized_production_order]
+    StockStatus: [available, unavailable, unknown]
+    FactStatus: [verified, incomplete, conflicting, stale]
+    StatementKind: [fact, calculation, recommendation, unknown]
+    EvidenceState: [quarantined, reviewed, released, revoked]
+    SkillOutcome: [completed, waiting_for_user, waiting_for_evidence, stopped, handed_off]
+    PaymentState: [NOT_REQUESTED, QUEUED, DISPATCH_COMMITTED, UNKNOWN, SUCCEEDED, FAILED]
+    ExecutionControlState: [ACTIVE, STOP_REQUESTED, STOPPED_BEFORE_DISPATCH]
+    OrderState: [NOT_CREATED, CREATE_PENDING, ACCEPTED, REJECTED, UNKNOWN, CANCELLED, FULFILLED]
+    RefundState: [NOT_REQUESTED, REQUESTED, ACCEPTED, UNKNOWN, FAILED, SETTLED]
+    TaskState: [DRAFT, CLARIFYING, RESEARCHING, PROPOSED, AWAITING_APPROVAL, EXECUTING, STOPPED, REVIEW_REQUIRED, COMPLETED]
+
+objects:
+  TrustedContext:
+    fields: {tenant_id: ID, actor_id: ID, actor_kind: string, role: string, task_id: ID, scopes: "array<string>", expires_at: Timestamp}
+    issuer: authenticated_backend_only
+    input_rule: never_construct_from_model_json_or_editable_profile_metadata
+  Task:
+    fields: {task_id: ID, owner_id: ID, tenant_id: ID, version: integer, constraints: TaskConstraints, state: TaskState}
+    access: buyer_owner_or_explicitly_assigned_service
+  TaskConstraints:
+    fields: {product: ProductIdentity, quantity: integer, cash_cap: Money, destination_ref: ID, delivery_deadline: "Timestamp?", return_requirements: "array<string>", approved_merchant_scope: "array<ID>"}
+    unresolved_required_fields: explicit_list_not_inferred_authority
+    v1_mapping: draft_purchase_quantity_cash_cap_minor_destination_ref_preference_requires_change_of_mind_return_latest_delivery_epoch
+  Money:
+    fields: {currency: string, amount_minor: MinorUnits}
+    stage1_validation: currency_HKD_and_nonnegative_integer
+    future_currency_rule: "可表达原币金额；未提供受信 FX 与完整费用时不得转换成执行报价。"
+  ProductIdentity:
+    fields: {brand: string, variant: string, net_content: integer, unit: string, pack_count: integer, gtin: "string?", origin: "string?", region_version: "string?"}
+    equivalence: field_level_supported_comparison_with_explicit_unresolved_differences
+  DeliverySegment:
+    fields: {segment_id: ID, from_region: string, to_region: string, carrier_ref: "ID?", fee: "Money?", promised_by: "Timestamp?", responsible_party: "ID?", evidence_refs: "array<ID>"}
+    stage1_rule: local_delivery_may_have_one_segment
+  ResponsibilityTerms:
+    fields: {policy_id: ID, applicable_region: string, warranty_party: "ID?", return_party: "ID?", return_shipping_payer: "ID?", return_destination: "string?", start_event: "string?", deadline: "string?", evidence_refs: "array<ID>"}
+    unknown_rule: missing_material_terms_remain_unknown_and_block_affected_requirements
+  EvidenceClaim:
+    fields: {claim_id: ID, source_id: ID, locator: string, field: string, value: typed_value, merchant_id: ID, sku: ID, market: string, language: string, observed_at: Timestamp, valid_from: Timestamp, expires_at: Timestamp, release_version: integer, state: EvidenceState, content_digest: Digest}
+    audit_fields: {rights_basis: string, reviewer_ref: "ID?", extractor_version: string, conflicts_with: "array<ID>", supersedes: "ID?"}
+    source_fields: {provenance: DataProvenance, capability_ref: ID}
+    guarantee_boundary: hashes_and_schema_do_not_prove_source_truth_or_textual_support
+  DiscountApplication:
+    fields: {application_id: ID, rule_id: ID, amount: Money, eligibility_result_ref: ID, exclusivity_group: "ID?", stack_rule_version: ID, expires_at: Timestamp}
+    validation: unique_application_id_and_verified_subject_order_scope_and_stack_rules
+    identity_rule: server_canonicalizes_issuer_coupon_instance_and_order_scope_before_deduplication
+  Quote:
+    fields: {quote_id: ID, version: integer, task_id: ID, merchant_id: ID, product: ProductIdentity, goods: Money, fee_lines: "array<FeeLine>", discounts: "array<DiscountApplication>", delivery: "array<DeliverySegment>", terms: ResponsibilityTerms, expires_at: Timestamp, evidence_refs: "array<ID>", current_fact_version: ID, payee_mapping_version: ID, environment: Environment}
+    additional_checks: [destination_match, stock_confirmed, fees_complete, connector_permission_current]
+    factual_status_fields: {stock_status: StockStatus, fees_complete: boolean, fact_status: FactStatus, missing_fields: "array<string>"}
+    source_and_capability_fields: {provenance: DataProvenance, access_capability: AccessCapability, capability_ref: ID}
+    execution_gate: available_stock_and_complete_known_fees_and_verified_facts_and_current_execution_capability
+    environment_rule: public_research_is_capability_not_environment_public_pages_never_grant_checkout
+    merchant_binding: provider_enforces_quote_version_or_equivalent_fixed_product_quantity_total_and_terms
+  FeeLine:
+    fields: {code: string, amount: "Money?", responsibility: string, evidence_refs: "array<ID>"}
+    validation: unique_codes_and_all_mandatory_fees_known_before_execution
+  CashCalculation:
+    fields: {calculation_id: ID, quote_id: ID, calculator_version: ID, cash_total: Money, applied_discount_ids: "array<ID>", pending_rewards: "array<string>", blockers: "array<string>"}
+    rule: goods_plus_mandatory_fees_minus_verified_instant_discounts
+    pending_rewards_reduce_cash: false
+  DecisionSnapshot:
+    fields: {snapshot_id: ID, task_id: ID, task_version: integer, frozen_constraints: TaskConstraints, quote: Quote, calculation: CashCalculation, frozen_payee_ref: ID, evidence_versions: "map<ID,integer>", snapshot_digest: Digest, expires_at: Timestamp}
+    persistence: immutable_server_record
+    authority_rule: unkeyed_digest_is_integrity_reference_not_authentication
+    v1_mapping: task_version_to_constraints_version_snapshot_digest_to_digest_frozen_payee_ref_to_payee_ref
+  ApprovalChallenge:
+    fields: {challenge_id: ID, task_id: ID, snapshot_id: ID, snapshot_digest: Digest, buyer_id: ID, nonce_ref: ID, expires_at: Timestamp, consumed_at: "Timestamp?"}
+    consumption: authenticated_human_confirmation_of_same_displayed_snapshot_once
+  Mandate:
+    fields: {mandate_id: ID, task_id: ID, snapshot_id: ID, challenge_id: ID, buyer_id: ID, version: integer, cash_cap: Money, frozen_payee_ref: ID, expires_at: Timestamp, revoked_at: "Timestamp?"}
+    scope: one_task_one_snapshot_one_purchase_no_background_renewal
+  Operation:
+    fields: {operation_id: ID, task_id: ID, snapshot_id: ID, mandate_id: ID, command_key: ID, provider_idempotency_key: ID, merchant_order_ref: "ID?", provider_payment_ref: "ID?", payment_state: PaymentState, order_state: OrderState, refund_state: RefundState}
+    identity: stable_across_timeout_restart_query_and_callback
+    control_fields: {execution_control_state: ExecutionControlState, original_operation_ref: ID}
+    visibility: backend_only_never_return_this_object_to_model
+  RoleScopedStatus:
+    fields: {task_id: ID, task_state: TaskState, original_operation_ref: "ID?", payment_state: "PaymentState?", order_state: "OrderState?", refund_state: "RefundState?", execution_control_state: "ExecutionControlState?", blockers: "array<string>", next_action: string}
+    projection: server_checks_current_buyer_owner_merchant_membership_or_assigned_case_then_omits_nonpermitted_fields
+    forbidden: [command_key, provider_idempotency_key, provider_credentials, raw_provider_refs, other_merchant_private_data]
+    opaque_reference: original_operation_ref_resolves_only_inside_authorized_backend_not_an_execution_credential
+  ClassifiedStatement:
+    fields: {kind: StatementKind, text: string, evidence_refs: "array<ID>", calculation_ref: "ID?", candidate_scope: "array<ID>", preference_refs: "array<ID>", tradeoffs: "array<string>", unknown_fields: "array<string>", unknown_impact: "string?", next_action: "string?"}
+    fact_validation: nonempty_applicable_field_supporting_evidence_no_unsupported_certainty
+    calculation_validation: nonnull_server_calculation_ref_with_recomputable_inputs_and_versions
+    recommendation_validation: nonempty_compared_scope_explicit_preference_refs_and_tradeoffs_no_whole_market_claim
+    unknown_validation: nonempty_missing_fields_impact_and_next_verification_or_handoff_action
+    irrelevant_fields: empty_or_null_explicitly_never_fabricated_to_satisfy_shape
+  ToolResult:
+    fields: {status: ToolStatus, data: "typed_payload?", evidence_refs: "array<ID>", observed_versions: "map<ID,string>", observed_at: Timestamp, error_code: "string?", retry_advice: string, missing_fields: "array<string>", task_id: ID}
+    validation: status_dependent_payload_schema_and_task_scope_enforced_server_side
+    unknown_rule: transport_timeout_is_not_negative_business_fact
+  SkillResult:
+    fields: {skill_id: ID, task_id: ID, outcome: SkillOutcome, statements: "array<ClassifiedStatement>", artifact_refs: "array<ID>", missing_fields: "array<string>", blockers: "array<string>", next_owner: "string?"}
+  CaseDraft:
+    fields: {case_id: ID, task_id: ID, original_operation_ref: "ID?", party_claims: "array<string>", supported_facts: "array<ClassifiedStatement>", disputes: "array<string>", proposed_next_steps: "array<string>"}
+  KnowledgeCandidate:
+    fields: {candidate_id: ID, source_case_refs: "array<ID>", proposed_claims: "array<EvidenceClaim>", deidentification_report_ref: ID, rights_review_ref: ID, status: string}
+    only_allowed_status: pending_human_review
+
+coordinator:
+  kind: deterministic_backend_service
+  responsibilities: [validate_task_state, issue_scoped_context, select_needed_skill, validate_tool_result, persist_transition, enforce_budget, route_handoff]
+  role_selection_rule: required_capability_and_missing_information_not_fixed_six_call_chain
+  model_may_propose_next_step: true
+  model_may_grant_permissions: false
+  model_may_mint_context_mandate_or_snapshot: false
+  state_and_authority_source: transactional_server_records
+  stop1_shared_transaction: TaskStore_and_StageOneKernel_same_sqlite_connection_no_nested_commit
+  model_run_fencing: current_run_lease_and_task_version_required_before_persisting_any_result
+  payment_crash_boundary: claimed_payment_not_a_retryable_model_run_query_original_only
+  scoped_handoff:
+    required_fields: [task_id, task_version, input_artifact_refs, applicable_evidence_versions, permitted_tools, expected_output_schema, deadline, correlation_id]
+    minimize_context: true
+    preserve: original_evidence_references_and_material_qualifiers
+    never_forward: [other_buyers_data, competitor_private_data, full_payment_secrets]
+  stop_routes:
+    user_cancel: authenticated_direct_backend_command_bypasses_agent_and_model
+    rule_stop: deterministic_validator_sets_blocker_and_prevents_new_dispatch
+    model_stop: advisory_signal_rechecked_by_backend
+    model_unavailable: cancellation_status_query_and_human_handoff_remain_available
+  loop_control: configured_step_time_and_cost_budget_with_persisted_exit_reason
+
+handler_contracts:
+  status: target_contracts_below_current_V1_registry_listed_separately_above
+  implementation_reference_kind: proposed_provider_service_names_not_current_in_process_handler_claims
+  invocation_contract:
+    signature: "handler(trusted_context, validated_input) -> ToolResult<DeclaredPayload>"
+    adapter_execution: actual_allowlisted_provider_or_database_call_not_llm_generated_result
+    input_validation: strict_local_schema_business_rules_and_current_resource_authorization
+    result_validation: payload_schema_evidence_scope_version_and_business_invariants
+    environment_isolation: no_fixture_receipt_as_real_provider_evidence_and_no_cross_environment_credentials
+    capability_isolation: public_read_access_never_implies_order_execution_permission
+    credentials: server_owned_secret_store_scoped_to_minimum_worker
+    permission_source: verified_session_and_current_backend_grants_and_provider_capabilities
+    no_permission_source: [prompt, model_claim, source_page_instruction, tool_argument_role]
+    audit: actor_task_handler_version_input_digest_result_digest_timestamp_status
+    retries: reads_bounded_backoff_writes_use_persisted_idempotency_contract
+    handler_missing: unavailable_never_successful_mock_fallback
+  tools:
+    - tool_ref: facts.search_candidates
+      handler: merchant_adapters.search_candidates
+      effect: external_read
+      inputs: {task_id: ID, query: ProductIdentity}
+      outputs: {candidates: "array<Quote>", source_count: integer}
+      roles: [offer_analyst]
+      permission: task_scoped_source_allowlist_and_permitted_data_use
+    - tool_ref: knowledge.retrieve
+      handler: knowledge_service.retrieve_released_claims
+      effect: database_read
+      inputs: {task_id: ID, query: string, filters: KnowledgeFilters}
+      outputs: {claims: "array<EvidenceClaim>", unresolved_conflicts: "array<ID>"}
+      roles: [buyer_planner, offer_analyst, payment_advisor, seller_assistant, case_assistant, knowledge_curator]
+      permission: current_resource_grants_and_released_applicable_claims
+    - tool_ref: facts.refresh_quote
+      handler: merchant_adapters.fetch_current_quote
+      effect: external_read
+      inputs: {task_id: ID, quote_id: ID, expected_version: integer}
+      outputs: {quote: Quote, changed_fields: "array<string>"}
+      roles: [offer_analyst, payment_advisor, seller_assistant]
+      permission: task_or_this_merchant_quote_scope_and_provider_access
+    - tool_ref: commerce.evaluate
+      handler: commerce_service.evaluate_quote_and_benefits
+      effect: deterministic_compute
+      inputs: {task_id: ID, quote_id: ID, expected_version: integer}
+      outputs: {calculation: CashCalculation, eligible: boolean, blockers: "array<string>"}
+      roles: [offer_analyst, payment_advisor]
+      permission: server_loads_constraints_and_minimal_verified_eligibility
+    - tool_ref: task.request_clarification
+      handler: task_service.store_clarification_request
+      effect: scoped_draft_write
+      inputs: {task_id: ID, missing_fields: "array<string>", questions: "array<string>"}
+      outputs: {clarification_ref: ID, task_state: TaskState}
+      roles: [buyer_planner, offer_analyst, payment_advisor]
+      permission: assigned_role_may_request_information_not_change_hard_constraints
+    - tool_ref: decision.propose_snapshot
+      handler: decision_service.validate_and_freeze_proposal
+      effect: scoped_proposal_write
+      inputs: {task_id: ID, quote_id: ID, expected_version: integer}
+      outputs: {snapshot: DecisionSnapshot, challenge: ApprovalChallenge}
+      roles: [buyer_planner]
+      permission: server_rechecks_facts_and_constraints_no_mandate_created
+    - tool_ref: task.get_status
+      handler: projection_service.get_role_scoped_status
+      effect: database_read
+      inputs: {task_id: ID}
+      outputs: {status_projection: RoleScopedStatus}
+      roles: [buyer_planner, seller_assistant, case_assistant]
+      permission: authenticated_buyer_this_merchant_or_assigned_case_view
+    - tool_ref: seller.draft_response
+      handler: seller_service.store_nonbinding_draft
+      effect: scoped_draft_write
+      inputs: {task_id: ID, merchant_id: ID, statements: "array<ClassifiedStatement>"}
+      outputs: {draft_ref: ID, binding: boolean}
+      roles: [seller_assistant]
+      permission: this_merchant_draft_only_binding_always_false
+    - tool_ref: case.draft_summary
+      handler: case_service.store_assigned_case_draft
+      effect: scoped_draft_write
+      inputs: {task_id: ID, case_draft: CaseDraft}
+      outputs: {draft_ref: ID, case_id: ID}
+      roles: [case_assistant]
+      permission: assigned_case_no_adjudication_or_money_movement
+    - tool_ref: knowledge.reviewed_batch
+      handler: knowledge_service.read_rights_cleared_case_batch
+      effect: database_read
+      inputs: {batch_id: ID, task_id: ID}
+      outputs: {case_refs: "array<ID>", rights_review_ref: ID, deidentification_report_ref: ID}
+      roles: [knowledge_curator]
+      permission: offline_batch_grant_with_no_private_party_memories
+    - tool_ref: knowledge.draft_candidate
+      handler: knowledge_service.queue_candidate_for_review
+      effect: offline_candidate_write
+      inputs: {task_id: ID, candidate: KnowledgeCandidate}
+      outputs: {candidate_id: ID, status: string}
+      roles: [knowledge_curator]
+      permission: candidate_queue_only_no_publish_or_live_rule_change
+  privileged_ports_not_model_tools:
+    approve: authenticated_human_challenge_consumption_creates_one_mandate
+    cancel: authenticated_direct_backend_revocation_no_model_dependency
+    dispatch: payment_worker_only_atomic_claim_then_one_external_attempt
+    reconcile: recovery_worker_only_queries_original_order_and_payment
+    publish_knowledge: authorized_human_review_and_service_release
+    refund: separately_authorized_backend_workflow_provider_confirmation_required
+
+transaction_invariants:
+  stop1_local_environment:
+    psp: LocalPSP
+    goods: synthetic_fixture
+    order_status: NOT_CREATED_until_independent_merchant_acceptance_exists
+    official_provider_acceptance: blocked_pending_permissions_and_sandbox
+    approval_effect: enqueue_only_no_automatic_external_send
+    outbox_mapping: s1_dispatch_commands_PENDING_to_CLAIMED_and_separate_s1_event_audit
+  acceptance_environment:
+    merchant_orders: authorized_nonfulfilling_test_or_sandbox_orders_only
+    psp: official_provider_sandbox_only
+    prohibit: production_orders_that_trigger_fulfillment_or_charges_during_sandbox_tests
+    missing_authorization_or_sandbox: blocked_not_simulated_pass
+    real_handler_and_receipt: actual_adapter_and_test_provider_response_not_real_funds
+  correlation_chain: task_id_to_snapshot_id_to_challenge_id_to_mandate_id_to_operation_id
+  confirmation_card: server_renders_goods_cash_payee_delivery_returns_expiry_snapshot_digest
+  changed_approved_terms: stop_old_execution_and_request_new_explicit_confirmation
+  enqueue_transaction:
+    create_together: [one_operation, budget_reservation, outbox_PENDING, authorization_link, audit_event]
+    uniqueness: one_authorized_purchase_command_per_snapshot_and_mandate
+    app_and_kernel: same_TaskStore_transaction_not_independent_commits
+  atomic_claim:
+    same_transaction_checks: [current_task_version, immutable_snapshot_digest, current_fact_version, evidence_not_revoked, current_connector_permission, frozen_payee_ref, payee_mapping_version, mandate_active, cash_cap_and_reservation, operation_not_previously_claimed]
+    commit_together: [reservation_state_revalidated, operation_DISPATCH_COMMITTED, immutable_dispatch_payload, existing_outbox_updated_to_CLAIMED, audit_event]
+    no_second_outbox_command: claim_updates_existing_enqueue_record_never_creates_another_payment_command
+    rule: "校验后到 claim 之间不可留事实/收款方版本竞态；外部请求不在数据库事务内。"
+  external_merchant_guard:
+    limit: local_atomic_claim_cannot_lock_external_merchant_price_stock_or_fulfillment
+    required: execute_with_provider_enforced_quote_version_or_fixed_product_quantity_total_and_material_terms
+    repricing_or_stock_change: changed_or_blocked_no_silent_acceptance_new_snapshot_and_human_confirmation
+    missing_provider_guarantee: research_only_not_executable_merchant
+    payment_already_in_flight: query_original_and_handle_exception_or_refund_no_second_purchase
+  cancellation_race:
+    revoke_before_claim: no_dispatch_and_release_only_unclaimed_reservation
+    claim_before_revoke: forbid_new_attempt_query_original_no_zero_charge_promise
+    user_message: 停止请求已接收，原付款仍在核实
+  unknown_recovery:
+    stable_keys: [operation_id, merchant_order_ref, provider_idempotency_key]
+    action: query_original_only_never_reissue_charge_with_new_key
+    not_found_or_timeout: keep_unknown_and_reservation_escalate_by_provider_contract
+    restart: persisted_state_and_new_authorized_recovery_worker
+    callback_validation: signature_replay_order_amount_currency_payee_and_operation_binding
+  independent_statuses: [order_state, payment_state, refund_state, task_state]
+  diagram_alignment:
+    diagram_kind: combined_view_of_multiple_objects_not_single_state_machine
+    canonical_payment_names: [DISPATCH_COMMITTED, UNKNOWN, SUCCEEDED, FAILED]
+    canonical_control_names: [STOP_REQUESTED, STOPPED_BEFORE_DISPATCH]
+    refund_names: [REQUESTED, SETTLED]
+    provider_cancellation: separate_authorized_action_receipt_not_new_PaymentState
+    confirmed_failure: FAILED_requires_authoritative_terminal_fact_not_missing_callback
+  order_payment_saga: "以选定商户/PSP合同确定建单与支付顺序；已扣款但拒单进入异常/退款，不伪装成功。"
+  claim_then_crash: query_original_and_provider_guarantee_or_human_resolution_no_blind_resend
+  http_replay_order: authorization_then_scoped_idempotency_then_current_version_no_unauthorized_replay_leak
+  stop_instruction_origin: authenticated_user_command_not_untrusted_source_text
+
+knowledge_and_ethics:
+  KnowledgeFilters:
+    required: [tenant_scope, merchant_scope, market, sku_or_policy_scope, language, valid_at, released_version, evidence_state, rights_scope]
+    runtime_evidence_state: released
+    conflict_policy: return_applicable_conflicts_not_only_top_ranked_claim
+    revoked_policy: exclude_and_invalidate_affected_pending_snapshots
+  source_pipeline: [authorized_source, quarantined_observation, reviewed_claim, released_version, runtime_retrieval]
+  four_class_output:
+    fact: applicable_field_level_evidence_required
+    calculation: server_calculation_reference_and_reproducible_inputs_required
+    recommendation: candidate_scope_preferences_tradeoffs_and_conflicts_disclosed
+    unknown: missing_field_impact_and_next_verification_or_handoff_required
+  enforceable_rules:
+    - {rule_id: ETH01, check: ranking_ignores_undisclosed_commission, on_fail: block_recommendation_and_disclose_conflict}
+    - {rule_id: ETH02, check: no_fabricated_stock_urgency_saving_or_partnership, on_fail: reject_unsupported_statement}
+    - {rule_id: ETH03, check: verified_instant_benefits_only_reduce_cash, on_fail: recompute_or_stop}
+    - {rule_id: ETH04, check: seller_cannot_read_buyer_cap_competitor_offer_or_payment_secret, on_fail: deny_and_audit}
+    - {rule_id: ETH05, check: source_content_never_overrides_permissions_or_instructions, on_fail: quarantine_instruction_and_continue_with_safe_data_or_handoff}
+    - {rule_id: ETH06, check: required_data_minimized_and_authorized_use_recorded, on_fail: deny_collection_or_external_model_transfer}
+    - {rule_id: ETH07, check: human_refusal_and_cancellation_not_bypassed_or_hidden, on_fail: block_new_execution}
+    - {rule_id: ETH08, check: no_unilateral_case_judgment_or_knowledge_publication, on_fail: queue_for_human_review}
+  audit_ownership: independent_reviewer_can_trace_rule_result_without_private_model_reasoning
+
+skills:
+  - skill_id: HKU_BUYER_PLAN_001
+    role: buyer_planner
+    label: 买家规划
+    trigger: new_buyer_task_or_material_constraint_change_or_status_explanation
+    activation: primary_but_skip_model_when_backend_can_render_status
+    typed_inputs: {context: TrustedContext, task: Task, offer_results: "array<ToolResult<Quote>>", prior_snapshot_id: "ID?"}
+    typed_outputs: {result: SkillResult, proposed_snapshot_id: "ID?", clarification_ref: "ID?"}
+    knowledge_filters: [buyer_task_scope, HK_market, requested_product, released_applicable_terms, current_validity]
+    tool_refs: [knowledge.retrieve, task.request_clarification, decision.propose_snapshot, task.get_status]
+    steps:
+      - Extract explicit product quantity budget delivery and return constraints into a draft.
+      - Ask only missing questions that materially affect feasibility or authorization.
+      - Request offer analysis through deterministic coordinator with scoped input references.
+      - Present two source comparison scope and all material unknowns without inventing authority.
+      - Request server snapshot and challenge only after deterministic feasibility passes.
+      - Wait for direct human confirmation and explain backend states without initiating payment.
+    failure:
+      recoverable: retain_draft_and_request_missing_evidence_or_user_input
+      unrecoverable: return_stopped_with_blockers_and_no_execution
+    stop: user_cancel_or_out_of_scope_or_unsatisfied_hard_constraint
+    handoff: {to: offer_analyst_or_assigned_human_operator, preserve: [task_id, constraints_version, evidence_refs, blocker_codes]}
+    tests: [AC01, AC05, AC07, AC09, AC10, AC12]
+
+  - skill_id: HKU_OFFER_ANALYZE_001
+    role: offer_analyst
+    label: 商品分析
+    trigger: task_has_sufficient_hard_constraints_and_needs_candidate_facts_or_refresh
+    activation: on_demand_research_or_changed_quote
+    typed_inputs: {context: TrustedContext, task: Task, candidate_quote_ids: "array<ID>"}
+    typed_outputs: {result: SkillResult, compared_quote_ids: "array<ID>", candidate_ranking: "array<ID>", unresolved_fields: "array<string>"}
+    knowledge_filters: [task_sources_allowlist, merchant_and_sku_match, HK_destination_scope, released_terms, valid_at_execution, applicable_region_version]
+    tool_refs: [facts.search_candidates, knowledge.retrieve, facts.refresh_quote, commerce.evaluate, task.request_clarification]
+    steps:
+      - Read two genuine permitted sources and retain merchant specific evidence references.
+      - Compare identity field by field including pack size origin and regional version.
+      - Check destination shipping all fees stock eligibility warranty and returns responsibility.
+      - Call deterministic evaluation and retain evidence conflicts as blockers.
+      - Refresh the provisional candidate and any candidate required to justify the final choice.
+      - When new facts change feasibility or rank investigate alternatives or request clarification.
+      - Return a scoped comparison with no claim of whole market optimality.
+    failure:
+      recoverable: stale_or_missing_fields_request_refresh_or_merchant_confirmation
+      unrecoverable: no_two_comparable_sources_or_no_feasible_candidate_return_stop
+    stop: unresolved_material_identity_fee_delivery_or_return_constraint
+    handoff: {to: buyer_planner_or_seller_assistant, preserve: [task_id, quote_versions, field_claim_refs, conflicts]}
+    tests: [AC02, AC03, AC04, AC07, AC09, AC10]
+
+  - skill_id: HKU_PAYMENT_BENEFITS_001
+    role: payment_advisor
+    label: 支付权益
+    trigger: quote_contains_conditional_benefits_or_buyer_requests_payment_explanation
+    activation: conditional_deterministic_calculation_always_runs_even_if_role_skipped
+    typed_inputs: {context: TrustedContext, task: Task, quote_id: ID, eligibility_projection_ref: ID}
+    typed_outputs: {result: SkillResult, calculation_id: ID, verified_benefit_ids: "array<ID>"}
+    knowledge_filters: [issuer_scope, verified_subject_eligibility_scope, merchant_scope, HKD_cash, released_current_rules]
+    tool_refs: [knowledge.retrieve, facts.refresh_quote, commerce.evaluate, task.request_clarification]
+    steps:
+      - Read minimum eligibility projection without payment credentials or full identity.
+      - Retrieve current rule version for threshold eligibility expiry and stacking conditions.
+      - Invoke service calculation using unique discount application instances.
+      - Keep future points cashback and unverified benefits outside immediate cash deductions.
+      - Explain verified result and unknown qualification without calculating authoritative amounts in prose.
+      - Return advice for the already configured single PSP without creating a payment command.
+    failure:
+      recoverable: unknown_eligibility_requests_verification_or_displays_unapplied_benefit
+      unrecoverable: necessary_fee_or_qualification_unknown_blocks_dependent_proposal
+    stop: amount_above_cap_duplicate_benefit_or_inconsistent_currency_or_payee
+    handoff: {to: buyer_planner_or_authorized_benefit_reviewer, preserve: [task_id, calculation_id, rule_versions, unresolved_eligibility]}
+    tests: [AC03, AC05, AC07, AC09, AC10]
+
+  - skill_id: HKU_SELLER_ASSIST_001
+    role: seller_assistant
+    label: 商户
+    trigger: permitted_merchant_receives_its_quote_clarification_order_or_service_request
+    activation: only_for_this_merchant_when_interaction_is_needed
+    typed_inputs: {context: TrustedContext, task_id: ID, merchant_id: ID, own_quote_id: ID, requested_fields: "array<string>"}
+    typed_outputs: {result: SkillResult, nonbinding_draft_ref: "ID?", updated_evidence_refs: "array<ID>"}
+    knowledge_filters: [this_merchant_only, participating_order_scope, applicable_sku_policy, permitted_shared_evidence, current_released_version]
+    tool_refs: [knowledge.retrieve, facts.refresh_quote, task.get_status, seller.draft_response]
+    steps:
+      - Verify current merchant membership and task or order assignment on the backend.
+      - Read only required fields excluding buyer budget competing offers and payment secrets.
+      - Obtain actual stock delivery return and warranty facts from authorized sources.
+      - Draft a response separating merchant claims supported facts and outstanding unknowns.
+      - Require authorized merchant action to accept binding terms or publish changed facts.
+      - Return new evidence versions so affected buyer proposals are rechecked.
+    failure:
+      recoverable: merchant_cannot_confirm_field_mark_unknown_and_request_human_reply
+      unrecoverable: source_permission_or_merchant_scope_denied
+    stop: attempted_competitor_access_or_unapproved_binding_commitment
+    handoff: {to: merchant_human_or_offer_analyst, preserve: [task_id, merchant_id, own_quote_version, factual_reply_refs]}
+    tests: [AC02, AC06, AC09, AC10, AC12]
+
+  - skill_id: HKU_CASE_ASSIST_001
+    role: case_assistant
+    label: 案例
+    trigger: order_payment_conflict_unknown_timeout_or_assigned_service_dispute
+    activation: exceptional_case_only_not_every_successful_purchase
+    typed_inputs: {context: TrustedContext, case_id: ID, task_id: ID, original_operation_ref: "ID?", permitted_evidence_refs: "array<ID>"}
+    typed_outputs: {result: SkillResult, case_draft_ref: "ID?", proposed_resolution_steps: "array<string>"}
+    knowledge_filters: [assigned_case_scope, permitted_party_evidence, applicable_merchant_terms, event_time_policy_version, no_private_memories]
+    tool_refs: [knowledge.retrieve, task.get_status, case.draft_summary]
+    steps:
+      - Read server order payment refund and cancellation states independently.
+      - Separate buyer statements merchant statements verified events and unresolved conflicts.
+      - Explain UNKNOWN without treating timeout or missing query record as failure.
+      - Send recovery need to deterministic recovery service through coordinator not payment tools.
+      - Draft evidence linked next steps without deciding liability or accepting settlement.
+      - Route cancellation refund or unresolved contradictions to authorized humans.
+    failure:
+      recoverable: retain_case_and_request_missing_permitted_evidence
+      unrecoverable: no_case_grant_or_unsafe_identity_scope
+    stop: any_attempt_to_resend_payment_adjudicate_or_move_money
+    handoff: {to: recovery_worker_or_assigned_human_operator, preserve: [case_id, task_id, original_operation_ref, permitted_event_refs], backend_only_resolution: original_operation_and_provider_keys}
+    tests: [AC06, AC07, AC08, AC09, AC10, AC12]
+
+  - skill_id: HKU_KNOWLEDGE_CURATE_001
+    role: knowledge_curator
+    label: 知识
+    trigger: authorized_offline_job_receives_reviewed_deidentified_rights_cleared_batch
+    activation: disabled_by_default_offline_only_pending_review
+    typed_inputs: {context: TrustedContext, task_id: ID, batch_id: ID, rights_review_ref: ID}
+    typed_outputs: {result: SkillResult, candidate_ids: "array<ID>", review_queue_ref: ID}
+    knowledge_filters: [explicit_offline_batch_grant, rights_cleared, deidentified, reviewed_case, source_group_split, applicable_region_and_time]
+    tool_refs: [knowledge.reviewed_batch, knowledge.retrieve, knowledge.draft_candidate]
+    steps:
+      - Check allowed purpose rights clearance and deidentification before reading the batch.
+      - Preserve source groups and prevent evaluation leakage across derived cases.
+      - Draft scoped knowledge candidates with field evidence uncertainty and counterexamples.
+      - Link existing conflicts superseded versions and proposed expiry rules.
+      - Write only pending_human_review candidates to an offline queue.
+      - Require independent human review and service release before runtime retrieval.
+    failure:
+      recoverable: insufficient_evidence_or_unclear_rights_hold_candidate_for_review
+      unrecoverable: private_data_or_unauthorized_use_reject_batch
+    stop: attempted_live_publication_policy_change_or_training_without_separate_authorization
+    handoff: {to: authorized_knowledge_reviewer, preserve: [candidate_ids, source_case_refs, rights_review_ref, conflicts, expiry_proposal]}
+    tests: [AC09, AC10]
+
+acceptance_contract:
+  interpretation: stop1_implementation_targets_local_results_in_app_README_live_and_browser_pending
+  evidence_rule: real_and_synthetic_runs_separately_labelled_no_inherited_verified_flags
+  AC01: 真实需求输入可澄清规格数量预算配送退货关键缺项，不擅自补授权
+  AC02: 两家同规格字段证据可核对，冲突有结论，至少一家有获准成交能力
+  AC03: 服务重算所有费用权益，优惠应用实例去重及互斥验证，未知不按零
+  AC04: 真实DeepSeek实际调用工具，新事实改变补查改选或停止并保留失败记录
+  AC05: 用户看到并明确授权同一冻结快照，一次挑战生成一次委托，变更需重确认
+  AC06: 获准商户测试或沙盒订单加一个官方PSP沙盒取得实际适配器回执，禁止触发生产履约扣费；状态分开，缺权限或沙盒则blocked
+  AC07: 越界阻止新执行，撤销绕过模型，验证撤销与派发登记先后竞态
+  AC08: UNKNOWN跨进程用同operation及原键查原单，无第二笔扣款，查无保留未知
+  AC09: 买家商户运营身份隔离及私有证据权限有效，来源注入不能提权泄密
+  AC10: 知识适用性发布撤回可执行，事实计算建议未知四类输出分别验证
+  AC11: 真实人工与格价加通用AI及HacKU三组记录时间正确性商户成本和全部失败
+  AC12: 可访问网页能重连恢复任务及人工接管，公众演示证据脱敏且标真实或合成
+  evidence_fields: [acceptance_id, environment, source_revision, run_id, actor_role, task_id, artifact_refs, result, blocker, reviewed_by]
+  result_enum: [pass, fail, not_run, blocked]
+  independence: sensitive_money_identity_and_knowledge_release_changes_reviewed_by_non_author
+  value_measurement:
+    outcomes: [completed, stopped_correctly, failed, abandoned]
+    correctness: [specification, delivery, cash_total, eligibility, returns]
+    cost_coverage: both_seconds_and_hourly_rate_finite_nonnegative_or_explicitly_missing
+    analysis: all_attempts_retained_conditional_paired_savings_labelled_no_fabricated_results
+  public_evidence:
+    omit: [secrets, complete_addresses, buyer_identity, private_merchant_terms, raw_private_reasoning]
+    retain: [environment_label, scoped_task_goal, evidence_versions, tool_action_sequence, authorization_boundary, backend_outcome]
+
+change_control:
+  migration_required: V1_entries_and_schema_definitions_separate_from_legacy_04_no_implicit_reinterpretation
+  current_authorization: existing_user_approved_33_file_stop1_scope_no_duplicate_permission_request
+  freeze_requires: technical_owner_and_product_owner_review_of_open_provider_contracts
+  unresolved_choices: [merchant_permission_and_api, single_psp_capabilities, hosting_recovery_contract, production_identity_provider]
+  release_rule: no_live_money_until_corresponding_provider_identity_recovery_and_operational_gates_pass
+  this_file_changes_runtime_behavior: false

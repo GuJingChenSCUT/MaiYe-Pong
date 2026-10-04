@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hacku:contract:AgentHandoff",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "0.2.0"
+    },
+    "handoff_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_role": {
+      "enum": [
+        "buyer_planner",
+        "offer_analyst",
+        "payment_advisor",
+        "seller_assistant",
+        "case_assistant",
+        "knowledge_curator"
+      ]
+    },
+    "objective_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0
+    },
+    "observed_versions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "requested_output_schema": {
+      "type": "string",
+      "minLength": 1
+    },
+    "deadline_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "contract_version",
+    "handoff_id",
+    "parent_task_id",
+    "source_run_id",
+    "target_role",
+    "objective_type",
+    "input_refs",
+    "observed_versions",
+    "requested_output_schema",
+    "deadline_at",
+    "trace_id"
+  ],
+  "description": "A proposal to the coordinator, not delegated authority. Server checks the allowed workflow edge, authorized references, shrinking grant, resource versions and deadline before issuing TaskEnvelope."
+}

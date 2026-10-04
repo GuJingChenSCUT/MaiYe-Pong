@@ -1,0 +1,117 @@
+{
+  "id": "stop_reconcile",
+  "version": "0.3.0",
+  "name_zh": "停止委托并解释对账状态",
+  "role": "buyer_planner",
+  "phase": "phase_1",
+  "enabled_by_default": true,
+  "publication_status": "draft",
+  "execution_mode": "interrupt",
+  "workflow_nodes": [
+    "intent",
+    "offers",
+    "payment_options",
+    "plan",
+    "human_approval",
+    "dispatch",
+    "fulfilment",
+    "seller_support",
+    "case_review"
+  ],
+  "objective_types": [
+    "stop_and_observe"
+  ],
+  "max_context_bytes": 24000,
+  "trigger": "买家通过可信界面停止，或已授权任务内收到停止请求；停止通道不依赖模型是否可用。",
+  "minimum_context": [
+    "task_binding",
+    "stop_command_projection",
+    "payment_operation_projection"
+  ],
+  "context_notes": [
+    "task_binding是服务器绑定的task_id及作用域，不接受模型自选授权。",
+    "stop_command_projection在尚未停止时可以为null。",
+    "payment_operation_projection在尚未建立金融操作时可以为null；停止通道不得等待无关资料补齐。"
+  ],
+  "allowed_tools": [
+    "request_stop",
+    "get_task_status"
+  ],
+  "steps": [
+    {
+      "order": 1,
+      "kind": "tool",
+      "instruction": "立即请求task_id的单调撤销；不等待额外商品研究或LLM确认。旧页面版本不应阻止合法停止。",
+      "tool": "request_stop",
+      "when": "可信界面尚未直接完成同一停止请求"
+    },
+    {
+      "order": 2,
+      "kind": "service_requirement",
+      "instruction": "可信界面的停止接口直接提交数据库撤销，与付款dispatch提交在同一授权边界串行判断；随后取消不再需要的模型工作。",
+      "tool": null,
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 3,
+      "kind": "tool",
+      "instruction": "读取停止结果和当前付款状态；停止推理不等于撤销付款，在途或未知结果必须保留并说明。",
+      "tool": "get_task_status",
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 4,
+      "kind": "service_requirement",
+      "instruction": "已在途操作由支付worker按原编号查询、取消或退款流程处理；当前13工具没有直接PSP取消/退款工具，不能由模型假装执行。",
+      "tool": null,
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 5,
+      "kind": "model",
+      "instruction": "分别说明后续执行是否已阻止、此前付款是否仍在途、接下来由谁核实；有证据才声称退款完成。",
+      "tool": null,
+      "when": "任务仍有效、预算及期限未耗尽"
+    }
+  ],
+  "outputs": {
+    "artifact_type": "stop_reconcile_result",
+    "schema_ref": null,
+    "required_fields": [
+      "task_id",
+      "revocation_status",
+      "future_dispatch_blocked",
+      "in_flight_payment_state",
+      "reconciliation_owner"
+    ],
+    "business_status": "AgentResult.completed仅表示本能力的工作完成，不表示付款、履约、退款或案件结案。"
+  },
+  "stop_conditions": [
+    "调用者不具有该任务停止权限",
+    "服务不可用无法确定撤销结果",
+    "在途支付结果未知",
+    "原交易已完成且需要单独取消或退款处理"
+  ],
+  "escalation": {
+    "target": "buyer_or_assigned_operations",
+    "reasons": [
+      "调用者不具有该任务停止权限",
+      "服务不可用无法确定撤销结果",
+      "在途支付结果未知",
+      "原交易已完成且需要单独取消或退款处理"
+    ],
+    "available_action_type": "human_action"
+  },
+  "negative_examples": [
+    {
+      "input": "用户点击停止后，支付已在银行处理中。",
+      "expected_behavior": "显示已阻止后续操作，原付款仍在核实并转交对账。",
+      "forbidden_behavior": "承诺钱一定未扣或即时原路退回。"
+    },
+    {
+      "input": "DeepSeek暂时不可用。",
+      "expected_behavior": "可信UI直达业务停止接口，不等待模型。",
+      "forbidden_behavior": "把模型恢复作为撤销前提。"
+    }
+  ]
+}

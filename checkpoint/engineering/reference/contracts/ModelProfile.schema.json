@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hacku:contract:ModelProfile",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "profile_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provider": {
+      "const": "deepseek"
+    },
+    "requested_model_label": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "base_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "enabled": {
+      "type": "boolean"
+    },
+    "verification_status": {
+      "enum": [
+        "unverified",
+        "docs_verified",
+        "sandbox_verified",
+        "production_verified"
+      ]
+    },
+    "verified_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "doc_verified": {
+      "type": "boolean"
+    },
+    "live_verified": {
+      "type": "boolean"
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tool_calling": {
+          "type": "boolean"
+        },
+        "strict_schema": {
+          "type": "boolean"
+        },
+        "streaming": {
+          "type": "boolean"
+        },
+        "thinking": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "tool_calling",
+        "strict_schema",
+        "streaming",
+        "thinking"
+      ]
+    },
+    "request_adapter_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "wire_schema_adapter_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "local_contract_version": {
+      "const": "0.2.0"
+    },
+    "data_policy_review_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "max_output_tokens": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "timeout_seconds": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "credential_secret_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "profile_id",
+    "provider",
+    "requested_model_label",
+    "model_id",
+    "base_url",
+    "enabled",
+    "verification_status",
+    "verified_at",
+    "doc_verified",
+    "live_verified",
+    "capabilities",
+    "request_adapter_version",
+    "wire_schema_adapter_version",
+    "local_contract_version",
+    "data_policy_review_ref",
+    "max_output_tokens",
+    "timeout_seconds",
+    "credential_secret_ref"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "enabled": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "doc_verified": {
+            "const": true
+          },
+          "live_verified": {
+            "const": true
+          },
+          "verification_status": {
+            "enum": [
+              "sandbox_verified",
+              "production_verified"
+            ]
+          },
+          "credential_secret_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "data_policy_review_ref": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  ]
+}

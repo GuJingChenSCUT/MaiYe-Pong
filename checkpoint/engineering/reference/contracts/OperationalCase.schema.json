@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hacku:contract:OperationalCase",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "record_kind": {
+      "const": "operational_case"
+    },
+    "case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "order_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "participant_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 2
+    },
+    "buyer_statement": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "seller_statement": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "visibility_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "state": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "required": [
+    "record_kind",
+    "case_id",
+    "order_id",
+    "participant_refs",
+    "buyer_statement",
+    "seller_statement",
+    "evidence_refs",
+    "visibility_scope",
+    "state",
+    "version"
+  ]
+}

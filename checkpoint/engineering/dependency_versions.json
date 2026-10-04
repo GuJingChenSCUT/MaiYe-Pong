@@ -1,0 +1,35 @@
+{
+  "python": "3.12",
+  "direct_requirements": "requirements.txt",
+  "verified_dependency_versions": {
+    "PyYAML": "6.0.3",
+    "annotated-types": "0.8.0",
+    "attrs": "26.1.0",
+    "jsonschema": "4.26.0",
+    "jsonschema-path": "0.5.0",
+    "jsonschema-specifications": "2025.9.1",
+    "lazy-object-proxy": "1.12.0",
+    "openapi-schema-validator": "0.9.0",
+    "openapi-spec-validator": "0.9.0",
+    "pathable": "0.6.0",
+    "pydantic": "2.13.5",
+    "pydantic-settings": "2.15.0",
+    "pydantic_core": "2.46.5",
+    "python-dotenv": "1.2.4",
+    "referencing": "0.37.0",
+    "rfc3339-validator": "0.1.4",
+    "rpds-py": "2026.6.3",
+    "six": "1.17.0",
+    "typing-inspection": "0.4.4",
+    "typing_extensions": "4.16.0"
+  },
+  "scope": "Observed test environment; not a complete production application lockfile.",
+  "stop1_runtime": {
+    "python_observed": "3.12.14",
+    "application_http": "stdlib http.server (loopback only)",
+    "database": "stdlib sqlite3, shared transaction connection",
+    "worker": "stdlib threading or separate process, persistent research jobs",
+    "new_third_party_runtime_dependencies": [],
+    "dependency_scope": "requirements.txt remains the existing verification dependencies; production lockfile/deployment not finalized"
+  }
+}

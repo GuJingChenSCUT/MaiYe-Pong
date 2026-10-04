@@ -1,0 +1,92 @@
+{
+  "verified_at": "2026-10-03T02:48:40.339755+00:00",
+  "tests_run": 40,
+  "failures": 0,
+  "errors": 0,
+  "draft_pack_refused_without_offline_flag": true,
+  "pack_manifest_sha256": "1474d4c7801b0b4f560461fb933f7f4cd99008807a4bd480d6999ad9db195c0a",
+  "real_pack_procedures_checked": [
+    {
+      "capability_id": "intent_plan",
+      "tested_stage": "intent",
+      "effective_tools": [
+        "create_plan_draft",
+        "get_task_status"
+      ],
+      "status": "offline_prepared_only"
+    },
+    {
+      "capability_id": "quote_research",
+      "tested_stage": "offers",
+      "effective_tools": [
+        "get_verified_quote",
+        "search_catalog",
+        "search_evidence"
+      ],
+      "status": "offline_prepared_only"
+    },
+    {
+      "capability_id": "payment_explain",
+      "tested_stage": "payment_options",
+      "effective_tools": [
+        "evaluate_payment_options",
+        "get_verified_quote",
+        "search_evidence"
+      ],
+      "status": "offline_prepared_only"
+    },
+    {
+      "capability_id": "authorized_execute",
+      "tested_stage": "human_approval",
+      "effective_tools": [
+        "get_task_status"
+      ],
+      "status": "offline_prepared_only"
+    },
+    {
+      "capability_id": "stop_reconcile",
+      "tested_stage": "intent",
+      "effective_tools": [
+        "get_task_status",
+        "request_stop"
+      ],
+      "status": "offline_prepared_only"
+    },
+    {
+      "capability_id": "seller_reply",
+      "tested_stage": "seller_support",
+      "effective_tools": [
+        "draft_seller_response",
+        "get_task_status",
+        "get_verified_quote",
+        "search_evidence"
+      ],
+      "status": "offline_prepared_only"
+    },
+    {
+      "capability_id": "case_evidence",
+      "tested_stage": "case_review",
+      "effective_tools": [
+        "draft_case_summary",
+        "get_task_status",
+        "search_evidence"
+      ],
+      "status": "offline_prepared_only"
+    },
+    {
+      "capability_id": "knowledge_candidate",
+      "tested_stage": "knowledge_candidate",
+      "effective_tools": [
+        "draft_knowledge_candidate",
+        "get_reviewed_case_batch",
+        "search_evidence"
+      ],
+      "status": "offline_prepared_only"
+    }
+  ],
+  "data_status": "synthetic_fixtures_no_market_rates_or_actual_cases",
+  "live_model_verified": false,
+  "identity_service_verified": false,
+  "payment_sandbox_verified": false,
+  "production_ready": false
+}

@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hacku:contract:ResolutionProposal",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "case_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "proposal_type": {
+      "enum": [
+        "request_evidence",
+        "merchant_refund_offer",
+        "replacement_offer",
+        "escalate"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "uncertainties": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "execution_terms": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "original_payment_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "refund_amount": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "amount_minor": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "currency",
+                "amount_minor"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "responsible_merchant_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "return_conditions": {
+          "type": "string",
+          "minLength": 1
+        },
+        "deadline": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "original_payment_id",
+        "refund_amount",
+        "responsible_merchant_id",
+        "return_conditions",
+        "deadline"
+      ]
+    },
+    "required_acceptor_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "terms_digest": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "case_id",
+    "case_version",
+    "proposal_type",
+    "summary",
+    "evidence_ids",
+    "uncertainties",
+    "execution_terms",
+    "required_acceptor_refs",
+    "terms_digest"
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "id": "case_evidence",
+  "version": "0.3.0",
+  "name_zh": "双边证据与争议摘要",
+  "role": "case_assistant",
+  "phase": "phase_1",
+  "enabled_by_default": true,
+  "publication_status": "draft",
+  "execution_mode": "normal",
+  "workflow_nodes": [
+    "case_review"
+  ],
+  "objective_types": [
+    "prepare_bilateral_case_summary"
+  ],
+  "max_context_bytes": 24000,
+  "trigger": "案件已正式建立并分配，材料使用范围和双方共享可见性已由服务检查。",
+  "minimum_context": [
+    "assigned_case_projection",
+    "party_statements",
+    "shared_evidence_projection",
+    "evaluation_context"
+  ],
+  "context_notes": [
+    "assigned_case_projection含已分配案件、版本与相关订单状态。",
+    "party_statements分别标明买家和卖家已提供或not_provided。",
+    "shared_evidence_projection保留来源、时间线及未核实点。",
+    "evaluation_context含适用地区、服务器时间和已发布规则版本。"
+  ],
+  "allowed_tools": [
+    "search_evidence",
+    "get_task_status",
+    "draft_case_summary"
+  ],
+  "steps": [
+    {
+      "order": 1,
+      "kind": "tool",
+      "instruction": "读取案件关联任务的受限运营投影，不能读取双方私人助手记忆。",
+      "tool": "get_task_status",
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 2,
+      "kind": "tool",
+      "instruction": "按地区、交易时间和问题检索适用资料；案例经验只作类比，不能自动创设退款权。",
+      "tool": "search_evidence",
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 3,
+      "kind": "model",
+      "instruction": "分别整理买家主张、商户回应、双方认可事实、争议点和未知项；没有回应时明确not_provided，不推断默认承认。",
+      "tool": null,
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 4,
+      "kind": "tool",
+      "instruction": "用当前case_version保存带证据引用的摘要草稿。没有服务核实或双方确认的事实不得放入agreed_facts。",
+      "tool": "draft_case_summary",
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 5,
+      "kind": "human_action",
+      "instruction": "有权限的案件人员和必要当事人在独立界面处理裁定或和解；退款执行仍由受控服务负责，当前工具仅产生摘要。",
+      "tool": null,
+      "when": "任务仍有效、预算及期限未耗尽"
+    }
+  ],
+  "outputs": {
+    "artifact_type": "case_evidence_result",
+    "schema_ref": null,
+    "required_fields": [
+      "draft_id",
+      "buyer_claim_summary",
+      "seller_response_summary",
+      "agreed_facts",
+      "contested_points",
+      "uncertainties",
+      "evidence_refs"
+    ],
+    "business_status": "AgentResult.completed仅表示本能力的工作完成，不表示付款、履约、退款或案件结案。"
+  },
+  "stop_conditions": [
+    "案件未分配或访问权限不足",
+    "证据来源冲突或无法验证",
+    "案件版本更新",
+    "需要实际退款、责任裁定或当事人接受和解"
+  ],
+  "escalation": {
+    "target": "assigned_case_operator",
+    "reasons": [
+      "案件未分配或访问权限不足",
+      "证据来源冲突或无法验证",
+      "案件版本更新",
+      "需要实际退款、责任裁定或当事人接受和解"
+    ],
+    "available_action_type": "human_action"
+  },
+  "negative_examples": [
+    {
+      "input": "商户暂未回复，买家要求AI立即判定全额退款。",
+      "expected_behavior": "标记商户回应未提供，整理现有证据并升级处理。",
+      "forbidden_behavior": "把沉默当认责并触发退款。"
+    },
+    {
+      "input": "公开报道里另一消费者曾获全额退款。",
+      "expected_behavior": "说明事实和条款可能不同，保留为背景证据。",
+      "forbidden_behavior": "据此设定所有类似订单自动全额退款。"
+    }
+  ]
+}

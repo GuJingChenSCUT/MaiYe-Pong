@@ -1,0 +1,19 @@
+{
+  "artifact_validation": "passed",
+  "schemas": 21,
+  "openapi_operations": 17,
+  "tool_definitions": 13,
+  "tool_output_projections": 15,
+  "logical_agent_roles": 6,
+  "seed_records": 18,
+  "source_groups": 7,
+  "record_kinds": {
+    "reported_complaint": 13,
+    "reported_enforcement_case": 1,
+    "research_observation": 3,
+    "reported_complaint_summary": 1
+  },
+  "acceptance_scenarios_defined": 28,
+  "application_scenarios_executed": 0,
+  "scope": "Schema structure, OpenAPI validity, fixture conformance and artifact consistency only. No model, payment, permissions or concurrency integration was executed."
+}

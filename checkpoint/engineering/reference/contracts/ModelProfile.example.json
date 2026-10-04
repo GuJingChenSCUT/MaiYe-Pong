@@ -1,0 +1,25 @@
+{
+  "profile_id": "deepseek_verified_profile",
+  "provider": "deepseek",
+  "requested_model_label": "DeepSeek-V4.1-Flash",
+  "model_id": "deepseek-flash",
+  "base_url": "https://api.deepseek.com/beta",
+  "enabled": false,
+  "verification_status": "docs_verified",
+  "verified_at": null,
+  "doc_verified": true,
+  "live_verified": false,
+  "capabilities": {
+    "tool_calling": true,
+    "strict_schema": true,
+    "streaming": true,
+    "thinking": true
+  },
+  "request_adapter_version": "0.2.0",
+  "wire_schema_adapter_version": "0.2.0",
+  "local_contract_version": "0.2.0",
+  "data_policy_review_ref": null,
+  "max_output_tokens": 2048,
+  "timeout_seconds": 30,
+  "credential_secret_ref": null
+}

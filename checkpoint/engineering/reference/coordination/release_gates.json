@@ -1,0 +1,24 @@
+{
+  "research": {
+    "target_reviewed_cases": "200-500 planned; not collected in this package",
+    "coverage": "Positive and negative outcomes; buyer/seller evidence; platform, category, region, date",
+    "holdout": "Split by case family/source group and time before prompt tuning; deduplicate across splits"
+  },
+  "engineering": "All critical money/auth/tenant scenarios in acceptance_matrix must pass; record denominators and setup. Zero failures in a finite suite is not zero production risk.",
+  "pilot": "Named partner, permitted interfaces, real DeepSeek credentials and contract review, explicit small-budget user consent, incident owner, reconciled payment and refund evidence.",
+  "production": "Threat/privacy review, incident and support process, backup restore rehearsal, monitoring, actual provider agreements and jurisdiction review; no claim of universal platform access.",
+  "metrics": [
+    "cash_paid",
+    "eligible_benefit_estimate",
+    "actual_benefit_posted",
+    "user_total_time_including_setup",
+    "task_success",
+    "unauthorized_dispatch_count",
+    "cross_tenant_leak_count",
+    "seller_resolution_time",
+    "human_handoff_rate",
+    "repeat_real_task_use"
+  ],
+  "model_activation": "Exact available DeepSeek model ID, documented capabilities and account data terms verified; sandbox tool loop and role/output isolation pass before enabling live roles.",
+  "migration_evaluation": "Compare single-agent and delegated roles on identical held-out tasks, including normal completions, refusals, tool correctness, cost and latency; do not assume more agents are better."
+}

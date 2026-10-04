@@ -1,0 +1,128 @@
+{
+  "status": "proposed_not_run",
+  "participants": 12,
+  "trials": 36,
+  "assignments": [
+    {
+      "participant_id": "P001",
+      "order": [
+        "manual",
+        "comparison_plus_ai",
+        "agent"
+      ],
+      "task_family": "T01",
+      "evidence_version": "E01"
+    },
+    {
+      "participant_id": "P002",
+      "order": [
+        "manual",
+        "agent",
+        "comparison_plus_ai"
+      ],
+      "task_family": "T01",
+      "evidence_version": "E01"
+    },
+    {
+      "participant_id": "P003",
+      "order": [
+        "comparison_plus_ai",
+        "manual",
+        "agent"
+      ],
+      "task_family": "T01",
+      "evidence_version": "E01"
+    },
+    {
+      "participant_id": "P004",
+      "order": [
+        "comparison_plus_ai",
+        "agent",
+        "manual"
+      ],
+      "task_family": "T01",
+      "evidence_version": "E01"
+    },
+    {
+      "participant_id": "P005",
+      "order": [
+        "agent",
+        "manual",
+        "comparison_plus_ai"
+      ],
+      "task_family": "T01",
+      "evidence_version": "E01"
+    },
+    {
+      "participant_id": "P006",
+      "order": [
+        "agent",
+        "comparison_plus_ai",
+        "manual"
+      ],
+      "task_family": "T01",
+      "evidence_version": "E01"
+    },
+    {
+      "participant_id": "P007",
+      "order": [
+        "manual",
+        "comparison_plus_ai",
+        "agent"
+      ],
+      "task_family": "T01",
+      "evidence_version": "E01"
+    },
+    {
+      "participant_id": "P008",
+      "order": [
+        "manual",
+        "agent",
+        "comparison_plus_ai"
+      ],
+      "task_family": "T01",
+      "evidence_version": "E01"
+    },
+    {
+      "participant_id": "P009",
+      "order": [
+        "comparison_plus_ai",
+        "manual",
+        "agent"
+      ],
+      "task_family": "T01",
+      "evidence_version": "E01"
+    },
+    {
+      "participant_id": "P010",
+      "order": [
+        "comparison_plus_ai",
+        "agent",
+        "manual"
+      ],
+      "task_family": "T01",
+      "evidence_version": "E01"
+    },
+    {
+      "participant_id": "P011",
+      "order": [
+        "agent",
+        "manual",
+        "comparison_plus_ai"
+      ],
+      "task_family": "T01",
+      "evidence_version": "E01"
+    },
+    {
+      "participant_id": "P012",
+      "order": [
+        "agent",
+        "comparison_plus_ai",
+        "manual"
+      ],
+      "task_family": "T01",
+      "evidence_version": "E01"
+    }
+  ],
+  "purpose": "Feasibility pilot; not statistically conclusive. Matched evidence snapshot, six orders repeated twice; report learning effects."
+}

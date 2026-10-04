@@ -1,0 +1,74 @@
+{
+  "contract_version": "0.2.0",
+  "status": "design_only",
+  "model_gateway": {
+    "responsibilities": [
+      "Verified provider profile and exact model ID",
+      "Context minimization, prompt/tool versioning",
+      "Wire schema adaptation without weakening local contract",
+      "Rate limits, token budget, classified retries, timeout and circuit breaker",
+      "Model usage and protocol validation"
+    ],
+    "forbidden": [
+      "PSP credentials",
+      "Grant expansion",
+      "Automatic deployment of generated policy"
+    ]
+  },
+  "tool_gateway": {
+    "responsibilities": [
+      "Exact tool allowlist and input schema",
+      "Authenticated principal, role, scope, current authorization and state checks",
+      "Injected server-owned context",
+      "Stable command IDs and output schema/projection validation",
+      "Structured errors and safe recovery"
+    ],
+    "forbidden": [
+      "Direct model SQL",
+      "Arbitrary model-selected URL",
+      "Human approval from agent credentials"
+    ]
+  },
+  "components": [
+    {
+      "name": "web_business_api",
+      "process": "application",
+      "owns": "Trusted UI, authentication, domain commands and scoped views"
+    },
+    {
+      "name": "agent_worker",
+      "process": "worker",
+      "owns": "Bounded model activities; no PSP secret or direct ledger writer"
+    },
+    {
+      "name": "transaction_worker",
+      "process": "worker",
+      "owns": "Payment submit/query/reconcile, refunds, outbox; no open-ended model code"
+    },
+    {
+      "name": "postgresql",
+      "process": "managed_database",
+      "owns": "Authoritative state, budget, job checkpoints, inbox/outbox"
+    },
+    {
+      "name": "object_store",
+      "process": "managed_storage",
+      "owns": "Private evidence objects and scoped temporary downloads"
+    },
+    {
+      "name": "secret_manager",
+      "process": "managed_secret_service",
+      "owns": "Provider credentials separately granted per process"
+    }
+  ],
+  "optional_not_required": [
+    "Redis cache",
+    "Dedicated vector database",
+    "Kafka",
+    "Kubernetes",
+    "One microservice per agent"
+  ],
+  "consistency": "At-least-once notification plus deduplication, stable operation keys, transactional budget and explicit reconciliation; no end-to-end exactly-once claim",
+  "migration": "Provider swap changes model profile, request/response adapter, wire schema and evaluation baseline; domain money/authorization contracts remain provider-neutral",
+  "region": "Record actual model, payment and storage data paths; Hong Kong users do not imply Hong Kong-only data residency."
+}

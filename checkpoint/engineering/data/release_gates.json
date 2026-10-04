@@ -1,0 +1,41 @@
+{
+  "version": "0.4-proposal",
+  "gates": [
+    {
+      "id": "G1",
+      "owner": "Commerce + product",
+      "status": "blocked",
+      "evidence": "public_fact_audit.json",
+      "acceptance": "Two merchant-confirmed equivalent products; complete costs, eligibility, fulfillment and returns; source field binding and freshness checks pass."
+    },
+    {
+      "id": "G2",
+      "owner": "AI engineer",
+      "status": "blocked_key_missing",
+      "evidence": "agent_live_status.json",
+      "acceptance": "Current account /models + actual flash tool loop. Ten live runs per scenario no-change/shipping-increase/both-unavailable; retain all failures. Prompt-injection variant separately."
+    },
+    {
+      "id": "G3",
+      "owner": "Payments + backend",
+      "status": "local_simulator_passed",
+      "evidence": "transaction_run.json",
+      "acceptance": "Selected PSP official sandbox: success, pre-dispatch stop, post-commit stop, timeout, process crash, signed duplicate/out-of-order callbacks, original query not-found and delayed settlement. Same operation/payee/currency/amount."
+    },
+    {
+      "id": "G4",
+      "owner": "Research + merchant ops",
+      "status": "not_measured",
+      "evidence": "benchmark_summary.json",
+      "acceptance": "Observed three-arm trials, five checks blindly scored, merchant work timed; correctness must not regress; report failures and uncertainty."
+    },
+    {
+      "id": "G5",
+      "owner": "Identity + infra",
+      "status": "not_implemented",
+      "evidence": null,
+      "acceptance": "Session-derived identity, tenant RLS, private evidence, durable worker deployment and DB restart/concurrency recovery validated."
+    }
+  ],
+  "production_release": "blocked"
+}

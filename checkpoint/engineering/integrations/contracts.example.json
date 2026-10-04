@@ -1,0 +1,65 @@
+{
+  "contract_kind": "internal_design_only_not_official_provider_api",
+  "version": "reservation-1",
+  "implementation_state": "designed",
+  "network_client_implemented": false,
+  "connected_to_application_routes": false,
+  "model_transaction_tools": [],
+  "launch_targets": {
+    "merchant_platform": "taobao",
+    "wallet": "wechat_hk",
+    "execution_currency": "HKD",
+    "wechat_cn": "reference_only_CNY_blocked_by_HKD_execution_policy"
+  },
+  "account_reservation_example": {
+    "integration": "wechat_hk",
+    "account_ref": null,
+    "secret_ref": null,
+    "secret_reference_format_only": "secret://reviewed-store/opaque-entry",
+    "account_evidence_ref": null,
+    "authorization_evidence_ref": null,
+    "granted_capabilities": [],
+    "merchant_id": null,
+    "payee_ref": null,
+    "payee_mapping_version": null,
+    "merchant_binding_evidence_ref": null,
+    "currency": null,
+    "currency_evidence_ref": null,
+    "valid_until": null,
+    "official_checkout_origins": [],
+    "checkout_origin_evidence_ref": null
+  },
+  "taobao_scope": {
+    "proposed_only": ["internal.merchant.quote", "internal.merchant.official_checkout_handoff"],
+    "implemented": [],
+    "order_create_and_query": "reserved_unimplemented_permission_not_established",
+    "own_wechat_collection_for_taobao_order": "forbidden"
+  },
+  "backend_only_payment_port_reservations": [
+    "internal.payment.session_create",
+    "internal.payment.query_original",
+    "internal.payment.close_original",
+    "internal.payment.refund_original",
+    "internal.payment.query_refund_original",
+    "internal.payment.verify_webhook"
+  ],
+  "original_refund_reference_shape": {
+    "example_only": true,
+    "original_payment": "OriginalTransactionRef loaded from the existing durable payment record",
+    "refund_operation_id": "existing_refund_operation_ref",
+    "refund_idempotency_key": "existing_refund_idempotency_key_distinct_from_payment_key",
+    "refund_amount": {"minor": 100, "currency": "HKD"},
+    "provider_refund_ref": null,
+    "state": "UNKNOWN",
+    "policy": "Query this refund identity; do not resubmit or use payment query as a substitute."
+  },
+  "preflight_example": {
+    "integration": "wechat_hk",
+    "capability": "internal.payment.session_create",
+    "implementation_state": "designed",
+    "executable": false,
+    "blockers": ["ADAPTER_NOT_IMPLEMENTED", "ACCOUNT_VERIFICATION_REQUIRED", "SECRET_REFERENCE_REQUIRED", "PLATFORM_AUTHORIZATION_REQUIRED", "CAPABILITY_GRANT_REQUIRED", "MERCHANT_PAYEE_BINDING_REQUIRED", "ACCOUNT_CURRENCY_EVIDENCE_REQUIRED", "USER_AUTHORIZATION_REQUIRED"]
+  },
+  "unknown_result_policy": "Load and query the existing durable operation and original idempotency key. Do not create another payment. Budget and reconciliation remain owned by the current kernel.",
+  "evidence_reference_limit": "DTO fields and evidence references are not authentication, signature verification, official capability approval or user consent. Existing trusted services must verify them before any future integration."
+}

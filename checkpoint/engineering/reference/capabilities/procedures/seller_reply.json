@@ -1,0 +1,112 @@
+{
+  "id": "seller_reply",
+  "version": "0.3.0",
+  "name_zh": "商户事实核对与回应草稿",
+  "role": "seller_assistant",
+  "phase": "phase_1",
+  "enabled_by_default": true,
+  "publication_status": "draft",
+  "execution_mode": "normal",
+  "workflow_nodes": [
+    "seller_support"
+  ],
+  "objective_types": [
+    "draft_merchant_response"
+  ],
+  "max_context_bytes": 24000,
+  "trigger": "当前商户请求帮助或获分配相关异常，且服务器已注入本商户订单和案件最小投影。",
+  "minimum_context": [
+    "merchant_order_projection",
+    "assigned_case_projection",
+    "merchant_evidence_refs"
+  ],
+  "context_notes": [
+    "merchant_order_projection只含本商户订单、原报价与履约状态。",
+    "assigned_case_projection含已分配case_id和expected_case_version，不含买家的私人记忆。",
+    "merchant_evidence_refs是获准证据引用，可为空列表；没有证据不能补造事实。"
+  ],
+  "allowed_tools": [
+    "search_evidence",
+    "get_verified_quote",
+    "get_task_status",
+    "draft_seller_response"
+  ],
+  "steps": [
+    {
+      "order": 1,
+      "kind": "tool",
+      "instruction": "核对相关任务的商户投影，禁止索取买家完整预算、其他商户报价和私人助手对话。",
+      "tool": "get_task_status",
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 2,
+      "kind": "tool",
+      "instruction": "对照本商户原报价承诺与当前事实，保留适用版本，不用新条款覆盖旧承诺。",
+      "tool": "get_verified_quote",
+      "when": "争议涉及报价或购买时承诺"
+    },
+    {
+      "order": 3,
+      "kind": "tool",
+      "instruction": "检索适用的已审核资料，区分平台规则、商户条款与法律事实；不作法律裁决。",
+      "tool": "search_evidence",
+      "when": "存在需要解释的规则问题"
+    },
+    {
+      "order": 4,
+      "kind": "tool",
+      "instruction": "将事实、不同意之处、证据引用和可考虑方案保存为草稿；内容不代表已经对外发送或承担法律责任。",
+      "tool": "draft_seller_response",
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 5,
+      "kind": "human_action",
+      "instruction": "商户在可信界面检查并确认是否提交共享回应或提出和解；该人工确认不是现有Agent工具。",
+      "tool": null,
+      "when": "任务仍有效、预算及期限未耗尽"
+    }
+  ],
+  "outputs": {
+    "artifact_type": "seller_reply_result",
+    "schema_ref": null,
+    "required_fields": [
+      "draft_id",
+      "case_id",
+      "case_version",
+      "merchant_claims",
+      "evidence_refs",
+      "unconfirmed_terms"
+    ],
+    "business_status": "AgentResult.completed仅表示本能力的工作完成，不表示付款、履约、退款或案件结案。"
+  },
+  "stop_conditions": [
+    "商户无订单或案件访问权",
+    "案件版本变化",
+    "材料不足以支持拟写事实",
+    "回应将形成未授权赔偿或履约承诺"
+  ],
+  "escalation": {
+    "target": "merchant_representative",
+    "reasons": [
+      "商户无订单或案件访问权",
+      "案件版本变化",
+      "材料不足以支持拟写事实",
+      "回应将形成未授权赔偿或履约承诺"
+    ],
+    "available_action_type": "human_action"
+  },
+  "negative_examples": [
+    {
+      "input": "商户要求查看买家在竞争店铺得到的底价和最高预算。",
+      "expected_behavior": "拒绝提供不属于其授权投影的信息。",
+      "forbidden_behavior": "通过共享数据库或另一个Agent转取。"
+    },
+    {
+      "input": "有物流发货记录，但没有签收证明。",
+      "expected_behavior": "写明已发货、签收待核实。",
+      "forbidden_behavior": "声称买家已经签收。"
+    }
+  ]
+}

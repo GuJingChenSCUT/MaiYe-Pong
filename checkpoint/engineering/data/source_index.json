@@ -1,0 +1,167 @@
+{
+  "checked_on": "2026-10-03",
+  "technical_sources": [
+    {
+      "id": "D1",
+      "title": "DeepSeek API introduction",
+      "url": "https://api-docs.deepseek.com/zh-cn/",
+      "finding": "deepseek-flash is current stable request name; legacy V4 aliases do not pin the retired original model."
+    },
+    {
+      "id": "D2",
+      "title": "DeepSeek Codex integration",
+      "url": "https://api-docs.deepseek.com/zh-cn/quick_start/agent_integrations/codex/",
+      "finding": "Native Responses wire API; use official catalog; no Chat-to-Responses proxy required by current guide."
+    },
+    {
+      "id": "D3",
+      "title": "DeepSeek list models",
+      "url": "https://api-docs.deepseek.com/api/list-models/",
+      "finding": "Account model discovery precedes live qualification; documentation examples are not this account result."
+    },
+    {
+      "id": "D4",
+      "title": "DeepSeek function calling",
+      "url": "https://api-docs.deepseek.com/guides/tool_calls/",
+      "finding": "Application executes tools. Strict mode uses beta base URL and restricted JSON Schema."
+    },
+    {
+      "id": "D5",
+      "title": "DeepSeek thinking mode",
+      "url": "https://api-docs.deepseek.com/guides/thinking_mode/",
+      "finding": "Preserve reasoning_content in model round-trip where required; do not publish it as user audit rationale."
+    },
+    {
+      "id": "D6",
+      "title": "OpenAI Codex config reference",
+      "url": "https://developers.openai.com/codex/config-reference/",
+      "finding": "env_key supports environment-secret auth; custom provider wire_api uses responses."
+    },
+    {
+      "id": "D7",
+      "title": "Harness quickstart",
+      "url": "https://deepseek-harness.github.io/deepseek-harness/guide/quickstart",
+      "finding": "Developer workspace workflow; task starts from current directory unless configured."
+    }
+  ],
+  "retail_sources": {
+    "P1": {
+      "url": "https://www.pns.hk/en/tot-pro-gum-health-toothpaste/p/BP_234865",
+      "publisher": "PNS",
+      "locator": "product price, size, origin, product code",
+      "checked_on": "2026-10-03",
+      "source_updated_at": null
+    },
+    "P2": {
+      "url": "https://www.pns.hk/en/deliveryDetails",
+      "publisher": "PNS",
+      "locator": "home delivery charges and exclusions; stairs surcharge",
+      "checked_on": "2026-10-03",
+      "source_updated_at": null
+    },
+    "P3": {
+      "url": "https://www.pns.hk/en/refundReplace",
+      "publisher": "PNS",
+      "locator": "refund and replacement conditions",
+      "checked_on": "2026-10-03",
+      "source_updated_at": null
+    },
+    "W1": {
+      "url": "https://www.watsons.com.hk/en/colgate-total-pro-gum-health-reduce-gum-bleeding-fight-bad-breath-toothpaste-old-or-new-packaging-random-delivery/p/BP_234865",
+      "publisher": "Watsons HK",
+      "locator": "product price, origin, product code and pack size",
+      "checked_on": "2026-10-03",
+      "source_updated_at": null
+    },
+    "W2": {
+      "url": "https://www.watsons.com.hk/en/terms-conditions",
+      "publisher": "Watsons HK",
+      "locator": "sections 8 delivery, 12 returns",
+      "checked_on": "2026-10-03",
+      "source_updated_at": "2025-07-24"
+    },
+    "W3": {
+      "url": "https://www.watsons.com.hk/en/delivery",
+      "publisher": "Watsons HK",
+      "locator": "delivery timetable differs from terms",
+      "checked_on": "2026-10-03",
+      "source_updated_at": null
+    }
+  },
+  "repositories": [
+    {
+      "repo": "deepseek-ai/deepseek-harness",
+      "commit": "da00f7f5358f2949383b35c14f548bc20187d80c",
+      "license": "MIT",
+      "inspected": [
+        "README.zh.md",
+        "SAFETY.zh.md",
+        "package.json"
+      ],
+      "use": "Isolated developer workspace and model evaluation only",
+      "boundary": "Experimental developer preview; not audited production transaction runtime.",
+      "url": "https://github.com/deepseek-ai/deepseek-harness/tree/da00f7f5358f2949383b35c14f548bc20187d80c",
+      "copied_code": false,
+      "executed": false
+    },
+    {
+      "repo": "Shopify/ucp-cli",
+      "commit": "1cd915db53a7734c4d32f998131ca00debb11f4f",
+      "license": "MIT",
+      "inspected": [
+        "README.md",
+        "LICENSE",
+        "src/core/escalation.ts"
+      ],
+      "use": "Catalog/cart/checkout tool shapes and continuation handoff",
+      "boundary": "Escalation hook is notification rather than a hard payment gate; avoid model-controlled shell. Merchant support must be negotiated.",
+      "url": "https://github.com/Shopify/ucp-cli/tree/1cd915db53a7734c4d32f998131ca00debb11f4f",
+      "copied_code": false,
+      "executed": false
+    },
+    {
+      "repo": "Universal-Commerce-Protocol/samples",
+      "commit": "e19314d29453ef16832fb972dddfc2e16432a1b0",
+      "license": "Apache-2.0",
+      "inspected": [
+        "README.md",
+        "rest/python/server/README.md",
+        "rest/python/server/services/checkout_service.py (initial portion)"
+      ],
+      "use": "Merchant sandbox and structured fulfillment examples",
+      "boundary": "Sample/mock semantics are not a real merchant or PSP agreement.",
+      "url": "https://github.com/Universal-Commerce-Protocol/samples/tree/e19314d29453ef16832fb972dddfc2e16432a1b0",
+      "copied_code": false,
+      "executed": false
+    },
+    {
+      "repo": "langchain-ai/langgraph",
+      "commit": "7dc9195e4141c8fbd8118581b3dd61d158628aa8",
+      "license": "MIT",
+      "inspected": [
+        "README.md",
+        "LICENSE"
+      ],
+      "use": "Optional durable workflow and human interrupts after minimum slice",
+      "boundary": "Checkpoint is not payment ledger; never add another independent payment retry owner.",
+      "url": "https://github.com/langchain-ai/langgraph/tree/7dc9195e4141c8fbd8118581b3dd61d158628aa8",
+      "copied_code": false,
+      "executed": false
+    },
+    {
+      "repo": "sierra-research/tau2-bench",
+      "commit": "5bfa7e37b36656b37dc6d022156be6563c1007f3",
+      "license": "MIT",
+      "inspected": [
+        "README.md",
+        "LICENSE"
+      ],
+      "use": "Task, state-change and trajectory evaluation pattern",
+      "boundary": "README now describes tau3-bench; external benchmark scores cannot prove HacKU value.",
+      "url": "https://github.com/sierra-research/tau2-bench/tree/5bfa7e37b36656b37dc6d022156be6563c1007f3",
+      "copied_code": false,
+      "executed": false
+    }
+  ],
+  "scope": "Official documentation and pinned static source review. No exhaustive security audit or third-party runtime execution."
+}

@@ -1,0 +1,3685 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/hacku/proposed/0.4/commerce.schema.json",
+  "$defs": {
+    "ProductIdentity": {
+      "type": "object",
+      "properties": {
+        "brand": {
+          "type": "string",
+          "minLength": 1
+        },
+        "variant": {
+          "type": "string",
+          "minLength": 1
+        },
+        "net_content": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "unit": {
+          "enum": [
+            "g",
+            "ml",
+            "item"
+          ]
+        },
+        "pack_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "packaging": {
+          "type": "string",
+          "minLength": 1
+        },
+        "origin": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "brand",
+        "variant",
+        "net_content",
+        "unit",
+        "pack_count",
+        "packaging",
+        "origin"
+      ],
+      "additionalProperties": false
+    },
+    "ExecutableQuote": {
+      "type": "object",
+      "properties": {
+        "quote_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "environment": {
+          "enum": [
+            "local_simulator",
+            "provider_sandbox",
+            "production",
+            "public_research"
+          ]
+        },
+        "merchant_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sku": {
+          "type": "string",
+          "minLength": 1
+        },
+        "product": {
+          "type": "object",
+          "properties": {
+            "brand": {
+              "type": "string",
+              "minLength": 1
+            },
+            "variant": {
+              "type": "string",
+              "minLength": 1
+            },
+            "net_content": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "unit": {
+              "enum": [
+                "g",
+                "ml",
+                "item"
+              ]
+            },
+            "pack_count": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "packaging": {
+              "type": "string",
+              "minLength": 1
+            },
+            "origin": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "brand",
+            "variant",
+            "net_content",
+            "unit",
+            "pack_count",
+            "packaging",
+            "origin"
+          ],
+          "additionalProperties": false
+        },
+        "currency": {
+          "const": "HKD"
+        },
+        "goods_minor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "fee_lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "minLength": 1
+              },
+              "amount_minor": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "code",
+              "amount_minor"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "discounts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "amount_minor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              "eligibility": {
+                "enum": [
+                  "eligible",
+                  "ineligible",
+                  "unknown"
+                ]
+              },
+              "expires_at": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              "rule_id": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "amount_minor",
+              "eligibility",
+              "expires_at",
+              "rule_id"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "fees_complete": {
+          "type": "boolean"
+        },
+        "stock": {
+          "enum": [
+            "available",
+            "unavailable",
+            "unknown"
+          ]
+        },
+        "destination_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "delivery": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "confirmed",
+                "unknown",
+                "conflicting"
+              ]
+            },
+            "guaranteed_by_epoch": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "policy_id": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "status",
+            "guaranteed_by_epoch",
+            "policy_id"
+          ],
+          "additionalProperties": false
+        },
+        "returns": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "confirmed",
+                "unknown",
+                "conflicting"
+              ]
+            },
+            "change_of_mind": {
+              "type": "boolean"
+            },
+            "policy_id": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "status",
+            "change_of_mind",
+            "policy_id"
+          ],
+          "additionalProperties": false
+        },
+        "observed_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "fact_status": {
+          "enum": [
+            "verified",
+            "partial",
+            "conflicting"
+          ]
+        },
+        "connector": {
+          "type": "object",
+          "properties": {
+            "environment": {
+              "enum": [
+                "local_simulator",
+                "provider_sandbox",
+                "production",
+                "public_research"
+              ]
+            },
+            "checkout": {
+              "type": "boolean"
+            },
+            "query_original": {
+              "type": "boolean"
+            },
+            "payee_ref": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "expires_at": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000000
+            }
+          },
+          "required": [
+            "environment",
+            "checkout",
+            "query_original",
+            "payee_ref",
+            "expires_at"
+          ],
+          "additionalProperties": false
+        },
+        "claim_bindings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "quote_id",
+        "version",
+        "environment",
+        "merchant_id",
+        "sku",
+        "product",
+        "currency",
+        "goods_minor",
+        "fee_lines",
+        "discounts",
+        "fees_complete",
+        "stock",
+        "destination_ref",
+        "delivery",
+        "returns",
+        "observed_at",
+        "expires_at",
+        "fact_status",
+        "connector",
+        "claim_bindings"
+      ],
+      "additionalProperties": false
+    },
+    "FulfillmentPolicy": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "confirmed",
+            "unknown",
+            "conflicting"
+          ]
+        },
+        "guaranteed_by_epoch": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "policy_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "status",
+        "guaranteed_by_epoch",
+        "policy_id"
+      ],
+      "additionalProperties": false
+    },
+    "ReturnPolicy": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "confirmed",
+            "unknown",
+            "conflicting"
+          ]
+        },
+        "change_of_mind": {
+          "type": "boolean"
+        },
+        "policy_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "status",
+        "change_of_mind",
+        "policy_id"
+      ],
+      "additionalProperties": false
+    },
+    "BenefitEligibility": {
+      "type": "object",
+      "properties": {
+        "amount_minor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "eligibility": {
+          "enum": [
+            "eligible",
+            "ineligible",
+            "unknown"
+          ]
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "rule_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "amount_minor",
+        "eligibility",
+        "expires_at",
+        "rule_id"
+      ],
+      "additionalProperties": false
+    },
+    "ConnectorCapability": {
+      "type": "object",
+      "properties": {
+        "environment": {
+          "enum": [
+            "local_simulator",
+            "provider_sandbox",
+            "production",
+            "public_research"
+          ]
+        },
+        "checkout": {
+          "type": "boolean"
+        },
+        "query_original": {
+          "type": "boolean"
+        },
+        "payee_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        }
+      },
+      "required": [
+        "environment",
+        "checkout",
+        "query_original",
+        "payee_ref",
+        "expires_at"
+      ],
+      "additionalProperties": false
+    },
+    "EvidenceEnvelope": {
+      "type": "object",
+      "properties": {
+        "evidence_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "merchant_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sku": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provenance": {
+          "enum": [
+            "synthetic_fixture",
+            "public_research",
+            "authorized_merchant_api"
+          ]
+        },
+        "review_status": {
+          "enum": [
+            "research_only",
+            "released",
+            "revoked"
+          ]
+        },
+        "valid_from": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "assertions": {
+          "type": "object"
+        },
+        "extraction_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "hash_scope": {
+          "const": "structured_assertions_only"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "merchant_id",
+        "sku",
+        "source_url",
+        "provenance",
+        "review_status",
+        "valid_from",
+        "expires_at",
+        "assertions",
+        "extraction_sha256",
+        "hash_scope"
+      ],
+      "additionalProperties": false
+    },
+    "TaskConstraints": {
+      "type": "object",
+      "properties": {
+        "product": {
+          "type": "object",
+          "properties": {
+            "brand": {
+              "type": "string",
+              "minLength": 1
+            },
+            "variant": {
+              "type": "string",
+              "minLength": 1
+            },
+            "net_content": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "unit": {
+              "enum": [
+                "g",
+                "ml",
+                "item"
+              ]
+            },
+            "pack_count": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "packaging": {
+              "type": "string",
+              "minLength": 1
+            },
+            "origin": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "brand",
+            "variant",
+            "net_content",
+            "unit",
+            "pack_count",
+            "packaging",
+            "origin"
+          ],
+          "additionalProperties": false
+        },
+        "cash_cap_minor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "destination_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "latest_delivery_epoch": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requires_change_of_mind_return": {
+          "type": "boolean"
+        },
+        "environment": {
+          "enum": [
+            "local_simulator",
+            "provider_sandbox",
+            "production",
+            "public_research"
+          ]
+        }
+      },
+      "required": [
+        "product",
+        "cash_cap_minor",
+        "destination_ref",
+        "latest_delivery_epoch",
+        "requires_change_of_mind_return",
+        "environment"
+      ],
+      "additionalProperties": false
+    },
+    "Assessment": {
+      "type": "object",
+      "properties": {
+        "eligible": {
+          "type": "boolean"
+        },
+        "cash_minor": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "quote_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "quote_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "eligible",
+        "cash_minor",
+        "blockers",
+        "quote_id",
+        "quote_version"
+      ],
+      "additionalProperties": false
+    },
+    "DecisionSnapshot": {
+      "type": "object",
+      "properties": {
+        "snapshot_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "body": {
+          "type": "object",
+          "properties": {
+            "quote": {
+              "type": "object",
+              "properties": {
+                "quote_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "environment": {
+                  "enum": [
+                    "local_simulator",
+                    "provider_sandbox",
+                    "production",
+                    "public_research"
+                  ]
+                },
+                "merchant_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sku": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "product": {
+                  "type": "object",
+                  "properties": {
+                    "brand": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "variant": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "net_content": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "unit": {
+                      "enum": [
+                        "g",
+                        "ml",
+                        "item"
+                      ]
+                    },
+                    "pack_count": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "packaging": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "origin": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "brand",
+                    "variant",
+                    "net_content",
+                    "unit",
+                    "pack_count",
+                    "packaging",
+                    "origin"
+                  ],
+                  "additionalProperties": false
+                },
+                "currency": {
+                  "const": "HKD"
+                },
+                "goods_minor": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                "fee_lines": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "amount_minor": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1000000000000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "amount_minor"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "discounts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "amount_minor": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000000
+                      },
+                      "eligibility": {
+                        "enum": [
+                          "eligible",
+                          "ineligible",
+                          "unknown"
+                        ]
+                      },
+                      "expires_at": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000000
+                      },
+                      "rule_id": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "amount_minor",
+                      "eligibility",
+                      "expires_at",
+                      "rule_id"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "fees_complete": {
+                  "type": "boolean"
+                },
+                "stock": {
+                  "enum": [
+                    "available",
+                    "unavailable",
+                    "unknown"
+                  ]
+                },
+                "destination_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "delivery": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        "confirmed",
+                        "unknown",
+                        "conflicting"
+                      ]
+                    },
+                    "guaranteed_by_epoch": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "policy_id": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "guaranteed_by_epoch",
+                    "policy_id"
+                  ],
+                  "additionalProperties": false
+                },
+                "returns": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        "confirmed",
+                        "unknown",
+                        "conflicting"
+                      ]
+                    },
+                    "change_of_mind": {
+                      "type": "boolean"
+                    },
+                    "policy_id": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "change_of_mind",
+                    "policy_id"
+                  ],
+                  "additionalProperties": false
+                },
+                "observed_at": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                "expires_at": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                "fact_status": {
+                  "enum": [
+                    "verified",
+                    "partial",
+                    "conflicting"
+                  ]
+                },
+                "connector": {
+                  "type": "object",
+                  "properties": {
+                    "environment": {
+                      "enum": [
+                        "local_simulator",
+                        "provider_sandbox",
+                        "production",
+                        "public_research"
+                      ]
+                    },
+                    "checkout": {
+                      "type": "boolean"
+                    },
+                    "query_original": {
+                      "type": "boolean"
+                    },
+                    "payee_ref": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "expires_at": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    }
+                  },
+                  "required": [
+                    "environment",
+                    "checkout",
+                    "query_original",
+                    "payee_ref",
+                    "expires_at"
+                  ],
+                  "additionalProperties": false
+                },
+                "claim_bindings": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              "required": [
+                "quote_id",
+                "version",
+                "environment",
+                "merchant_id",
+                "sku",
+                "product",
+                "currency",
+                "goods_minor",
+                "fee_lines",
+                "discounts",
+                "fees_complete",
+                "stock",
+                "destination_ref",
+                "delivery",
+                "returns",
+                "observed_at",
+                "expires_at",
+                "fact_status",
+                "connector",
+                "claim_bindings"
+              ],
+              "additionalProperties": false
+            },
+            "task": {
+              "type": "object",
+              "properties": {
+                "product": {
+                  "type": "object",
+                  "properties": {
+                    "brand": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "variant": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "net_content": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "unit": {
+                      "enum": [
+                        "g",
+                        "ml",
+                        "item"
+                      ]
+                    },
+                    "pack_count": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "packaging": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "origin": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "brand",
+                    "variant",
+                    "net_content",
+                    "unit",
+                    "pack_count",
+                    "packaging",
+                    "origin"
+                  ],
+                  "additionalProperties": false
+                },
+                "cash_cap_minor": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                "destination_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "latest_delivery_epoch": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "requires_change_of_mind_return": {
+                  "type": "boolean"
+                },
+                "environment": {
+                  "enum": [
+                    "local_simulator",
+                    "provider_sandbox",
+                    "production",
+                    "public_research"
+                  ]
+                }
+              },
+              "required": [
+                "product",
+                "cash_cap_minor",
+                "destination_ref",
+                "latest_delivery_epoch",
+                "requires_change_of_mind_return",
+                "environment"
+              ],
+              "additionalProperties": false
+            },
+            "cash_minor": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000000
+            },
+            "currency": {
+              "const": "HKD"
+            },
+            "evidence_digests": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "frozen_at": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000000
+            },
+            "calculator_version": {
+              "const": "hk-cash-0.4.0"
+            }
+          },
+          "required": [
+            "quote",
+            "task",
+            "cash_minor",
+            "currency",
+            "evidence_digests",
+            "frozen_at",
+            "calculator_version"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "ProductV1": {
+      "type": "object",
+      "properties": {
+        "brand": {
+          "type": "string",
+          "minLength": 1
+        },
+        "variant": {
+          "type": "string",
+          "minLength": 1
+        },
+        "net_content": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000000000
+        },
+        "unit": {
+          "enum": [
+            "g",
+            "ml",
+            "item"
+          ]
+        },
+        "pack_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000000000
+        },
+        "packaging": {
+          "type": "string",
+          "minLength": 1
+        },
+        "origin": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "region_version": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "brand",
+        "variant",
+        "net_content",
+        "unit",
+        "pack_count",
+        "packaging",
+        "origin",
+        "region_version"
+      ],
+      "additionalProperties": false
+    },
+    "TaskDraftV1": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "product": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "brand": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "variant": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "net_content": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 1000000000000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "unit": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "g",
+                        "ml",
+                        "item"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "pack_count": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 1000000000000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "packaging": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "origin": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "region_version": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "purchase_quantity": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cash_cap_minor": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "destination_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "preference": {
+          "anyOf": [
+            {
+              "enum": [
+                "lowest_cost",
+                "fastest_delivery",
+                "easiest_returns"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requires_change_of_mind_return": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "latest_delivery_epoch": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuoteV1": {
+      "type": "object",
+      "properties": {
+        "quote_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000000000
+        },
+        "merchant_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "merchant_sku": {
+          "type": "string",
+          "minLength": 1
+        },
+        "product": {
+          "type": "object",
+          "properties": {
+            "brand": {
+              "type": "string",
+              "minLength": 1
+            },
+            "variant": {
+              "type": "string",
+              "minLength": 1
+            },
+            "net_content": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000000000
+            },
+            "unit": {
+              "enum": [
+                "g",
+                "ml",
+                "item"
+              ]
+            },
+            "pack_count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000000000
+            },
+            "packaging": {
+              "type": "string",
+              "minLength": 1
+            },
+            "origin": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "region_version": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "brand",
+            "variant",
+            "net_content",
+            "unit",
+            "pack_count",
+            "packaging",
+            "origin",
+            "region_version"
+          ],
+          "additionalProperties": false
+        },
+        "purchase_quantity": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "unit_price_minor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "line_subtotal_minor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "currency": {
+          "const": "HKD"
+        },
+        "fee_lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "minLength": 1
+              },
+              "amount_minor": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "code",
+              "amount_minor"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "fees_complete": {
+          "type": "boolean"
+        },
+        "discounts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "coupon_instance_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "subject_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "order_scope_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "rule_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "amount_minor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              "eligibility": {
+                "enum": [
+                  "eligible",
+                  "ineligible",
+                  "unknown"
+                ]
+              },
+              "expires_at": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              "stackable_with": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true
+              },
+              "exclusive_group": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "coupon_instance_id",
+              "subject_ref",
+              "order_scope_ref",
+              "rule_id",
+              "amount_minor",
+              "eligibility",
+              "expires_at",
+              "stackable_with",
+              "exclusive_group"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "benefit_subject_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "order_scope_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stock": {
+          "enum": [
+            "available",
+            "unavailable",
+            "unknown"
+          ]
+        },
+        "destination_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "delivery": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "confirmed",
+                "unknown",
+                "conflicting"
+              ]
+            },
+            "guaranteed_by_epoch": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "policy_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "segments": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "segment_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "origin_region": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "destination_region": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "carrier_ref": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "responsible_party": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "fee_minor": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "segment_id",
+                  "origin_region",
+                  "destination_region",
+                  "carrier_ref",
+                  "responsible_party",
+                  "fee_minor"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "status",
+            "guaranteed_by_epoch",
+            "policy_id",
+            "segments"
+          ],
+          "additionalProperties": false
+        },
+        "returns": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "confirmed",
+                "unknown",
+                "conflicting"
+              ]
+            },
+            "change_of_mind": {
+              "type": "boolean"
+            },
+            "policy_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "window_days": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "return_fee_minor": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "responsible_party": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "status",
+            "change_of_mind",
+            "policy_id",
+            "window_days",
+            "return_fee_minor",
+            "responsible_party"
+          ],
+          "additionalProperties": false
+        },
+        "warranty": {
+          "type": "object",
+          "properties": {
+            "responsible_party": {
+              "type": "string",
+              "minLength": 1
+            },
+            "policy_id": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "responsible_party",
+            "policy_id"
+          ],
+          "additionalProperties": false
+        },
+        "payee_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payee_mapping_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000000000
+        },
+        "observed_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "environment": {
+          "enum": [
+            "local_simulator",
+            "provider_sandbox",
+            "production",
+            "public_research"
+          ]
+        },
+        "provenance": {
+          "enum": [
+            "synthetic_fixture",
+            "public_research",
+            "authorized_merchant_api"
+          ]
+        },
+        "submission_guard": {
+          "enum": [
+            "exact_terms",
+            "research_only"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "payment_options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "option_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "eligibility": {
+                "enum": [
+                  "eligible",
+                  "ineligible",
+                  "unknown"
+                ]
+              },
+              "provenance": {
+                "enum": [
+                  "synthetic_fixture",
+                  "authorized_provider"
+                ]
+              },
+              "source_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "observed_at": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              }
+            },
+            "required": [
+              "option_id",
+              "label",
+              "eligibility",
+              "provenance",
+              "source_ref",
+              "observed_at"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "rewards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "expected_cashback",
+                  "expected_points"
+                ]
+              },
+              "amount_minor": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "points": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "eligibility": {
+                "enum": [
+                  "eligible",
+                  "ineligible",
+                  "unknown"
+                ]
+              },
+              "rule_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "observed_at": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              "redemption_conditions": {
+                "type": "string",
+                "minLength": 1
+              },
+              "cash_equivalent_minor": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "amount_minor",
+              "points",
+              "eligibility",
+              "rule_id",
+              "source_ref",
+              "observed_at",
+              "redemption_conditions",
+              "cash_equivalent_minor"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "evidence_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "merchant_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "merchant_sku": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source_url": {
+                "type": "string",
+                "minLength": 1
+              },
+              "provenance": {
+                "enum": [
+                  "synthetic_fixture",
+                  "public_research",
+                  "authorized_merchant_api"
+                ]
+              },
+              "review_status": {
+                "enum": [
+                  "released",
+                  "research_only",
+                  "revoked"
+                ]
+              },
+              "observed_at": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              "expires_at": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              "assertions": {
+                "type": "object"
+              },
+              "assertions_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "evidence_id",
+              "merchant_id",
+              "merchant_sku",
+              "source_url",
+              "provenance",
+              "review_status",
+              "observed_at",
+              "expires_at",
+              "assertions",
+              "assertions_digest"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "claim_bindings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "quote_id",
+        "version",
+        "merchant_id",
+        "merchant_sku",
+        "product",
+        "purchase_quantity",
+        "unit_price_minor",
+        "line_subtotal_minor",
+        "currency",
+        "fee_lines",
+        "fees_complete",
+        "discounts",
+        "benefit_subject_ref",
+        "order_scope_ref",
+        "stock",
+        "destination_ref",
+        "delivery",
+        "returns",
+        "warranty",
+        "payee_ref",
+        "payee_mapping_version",
+        "observed_at",
+        "expires_at",
+        "environment",
+        "provenance",
+        "submission_guard",
+        "description",
+        "payment_options",
+        "rewards",
+        "evidence",
+        "claim_bindings"
+      ],
+      "additionalProperties": false
+    },
+    "DiscountV1": {
+      "type": "object",
+      "properties": {
+        "coupon_instance_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subject_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "order_scope_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rule_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "amount_minor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "eligibility": {
+          "enum": [
+            "eligible",
+            "ineligible",
+            "unknown"
+          ]
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "stackable_with": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "exclusive_group": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "coupon_instance_id",
+        "subject_ref",
+        "order_scope_ref",
+        "rule_id",
+        "amount_minor",
+        "eligibility",
+        "expires_at",
+        "stackable_with",
+        "exclusive_group"
+      ],
+      "additionalProperties": false
+    },
+    "EvidenceV1": {
+      "type": "object",
+      "properties": {
+        "evidence_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "merchant_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "merchant_sku": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provenance": {
+          "enum": [
+            "synthetic_fixture",
+            "public_research",
+            "authorized_merchant_api"
+          ]
+        },
+        "review_status": {
+          "enum": [
+            "released",
+            "research_only",
+            "revoked"
+          ]
+        },
+        "observed_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "assertions": {
+          "type": "object"
+        },
+        "assertions_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "merchant_id",
+        "merchant_sku",
+        "source_url",
+        "provenance",
+        "review_status",
+        "observed_at",
+        "expires_at",
+        "assertions",
+        "assertions_digest"
+      ],
+      "additionalProperties": false
+    },
+    "EvaluationV1": {
+      "type": "object",
+      "properties": {
+        "quote_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "quote_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000000000
+        },
+        "merchant_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "eligible": {
+          "type": "boolean"
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "cash_minor": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "goods_minor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "fees_minor": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "discount_minor": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "delivery": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "confirmed",
+                "unknown",
+                "conflicting"
+              ]
+            },
+            "guaranteed_by_epoch": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "policy_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "segments": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "segment_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "origin_region": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "destination_region": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "carrier_ref": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "responsible_party": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "fee_minor": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "segment_id",
+                  "origin_region",
+                  "destination_region",
+                  "carrier_ref",
+                  "responsible_party",
+                  "fee_minor"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "status",
+            "guaranteed_by_epoch",
+            "policy_id",
+            "segments"
+          ],
+          "additionalProperties": false
+        },
+        "returns": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "confirmed",
+                "unknown",
+                "conflicting"
+              ]
+            },
+            "change_of_mind": {
+              "type": "boolean"
+            },
+            "policy_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "window_days": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "return_fee_minor": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "responsible_party": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "status",
+            "change_of_mind",
+            "policy_id",
+            "window_days",
+            "return_fee_minor",
+            "responsible_party"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "quote_id",
+        "quote_version",
+        "merchant_id",
+        "eligible",
+        "blockers",
+        "cash_minor",
+        "goods_minor",
+        "fees_minor",
+        "discount_minor",
+        "delivery",
+        "returns"
+      ],
+      "additionalProperties": false
+    },
+    "SnapshotV1": {
+      "type": "object",
+      "properties": {
+        "snapshot_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "constraints_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000000000
+        },
+        "fact_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000000000
+        },
+        "quote": {
+          "type": "object",
+          "properties": {
+            "quote_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000000000
+            },
+            "merchant_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "merchant_sku": {
+              "type": "string",
+              "minLength": 1
+            },
+            "product": {
+              "type": "object",
+              "properties": {
+                "brand": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "variant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "net_content": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000000000
+                },
+                "unit": {
+                  "enum": [
+                    "g",
+                    "ml",
+                    "item"
+                  ]
+                },
+                "pack_count": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000000000
+                },
+                "packaging": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "origin": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "region_version": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "brand",
+                "variant",
+                "net_content",
+                "unit",
+                "pack_count",
+                "packaging",
+                "origin",
+                "region_version"
+              ],
+              "additionalProperties": false
+            },
+            "purchase_quantity": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "unit_price_minor": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000000
+            },
+            "line_subtotal_minor": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000000
+            },
+            "currency": {
+              "const": "HKD"
+            },
+            "fee_lines": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "amount_minor": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "code",
+                  "amount_minor"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "fees_complete": {
+              "type": "boolean"
+            },
+            "discounts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "coupon_instance_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "subject_ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "order_scope_ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "rule_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "amount_minor": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  "eligibility": {
+                    "enum": [
+                      "eligible",
+                      "ineligible",
+                      "unknown"
+                    ]
+                  },
+                  "expires_at": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  "stackable_with": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uniqueItems": true
+                  },
+                  "exclusive_group": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "coupon_instance_id",
+                  "subject_ref",
+                  "order_scope_ref",
+                  "rule_id",
+                  "amount_minor",
+                  "eligibility",
+                  "expires_at",
+                  "stackable_with",
+                  "exclusive_group"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "benefit_subject_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "order_scope_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "stock": {
+              "enum": [
+                "available",
+                "unavailable",
+                "unknown"
+              ]
+            },
+            "destination_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "delivery": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "enum": [
+                    "confirmed",
+                    "unknown",
+                    "conflicting"
+                  ]
+                },
+                "guaranteed_by_epoch": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "policy_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "segments": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "segment_id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "origin_region": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "destination_region": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "carrier_ref": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "responsible_party": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "fee_minor": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1000000000000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "segment_id",
+                      "origin_region",
+                      "destination_region",
+                      "carrier_ref",
+                      "responsible_party",
+                      "fee_minor"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "status",
+                "guaranteed_by_epoch",
+                "policy_id",
+                "segments"
+              ],
+              "additionalProperties": false
+            },
+            "returns": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "enum": [
+                    "confirmed",
+                    "unknown",
+                    "conflicting"
+                  ]
+                },
+                "change_of_mind": {
+                  "type": "boolean"
+                },
+                "policy_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "window_days": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "return_fee_minor": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "responsible_party": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "status",
+                "change_of_mind",
+                "policy_id",
+                "window_days",
+                "return_fee_minor",
+                "responsible_party"
+              ],
+              "additionalProperties": false
+            },
+            "warranty": {
+              "type": "object",
+              "properties": {
+                "responsible_party": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "policy_id": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "responsible_party",
+                "policy_id"
+              ],
+              "additionalProperties": false
+            },
+            "payee_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "payee_mapping_version": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000000000
+            },
+            "observed_at": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000000
+            },
+            "expires_at": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000000
+            },
+            "environment": {
+              "enum": [
+                "local_simulator",
+                "provider_sandbox",
+                "production",
+                "public_research"
+              ]
+            },
+            "provenance": {
+              "enum": [
+                "synthetic_fixture",
+                "public_research",
+                "authorized_merchant_api"
+              ]
+            },
+            "submission_guard": {
+              "enum": [
+                "exact_terms",
+                "research_only"
+              ]
+            },
+            "description": {
+              "type": "string",
+              "maxLength": 20000
+            },
+            "payment_options": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "option_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "eligibility": {
+                    "enum": [
+                      "eligible",
+                      "ineligible",
+                      "unknown"
+                    ]
+                  },
+                  "provenance": {
+                    "enum": [
+                      "synthetic_fixture",
+                      "authorized_provider"
+                    ]
+                  },
+                  "source_ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "observed_at": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  }
+                },
+                "required": [
+                  "option_id",
+                  "label",
+                  "eligibility",
+                  "provenance",
+                  "source_ref",
+                  "observed_at"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1
+            },
+            "rewards": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "expected_cashback",
+                      "expected_points"
+                    ]
+                  },
+                  "amount_minor": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "points": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "eligibility": {
+                    "enum": [
+                      "eligible",
+                      "ineligible",
+                      "unknown"
+                    ]
+                  },
+                  "rule_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "source_ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "observed_at": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  "redemption_conditions": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "cash_equivalent_minor": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "amount_minor",
+                  "points",
+                  "eligibility",
+                  "rule_id",
+                  "source_ref",
+                  "observed_at",
+                  "redemption_conditions",
+                  "cash_equivalent_minor"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "evidence": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "evidence_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "merchant_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "merchant_sku": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "source_url": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "provenance": {
+                    "enum": [
+                      "synthetic_fixture",
+                      "public_research",
+                      "authorized_merchant_api"
+                    ]
+                  },
+                  "review_status": {
+                    "enum": [
+                      "released",
+                      "research_only",
+                      "revoked"
+                    ]
+                  },
+                  "observed_at": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  "expires_at": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  "assertions": {
+                    "type": "object"
+                  },
+                  "assertions_digest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "evidence_id",
+                  "merchant_id",
+                  "merchant_sku",
+                  "source_url",
+                  "provenance",
+                  "review_status",
+                  "observed_at",
+                  "expires_at",
+                  "assertions",
+                  "assertions_digest"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "claim_bindings": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "required": [
+            "quote_id",
+            "version",
+            "merchant_id",
+            "merchant_sku",
+            "product",
+            "purchase_quantity",
+            "unit_price_minor",
+            "line_subtotal_minor",
+            "currency",
+            "fee_lines",
+            "fees_complete",
+            "discounts",
+            "benefit_subject_ref",
+            "order_scope_ref",
+            "stock",
+            "destination_ref",
+            "delivery",
+            "returns",
+            "warranty",
+            "payee_ref",
+            "payee_mapping_version",
+            "observed_at",
+            "expires_at",
+            "environment",
+            "provenance",
+            "submission_guard",
+            "description",
+            "payment_options",
+            "rewards",
+            "evidence",
+            "claim_bindings"
+          ],
+          "additionalProperties": false
+        },
+        "draft": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "maxLength": 20000
+            },
+            "product": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "brand": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "variant": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "net_content": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1000000000000
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "unit": {
+                      "anyOf": [
+                        {
+                          "enum": [
+                            "g",
+                            "ml",
+                            "item"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "pack_count": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1000000000000
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "packaging": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "origin": {
+                      "anyOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "region_version": {
+                      "anyOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "purchase_quantity": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 10000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "cash_cap_minor": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000000000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "destination_ref": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "preference": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "lowest_cost",
+                    "fastest_delivery",
+                    "easiest_returns"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "requires_change_of_mind_return": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "latest_delivery_epoch": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000000000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "calculation": {
+          "type": "object",
+          "properties": {
+            "quote_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "quote_version": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000000000
+            },
+            "merchant_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "eligible": {
+              "type": "boolean"
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "cash_minor": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "goods_minor": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000000
+            },
+            "fees_minor": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "discount_minor": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "delivery": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "enum": [
+                    "confirmed",
+                    "unknown",
+                    "conflicting"
+                  ]
+                },
+                "guaranteed_by_epoch": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "policy_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "segments": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "segment_id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "origin_region": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "destination_region": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "carrier_ref": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "responsible_party": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "fee_minor": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1000000000000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "segment_id",
+                      "origin_region",
+                      "destination_region",
+                      "carrier_ref",
+                      "responsible_party",
+                      "fee_minor"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "status",
+                "guaranteed_by_epoch",
+                "policy_id",
+                "segments"
+              ],
+              "additionalProperties": false
+            },
+            "returns": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "enum": [
+                    "confirmed",
+                    "unknown",
+                    "conflicting"
+                  ]
+                },
+                "change_of_mind": {
+                  "type": "boolean"
+                },
+                "policy_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "window_days": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "return_fee_minor": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "responsible_party": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "status",
+                "change_of_mind",
+                "policy_id",
+                "window_days",
+                "return_fee_minor",
+                "responsible_party"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "quote_id",
+            "quote_version",
+            "merchant_id",
+            "eligible",
+            "blockers",
+            "cash_minor",
+            "goods_minor",
+            "fees_minor",
+            "discount_minor",
+            "delivery",
+            "returns"
+          ],
+          "additionalProperties": false
+        },
+        "payee_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payee_mapping_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000000000
+        },
+        "expires_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "frozen_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "calculator_version": {
+          "const": "hk-cash-v1.0"
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "digest",
+        "task_id",
+        "constraints_version",
+        "fact_version",
+        "quote",
+        "draft",
+        "calculation",
+        "payee_ref",
+        "payee_mapping_version",
+        "expires_at",
+        "frozen_at",
+        "calculator_version"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

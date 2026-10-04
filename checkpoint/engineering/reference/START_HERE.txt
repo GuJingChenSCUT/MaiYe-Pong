@@ -1,0 +1,33 @@
+工程启动顺序 v0.3
+
+1. 所有开发智能体先阅读 README.txt、AGENTS.md 和配套工程交付说明。
+2. 产品负责人确认首个交付范围：两家可合法接入商户的可比商品，选择其中一家形成一笔订单；报价、授权、付款、退款及权益账目全程可追踪。先不做跨商户拆单。
+3. 架构负责人冻结 contracts/ 的对象定义和状态转换，所有接口改动须同时更新消费者代码及验收记录。
+4. 根据 coordination/work_packages.json 分配文件归属，分别实现数据、交易内核、模型工具、平台适配器、三端及独立测试。不要让多个智能体同时修改同一数据库迁移。
+5. 运行 qa/validate_contracts.py 校验规格文件；这不替代应用测试。随后实现并执行 qa/acceptance_matrix.csv 中28项情境。
+6. 依次通过 coordination/release_gates.json 的研究、工程、合作试点及生产门槛，保存真实联调证据。平台和支付接口未获授权时应明确标注模拟适配器。
+
+数据说明
+data 中两个 JSONL 是同一批18条记录的原始研究格式与契约格式，不能视为36条。它们均为研究草稿，尚未获批进入生产知识库。买家陈述、卖家回应、报道结果和研究者根因假说不应相互混写。
+
+部署边界
+本包没有运行中的服务、API密钥或已部署网址。部署后需通过同一HTTPS入口进入买家、卖家、运营三个受权限控制的界面。浏览器和模型不得获得数据库管理权限或支付密钥。
+
+本次增补：先核对 contracts/agent_manifest.json、workflow_definition.json、ModelProfile.example.json 及双网关部署边界，再阅读 runtime_reference/README.txt、capabilities/README.zh-CN.txt、capability_runtime/README.txt、transaction_reference/README.txt。
+
+可复查的本地验证命令（先安装qa/requirements.txt）
+  python qa/validate_contracts.py
+  python runtime_reference/verify_offline.py
+  python capability_runtime/verify_offline.py
+  python transaction_reference/verify.py
+  python qa/test_reference_composition.py
+
+完整应用接线顺序
+1. 身份负责人建立真实登录、用户/商户/运营成员关系和独立消费委托接口。
+2. 同一服务器快照构造capability_context和runtime_context，按阶段装载能力；不能接收客户端自报的角色或权限。
+3. 实现真实资料、报价及权益handlers；消费者确认不可变方案后才推进dispatch。
+4. 将SQLite参考约束迁移到生产持久层，实现独立支付worker、提供方认证、验签回调和查单对账。
+5. 接入真实DeepSeek做任务质量评测，再联调支付机构官方测试环境；每层报告分别保存。
+6. 三端网页按权限订阅权威状态；用户停止入口直接调用控制面，不依赖模型。
+
+参考代码测试不能替代真实身份与权限服务、提供方支付接入、三端完整应用及生产发布验收。

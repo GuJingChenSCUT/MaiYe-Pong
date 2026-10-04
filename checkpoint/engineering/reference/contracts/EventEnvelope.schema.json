@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hacku:contract:EventEnvelope",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "aggregate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "aggregate_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "projection": {
+      "enum": [
+        "buyer",
+        "seller",
+        "ops"
+      ]
+    },
+    "refresh_required": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "event_id",
+    "event_type",
+    "aggregate_id",
+    "aggregate_version",
+    "occurred_at",
+    "correlation_id",
+    "projection",
+    "refresh_required"
+  ]
+}

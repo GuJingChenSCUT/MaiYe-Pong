@@ -1,0 +1,92 @@
+[
+  {
+    "entity": "actors",
+    "purpose": "Identity and tenant memberships",
+    "key_fields": "actor_id, tenant_memberships, role, auth_strength",
+    "invariant": "No trust in model-supplied identity"
+  },
+  {
+    "entity": "intents",
+    "purpose": "Consumer requirements",
+    "key_fields": "intent_id, owner_id, must_have, cash_cap, currency, version",
+    "invariant": "Private buyer preferences excluded from seller views"
+  },
+  {
+    "entity": "quotes",
+    "purpose": "Merchant-confirmed commercial terms",
+    "key_fields": "quote_id, merchant_id, sku_spec, landed_cash, fees, terms_digest, expires_at, version",
+    "invariant": "Immutable revisions; quote is not evidence of delivery"
+  },
+  {
+    "entity": "mandates",
+    "purpose": "Approved bounded authority",
+    "key_fields": "mandate_id, buyer_id, plan_digest, limits, valid_until, revoked_at, version",
+    "invariant": "Human approval; no model activation; server clock"
+  },
+  {
+    "entity": "orders",
+    "purpose": "Order business lifecycle",
+    "key_fields": "order_id, buyer_id, merchant_id, quote_id, state, version",
+    "invariant": "Separate from payment and case states"
+  },
+  {
+    "entity": "payment_attempts",
+    "purpose": "Provider submission and reconciliation",
+    "key_fields": "attempt_id, mandate_version, idempotency_key, provider_ref, state, dispatch_claimed_at",
+    "invariant": "Unique execution key; UNKNOWN blocks retry with new key"
+  },
+  {
+    "entity": "budget_reservations",
+    "purpose": "Shared cash cap enforcement",
+    "key_fields": "reservation_id, scope_key, amount_minor, currency, state",
+    "invariant": "Reserve atomically across tasks; rewards do not expand cash cap"
+  },
+  {
+    "entity": "benefit_entries",
+    "purpose": "Reward lifecycle",
+    "key_fields": "entry_id, order_id, program, rule_version, expected, posted, reversed",
+    "invariant": "Estimate not posted fact; no blanket cash equivalence"
+  },
+  {
+    "entity": "cases",
+    "purpose": "Dispute process",
+    "key_fields": "case_id, order_id, buyer_claim, seller_response, outcome, state, version",
+    "invariant": "Neither party can overwrite the other's evidence"
+  },
+  {
+    "entity": "evidence_objects",
+    "purpose": "Versioned evidence access",
+    "key_fields": "evidence_id, object_key, digest, owner, visibility, retention_until",
+    "invariant": "URLs signed and short-lived; private bucket, access checks"
+  },
+  {
+    "entity": "audit_events",
+    "purpose": "Business control record",
+    "key_fields": "event_id, actor_id, action, rule_version, evidence_refs, result, occurred_at",
+    "invariant": "Append-only app permissions; hash chain alone is not independent audit"
+  },
+  {
+    "entity": "outbox_events",
+    "purpose": "Reliable delivery",
+    "key_fields": "event_id, aggregate_id, aggregate_version, event_type, retry_count",
+    "invariant": "Write in business transaction; at-least-once plus inbox dedupe"
+  },
+  {
+    "entity": "knowledge_cases",
+    "purpose": "Reviewed case records",
+    "key_fields": "case_id, source_group, jurisdiction, rights, review_status, split",
+    "invariant": "No operational raw PII; scoped retrieval before model"
+  },
+  {
+    "entity": "rule_versions",
+    "purpose": "Reviewed executable policies",
+    "key_fields": "rule_id, jurisdiction, effective_from, expires_at, source_id, release_id",
+    "invariant": "Cases do not automatically become rules"
+  },
+  {
+    "entity": "agent_runs",
+    "purpose": "Bounded model tasks",
+    "key_fields": "run_id, task_id, model_id, prompt_version, tools_version, duration, status",
+    "invariant": "Redacted arguments and concise rationale; no raw reasoning log"
+  }
+]

@@ -1,0 +1,139 @@
+{
+  "version": "research-2026-10-03",
+  "environment": "public_research",
+  "sources": {
+    "P1": {
+      "url": "https://www.pns.hk/en/tot-pro-gum-health-toothpaste/p/BP_234865",
+      "publisher": "PNS",
+      "locator": "product price, size, origin, product code",
+      "checked_on": "2026-10-03",
+      "source_updated_at": null
+    },
+    "P2": {
+      "url": "https://www.pns.hk/en/deliveryDetails",
+      "publisher": "PNS",
+      "locator": "home delivery charges and exclusions; stairs surcharge",
+      "checked_on": "2026-10-03",
+      "source_updated_at": null
+    },
+    "P3": {
+      "url": "https://www.pns.hk/en/refundReplace",
+      "publisher": "PNS",
+      "locator": "refund and replacement conditions",
+      "checked_on": "2026-10-03",
+      "source_updated_at": null
+    },
+    "W1": {
+      "url": "https://www.watsons.com.hk/en/colgate-total-pro-gum-health-reduce-gum-bleeding-fight-bad-breath-toothpaste-old-or-new-packaging-random-delivery/p/BP_234865",
+      "publisher": "Watsons HK",
+      "locator": "product price, origin, product code and pack size",
+      "checked_on": "2026-10-03",
+      "source_updated_at": null
+    },
+    "W2": {
+      "url": "https://www.watsons.com.hk/en/terms-conditions",
+      "publisher": "Watsons HK",
+      "locator": "sections 8 delivery, 12 returns",
+      "checked_on": "2026-10-03",
+      "source_updated_at": "2025-07-24"
+    },
+    "W3": {
+      "url": "https://www.watsons.com.hk/en/delivery",
+      "publisher": "Watsons HK",
+      "locator": "delivery timetable differs from terms",
+      "checked_on": "2026-10-03",
+      "source_updated_at": null
+    }
+  },
+  "scenario": {
+    "quantity": 1,
+    "destination": "Kowloon standard home delivery area, elevator building, hypothetical address",
+    "member_status": "unverified",
+    "coupon": "none",
+    "deadline": "none"
+  },
+  "offers": [
+    {
+      "merchant_id": "PNS",
+      "listed_product_code": "234865",
+      "gtin": null,
+      "product": {
+        "brand": "COLGATE",
+        "variant": "Total Pro Gum Health (non-whitening)",
+        "net_content": 110,
+        "unit": "g",
+        "pack_count": 1,
+        "packaging": "old_or_new_random",
+        "origin": "China"
+      },
+      "goods_minor": 4690,
+      "currency": "HKD",
+      "standard_shipping_minor": 5000,
+      "free_delivery_threshold_minor": 39900,
+      "checkout_verified": false,
+      "stock_reserved": false,
+      "can_execute": false,
+      "source_refs": [
+        "P1",
+        "P2",
+        "P3"
+      ],
+      "other_mandatory_fees_minor": null,
+      "applied_discounts": [],
+      "benefit_eligibility": "No member identity or coupon confirmed. Threshold promotions are excluded from this one-unit example.",
+      "delivery_slot_guaranteed": false,
+      "return_shipping_responsibility": "unknown",
+      "return_location": "unknown",
+      "delivery_policy_summary": "Standard HK home delivery area only; schedule requires checkout. Stairs above third floor: page lists HKD40 per floor for first ten boxes; excluded from this elevator-building scenario, not treated as universally zero.",
+      "return_summary": "Quality/wrong/missing item route within seven days of receipt; original packaging and labels, one request per order. Not a general change-of-mind promise. Merchant must confirm return logistics."
+    },
+    {
+      "merchant_id": "Watsons HK",
+      "listed_product_code": "234865",
+      "gtin": null,
+      "product": {
+        "brand": "COLGATE",
+        "variant": "Total Pro Gum Health (non-whitening)",
+        "net_content": 110,
+        "unit": "g",
+        "pack_count": 1,
+        "packaging": "old_or_new_random",
+        "origin": "Thailand"
+      },
+      "goods_minor": 4690,
+      "currency": "HKD",
+      "standard_shipping_minor": 4500,
+      "free_delivery_threshold_minor": 39900,
+      "checkout_verified": false,
+      "stock_reserved": false,
+      "can_execute": false,
+      "source_refs": [
+        "W1",
+        "W2",
+        "W3"
+      ],
+      "other_mandatory_fees_minor": null,
+      "applied_discounts": [],
+      "benefit_eligibility": "No member identity or coupon confirmed. Threshold promotions are excluded from this one-unit example.",
+      "delivery_slot_guaranteed": false,
+      "return_shipping_responsibility": "unknown",
+      "return_location": "unknown",
+      "delivery_policy_summary": "Terms quote an estimated two to five working days; separate delivery page differs. No hard delivery promise. Address eligibility and all charges require checkout.",
+      "return_summary": "Quality complaints within fourteen days per terms; start event needs merchant confirmation. Online customer-service review with photos and proof of purchase; not general change-of-mind cancellation. Logistics unconfirmed."
+    }
+  ],
+  "comparison_status": "listed_specs_match_but_origin_conflicts",
+  "executable": false,
+  "limitations": [
+    "Observed public page data may be cached; no logged-in checkout or stock reservation.",
+    "Same merchant item code is not a globally verified GTIN.",
+    "Return shipping and handling costs remain unknown.",
+    "PNS and Watsons are two retail sources, not evidence of broad independent-platform coverage."
+  ],
+  "required_resolution": [
+    "Confirm barcode, current batch/origin and formula equivalence with both merchants.",
+    "Obtain destination-specific shipping, mandatory charges, expiry and fulfillment slot from authorized checkout.",
+    "Confirm eligibility and returns workflow; record who pays return shipping.",
+    "Record merchant permission and selected PSP capabilities before any execution."
+  ]
+}

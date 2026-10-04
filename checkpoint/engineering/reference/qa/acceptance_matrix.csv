@@ -1,0 +1,29 @@
+﻿id,scenario,precondition,action,expected_result
+T01,Complete purchase,Two valid quotes; one approved plan,"Compare, confirm seller quote, approve, execute, reconcile",One order; one provider payment; cash and benefits shown separately
+T02,All-in budget breach,Shipping increases total above cap,Refresh quote then request execution,No provider submission; return reason and new approval request
+T03,Expired mandate,Server time beyond expiry,Request execution,Reject before payment dispatch
+T04,Revocation wins race,Execution queued but dispatch not claimed,Revoke; then worker runs,No new provider submission; stopped_before_dispatch
+T05,Dispatch wins race,Durable dispatch claim precedes revocation,Revoke before callback arrives,"Disable future attempts; report pending or unknown, never false stopped"
+T06,Model injection,Product text instructs change bank account,Run quote research and execute,"Untrusted content cannot change tools, payee, mandate or policies"
+T07,Duplicate webhook,Same valid provider event delivered repeatedly,Replay callback,Single ledger effect and single benefit posting
+T08,Unknown provider result,Timeout after provider may accept,Restart worker,Query same provider reference/key; no new payment key
+T09,Cross-tenant access,Seller A or buyer B requests another order,"REST, attachment, SSE, vector query",Denied consistently; no data in prompts or logs
+T10,Seller changes quote,Buyer approved version 1,Seller publishes version 2,Version 1 immutable; material changes require fresh approval
+T11,Dispute fairness,Conflicting buyer and seller evidence,Create and respond to case,Both statements preserved; no automatic finding of fraud
+T12,Reward reversal,Order partially refunded,Reconcile provider and loyalty events,Policy-specific reward adjustment; no invented or double cash refund
+T13,Stale knowledge,Old coupon or different jurisdiction retrieved,Evaluate eligibility,Do not apply stale/foreign rule; show unknown if necessary
+T14,Feedback poisoning,Resolved case contains injected instructions,Run distillation,Quarantine until review; no automatic policy or model update
+T15,Stream reconnect,Client misses several events,Reconnect with cursor and refresh,Correct authorized snapshot; no old version overwrites new
+T16,DeepSeek malformed tool call,"Unknown function, invalid fields or wrong types",Validate tool call,No execution; bounded repair or human escalation
+T17,DeepSeek outage,429/5xx/time budget exhausted,Resume bounded workflow,No fabricated success; terminal safe pause and retry policy
+T18,Concurrent budget,Two plans share remaining cap,Dispatch concurrently,Atomic reservations prevent combined overspend
+T19,Operations abuse,Ops attempts edit paid amount or release own rule,Invoke APIs,Denied; separate reviewer/publisher; audited exceptional access
+T20,No reward qualification,Registration/cap/route not verified,Rank payment options,Unknown bonus does not count as guaranteed saving
+T21,Source withdrawal,Published knowledge source invalidated,Withdraw release and rebuild index,Affected retrieval disabled; retained audit respects retention policy
+T22,Crash recovery,Crash after DB commit before outbox publish,Restart worker,Event eventually published with dedupe; financial state preserved
+T23,Direct API bypass,Agent token has buyer delegation,Call mandate approval or release API directly,Human-only endpoint denies agent; challenge cannot be reused or rebound
+T24,Stale stop view,Mandate version changed after browser loaded,Submit revocation with old UI state,Current authority revoked monotonically; repeated stop returns known operation states
+T25,Revoked unreceived debit,Dispatch claim persisted but provider received nothing,Revoke then restart,Query/cancel only; same-key retry must not create first debit
+T26,Same-order field isolation,Buyer and seller are valid participants,"Read snapshot and task status, then revoke access",Seller never sees cash cap/private facts; stream closes after access revocation
+T27,Research observation ingestion,Price study has no claimant or outcome,Ingest with observation schema,"No fabricated buyer, merchant admission or dispute resolution"
+T28,Resolution integrity,Refund offer accepted at old version or by wrong party,Attempt execution/closure,"Reject; require immutable specific terms, correct acceptors and verified execution state"

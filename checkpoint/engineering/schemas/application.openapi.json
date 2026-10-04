@@ -1,0 +1,5537 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "HacKU Stop 1 local application",
+    "version": "1.1.0",
+    "description": "Local-only implementation. Authentication and resource authorization occur before idempotency lookup, then CAS. Tenant and actor come from server session. No official merchant/PSP environment verified; no HTTP payment dispatch endpoint. Model research jobs and payment commands have different recovery semantics."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8765/api/v1",
+      "description": "Local development only"
+    }
+  ],
+  "paths": {
+    "/config": {
+      "get": {
+        "operationId": "getConfig",
+        "summary": "Capabilities and explicit synthetic exercise template",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; mutation replay returns the original authorized response. GET the task for the latest state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role, CSRF or origin rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version, idempotency or business conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 65536 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Safe internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": []
+      }
+    },
+    "/session": {
+      "get": {
+        "operationId": "getSession",
+        "summary": "Restore server session and role",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; mutation replay returns the original authorized response. GET the task for the latest state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role, CSRF or origin rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version, idempotency or business conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 65536 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Safe internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "STORAGE_UNAVAILABLE or WORKER_UNAVAILABLE. No successful stop or cancellation is implied. After recovery, query the original task and reuse the original idempotency key for the same authorized request; never create another payment to resolve an unknown result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": []
+      },
+      "post": {
+        "operationId": "login",
+        "summary": "Exchange locally provisioned access code for HttpOnly SameSite session",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; mutation replay returns the original authorized response. GET the task for the latest state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role, CSRF or origin rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version, idempotency or business conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 65536 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Safe internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "STORAGE_UNAVAILABLE or WORKER_UNAVAILABLE. No successful stop or cancellation is implied. After recovery, query the original task and reuse the original idempotency key for the same authorized request; never create another payment to resolve an unknown result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "logout",
+        "summary": "Revoke session",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; mutation replay returns the original authorized response. GET the task for the latest state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "logged_out": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "logged_out"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role, CSRF or origin rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version, idempotency or business conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 65536 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Safe internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "STORAGE_UNAVAILABLE or WORKER_UNAVAILABLE. No successful stop or cancellation is implied. After recovery, query the original task and reuse the original idempotency key for the same authorized request; never create another payment to resolve an unknown result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ]
+      }
+    },
+    "/intents": {
+      "post": {
+        "operationId": "createIntent",
+        "summary": "Persist user draft and queue research (never authorize purchase)",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; mutation replay returns the original authorized response. GET the task for the latest state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role, CSRF or origin rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version, idempotency or business conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 65536 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Safe internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "STORAGE_UNAVAILABLE or WORKER_UNAVAILABLE. No successful stop or cancellation is implied. After recovery, query the original task and reuse the original idempotency key for the same authorized request; never create another payment to resolve an unknown result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 160
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIntent"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks": {
+      "get": {
+        "operationId": "listTasks",
+        "summary": "Role-filtered task projections",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; mutation replay returns the original authorized response. GET the task for the latest state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role, CSRF or origin rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version, idempotency or business conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 65536 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Safe internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "STORAGE_UNAVAILABLE or WORKER_UNAVAILABLE. No successful stop or cancellation is implied. After recovery, query the original task and reuse the original idempotency key for the same authorized request; never create another payment to resolve an unknown result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": []
+      }
+    },
+    "/tasks/{task_id}": {
+      "get": {
+        "operationId": "getTask",
+        "summary": "Current authoritative state, scoped to authenticated role",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; mutation replay returns the original authorized response. GET the task for the latest state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role, CSRF or origin rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version, idempotency or business conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 65536 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Safe internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "STORAGE_UNAVAILABLE or WORKER_UNAVAILABLE. No successful stop or cancellation is implied. After recovery, query the original task and reuse the original idempotency key for the same authorized request; never create another payment to resolve an unknown result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ]
+      }
+    },
+    "/tasks/{task_id}/answers": {
+      "post": {
+        "operationId": "answerTask",
+        "summary": "CAS edit; invalidate old challenge and research result, queue new run",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; mutation replay returns the original authorized response. GET the task for the latest state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role, CSRF or origin rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version, idempotency or business conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 65536 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Safe internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "STORAGE_UNAVAILABLE or WORKER_UNAVAILABLE. No successful stop or cancellation is implied. After recovery, query the original task and reuse the original idempotency key for the same authorized request; never create another payment to resolve an unknown result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 160
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Answers"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{task_id}/runs": {
+      "post": {
+        "operationId": "retryResearch",
+        "summary": "Explicit research retry, not payment retry",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; mutation replay returns the original authorized response. GET the task for the latest state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role, CSRF or origin rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version, idempotency or business conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 65536 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Safe internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "STORAGE_UNAVAILABLE or WORKER_UNAVAILABLE. No successful stop or cancellation is implied. After recovery, query the original task and reuse the original idempotency key for the same authorized request; never create another payment to resolve an unknown result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 160
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Version"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{task_id}/approvals": {
+      "post": {
+        "operationId": "approveProposal",
+        "summary": "Approve exact snapshot and atomically enqueue unique LocalPSP command",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; mutation replay returns the original authorized response. GET the task for the latest state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role, CSRF or origin rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version, idempotency or business conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 65536 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Safe internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "STORAGE_UNAVAILABLE or WORKER_UNAVAILABLE. No successful stop or cancellation is implied. After recovery, query the original task and reuse the original idempotency key for the same authorized request; never create another payment to resolve an unknown result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 160
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Approval"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{task_id}/stop": {
+      "post": {
+        "operationId": "stopTask",
+        "summary": "Stop future dispatch; already claimed payment remains original-query recovery",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; mutation replay returns the original authorized response. GET the task for the latest state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role, CSRF or origin rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version, idempotency or business conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 65536 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Safe internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "STORAGE_UNAVAILABLE or WORKER_UNAVAILABLE. No successful stop or cancellation is implied. After recovery, query the original task and reuse the original idempotency key for the same authorized request; never create another payment to resolve an unknown result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 160
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "getServiceHealth",
+        "summary": "Safe storage and embedded research-worker readiness",
+        "description": "Loopback-only, no database paths, SQL, task contents or credentials. Probes SQLite quick_check. A disabled embedded worker is external_unmonitored; ready in that mode does not attest to external worker liveness. Readiness is not evidence of payment settlement or historical corruption root-cause resolution. An unavailable embedded worker blocks new intents, answers, runs and approvals; stopping an existing task remains allowed if storage is available.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Local storage available and embedded worker operational, or explicitly external_unmonitored.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceHealth"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Storage or embedded worker unavailable. No stop, cancellation or rollback confirmation is implied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceHealth"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Host or origin rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ProductIdentity": {
+        "type": "object",
+        "properties": {
+          "brand": {
+            "type": "string",
+            "minLength": 1
+          },
+          "variant": {
+            "type": "string",
+            "minLength": 1
+          },
+          "net_content": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "unit": {
+            "enum": [
+              "g",
+              "ml",
+              "item"
+            ]
+          },
+          "pack_count": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "packaging": {
+            "type": "string",
+            "minLength": 1
+          },
+          "origin": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "brand",
+          "variant",
+          "net_content",
+          "unit",
+          "pack_count",
+          "packaging",
+          "origin"
+        ],
+        "additionalProperties": false
+      },
+      "ExecutableQuote": {
+        "type": "object",
+        "properties": {
+          "quote_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "environment": {
+            "enum": [
+              "local_simulator",
+              "provider_sandbox",
+              "production",
+              "public_research"
+            ]
+          },
+          "merchant_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sku": {
+            "type": "string",
+            "minLength": 1
+          },
+          "product": {
+            "type": "object",
+            "properties": {
+              "brand": {
+                "type": "string",
+                "minLength": 1
+              },
+              "variant": {
+                "type": "string",
+                "minLength": 1
+              },
+              "net_content": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "unit": {
+                "enum": [
+                  "g",
+                  "ml",
+                  "item"
+                ]
+              },
+              "pack_count": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "packaging": {
+                "type": "string",
+                "minLength": 1
+              },
+              "origin": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "brand",
+              "variant",
+              "net_content",
+              "unit",
+              "pack_count",
+              "packaging",
+              "origin"
+            ],
+            "additionalProperties": false
+          },
+          "currency": {
+            "const": "HKD"
+          },
+          "goods_minor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "fee_lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "amount_minor": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "amount_minor"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "discounts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "amount_minor": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                "eligibility": {
+                  "enum": [
+                    "eligible",
+                    "ineligible",
+                    "unknown"
+                  ]
+                },
+                "expires_at": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                "rule_id": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "amount_minor",
+                "eligibility",
+                "expires_at",
+                "rule_id"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "fees_complete": {
+            "type": "boolean"
+          },
+          "stock": {
+            "enum": [
+              "available",
+              "unavailable",
+              "unknown"
+            ]
+          },
+          "destination_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "delivery": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "enum": [
+                  "confirmed",
+                  "unknown",
+                  "conflicting"
+                ]
+              },
+              "guaranteed_by_epoch": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "policy_id": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "status",
+              "guaranteed_by_epoch",
+              "policy_id"
+            ],
+            "additionalProperties": false
+          },
+          "returns": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "enum": [
+                  "confirmed",
+                  "unknown",
+                  "conflicting"
+                ]
+              },
+              "change_of_mind": {
+                "type": "boolean"
+              },
+              "policy_id": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "status",
+              "change_of_mind",
+              "policy_id"
+            ],
+            "additionalProperties": false
+          },
+          "observed_at": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "expires_at": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "fact_status": {
+            "enum": [
+              "verified",
+              "partial",
+              "conflicting"
+            ]
+          },
+          "connector": {
+            "type": "object",
+            "properties": {
+              "environment": {
+                "enum": [
+                  "local_simulator",
+                  "provider_sandbox",
+                  "production",
+                  "public_research"
+                ]
+              },
+              "checkout": {
+                "type": "boolean"
+              },
+              "query_original": {
+                "type": "boolean"
+              },
+              "payee_ref": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "expires_at": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              }
+            },
+            "required": [
+              "environment",
+              "checkout",
+              "query_original",
+              "payee_ref",
+              "expires_at"
+            ],
+            "additionalProperties": false
+          },
+          "claim_bindings": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "quote_id",
+          "version",
+          "environment",
+          "merchant_id",
+          "sku",
+          "product",
+          "currency",
+          "goods_minor",
+          "fee_lines",
+          "discounts",
+          "fees_complete",
+          "stock",
+          "destination_ref",
+          "delivery",
+          "returns",
+          "observed_at",
+          "expires_at",
+          "fact_status",
+          "connector",
+          "claim_bindings"
+        ],
+        "additionalProperties": false
+      },
+      "FulfillmentPolicy": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "enum": [
+              "confirmed",
+              "unknown",
+              "conflicting"
+            ]
+          },
+          "guaranteed_by_epoch": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "policy_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "status",
+          "guaranteed_by_epoch",
+          "policy_id"
+        ],
+        "additionalProperties": false
+      },
+      "ReturnPolicy": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "enum": [
+              "confirmed",
+              "unknown",
+              "conflicting"
+            ]
+          },
+          "change_of_mind": {
+            "type": "boolean"
+          },
+          "policy_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "status",
+          "change_of_mind",
+          "policy_id"
+        ],
+        "additionalProperties": false
+      },
+      "BenefitEligibility": {
+        "type": "object",
+        "properties": {
+          "amount_minor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "eligibility": {
+            "enum": [
+              "eligible",
+              "ineligible",
+              "unknown"
+            ]
+          },
+          "expires_at": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "rule_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "amount_minor",
+          "eligibility",
+          "expires_at",
+          "rule_id"
+        ],
+        "additionalProperties": false
+      },
+      "ConnectorCapability": {
+        "type": "object",
+        "properties": {
+          "environment": {
+            "enum": [
+              "local_simulator",
+              "provider_sandbox",
+              "production",
+              "public_research"
+            ]
+          },
+          "checkout": {
+            "type": "boolean"
+          },
+          "query_original": {
+            "type": "boolean"
+          },
+          "payee_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "expires_at": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          }
+        },
+        "required": [
+          "environment",
+          "checkout",
+          "query_original",
+          "payee_ref",
+          "expires_at"
+        ],
+        "additionalProperties": false
+      },
+      "EvidenceEnvelope": {
+        "type": "object",
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "merchant_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sku": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_url": {
+            "type": "string",
+            "minLength": 1
+          },
+          "provenance": {
+            "enum": [
+              "synthetic_fixture",
+              "public_research",
+              "authorized_merchant_api"
+            ]
+          },
+          "review_status": {
+            "enum": [
+              "research_only",
+              "released",
+              "revoked"
+            ]
+          },
+          "valid_from": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "expires_at": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "assertions": {
+            "type": "object"
+          },
+          "extraction_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "hash_scope": {
+            "const": "structured_assertions_only"
+          }
+        },
+        "required": [
+          "evidence_id",
+          "merchant_id",
+          "sku",
+          "source_url",
+          "provenance",
+          "review_status",
+          "valid_from",
+          "expires_at",
+          "assertions",
+          "extraction_sha256",
+          "hash_scope"
+        ],
+        "additionalProperties": false
+      },
+      "TaskConstraints": {
+        "type": "object",
+        "properties": {
+          "product": {
+            "type": "object",
+            "properties": {
+              "brand": {
+                "type": "string",
+                "minLength": 1
+              },
+              "variant": {
+                "type": "string",
+                "minLength": 1
+              },
+              "net_content": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "unit": {
+                "enum": [
+                  "g",
+                  "ml",
+                  "item"
+                ]
+              },
+              "pack_count": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "packaging": {
+                "type": "string",
+                "minLength": 1
+              },
+              "origin": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "brand",
+              "variant",
+              "net_content",
+              "unit",
+              "pack_count",
+              "packaging",
+              "origin"
+            ],
+            "additionalProperties": false
+          },
+          "cash_cap_minor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "destination_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "latest_delivery_epoch": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requires_change_of_mind_return": {
+            "type": "boolean"
+          },
+          "environment": {
+            "enum": [
+              "local_simulator",
+              "provider_sandbox",
+              "production",
+              "public_research"
+            ]
+          }
+        },
+        "required": [
+          "product",
+          "cash_cap_minor",
+          "destination_ref",
+          "latest_delivery_epoch",
+          "requires_change_of_mind_return",
+          "environment"
+        ],
+        "additionalProperties": false
+      },
+      "Assessment": {
+        "type": "object",
+        "properties": {
+          "eligible": {
+            "type": "boolean"
+          },
+          "cash_minor": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "quote_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "quote_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "eligible",
+          "cash_minor",
+          "blockers",
+          "quote_id",
+          "quote_version"
+        ],
+        "additionalProperties": false
+      },
+      "DecisionSnapshot": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "body": {
+            "type": "object",
+            "properties": {
+              "quote": {
+                "type": "object",
+                "properties": {
+                  "quote_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "environment": {
+                    "enum": [
+                      "local_simulator",
+                      "provider_sandbox",
+                      "production",
+                      "public_research"
+                    ]
+                  },
+                  "merchant_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sku": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "product": {
+                    "type": "object",
+                    "properties": {
+                      "brand": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "variant": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "net_content": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "unit": {
+                        "enum": [
+                          "g",
+                          "ml",
+                          "item"
+                        ]
+                      },
+                      "pack_count": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "packaging": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "origin": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "brand",
+                      "variant",
+                      "net_content",
+                      "unit",
+                      "pack_count",
+                      "packaging",
+                      "origin"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "currency": {
+                    "const": "HKD"
+                  },
+                  "goods_minor": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  "fee_lines": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "amount_minor": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 1000000000000
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "amount_minor"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "discounts": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "amount_minor": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000
+                        },
+                        "eligibility": {
+                          "enum": [
+                            "eligible",
+                            "ineligible",
+                            "unknown"
+                          ]
+                        },
+                        "expires_at": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000
+                        },
+                        "rule_id": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "amount_minor",
+                        "eligibility",
+                        "expires_at",
+                        "rule_id"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "fees_complete": {
+                    "type": "boolean"
+                  },
+                  "stock": {
+                    "enum": [
+                      "available",
+                      "unavailable",
+                      "unknown"
+                    ]
+                  },
+                  "destination_ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "delivery": {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "enum": [
+                          "confirmed",
+                          "unknown",
+                          "conflicting"
+                        ]
+                      },
+                      "guaranteed_by_epoch": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1000000000000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "policy_id": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "guaranteed_by_epoch",
+                      "policy_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "returns": {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "enum": [
+                          "confirmed",
+                          "unknown",
+                          "conflicting"
+                        ]
+                      },
+                      "change_of_mind": {
+                        "type": "boolean"
+                      },
+                      "policy_id": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "change_of_mind",
+                      "policy_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "observed_at": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  "expires_at": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  "fact_status": {
+                    "enum": [
+                      "verified",
+                      "partial",
+                      "conflicting"
+                    ]
+                  },
+                  "connector": {
+                    "type": "object",
+                    "properties": {
+                      "environment": {
+                        "enum": [
+                          "local_simulator",
+                          "provider_sandbox",
+                          "production",
+                          "public_research"
+                        ]
+                      },
+                      "checkout": {
+                        "type": "boolean"
+                      },
+                      "query_original": {
+                        "type": "boolean"
+                      },
+                      "payee_ref": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "expires_at": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000000
+                      }
+                    },
+                    "required": [
+                      "environment",
+                      "checkout",
+                      "query_original",
+                      "payee_ref",
+                      "expires_at"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "claim_bindings": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "quote_id",
+                  "version",
+                  "environment",
+                  "merchant_id",
+                  "sku",
+                  "product",
+                  "currency",
+                  "goods_minor",
+                  "fee_lines",
+                  "discounts",
+                  "fees_complete",
+                  "stock",
+                  "destination_ref",
+                  "delivery",
+                  "returns",
+                  "observed_at",
+                  "expires_at",
+                  "fact_status",
+                  "connector",
+                  "claim_bindings"
+                ],
+                "additionalProperties": false
+              },
+              "task": {
+                "type": "object",
+                "properties": {
+                  "product": {
+                    "type": "object",
+                    "properties": {
+                      "brand": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "variant": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "net_content": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "unit": {
+                        "enum": [
+                          "g",
+                          "ml",
+                          "item"
+                        ]
+                      },
+                      "pack_count": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "packaging": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "origin": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "brand",
+                      "variant",
+                      "net_content",
+                      "unit",
+                      "pack_count",
+                      "packaging",
+                      "origin"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "cash_cap_minor": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  "destination_ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "latest_delivery_epoch": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "requires_change_of_mind_return": {
+                    "type": "boolean"
+                  },
+                  "environment": {
+                    "enum": [
+                      "local_simulator",
+                      "provider_sandbox",
+                      "production",
+                      "public_research"
+                    ]
+                  }
+                },
+                "required": [
+                  "product",
+                  "cash_cap_minor",
+                  "destination_ref",
+                  "latest_delivery_epoch",
+                  "requires_change_of_mind_return",
+                  "environment"
+                ],
+                "additionalProperties": false
+              },
+              "cash_minor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              "currency": {
+                "const": "HKD"
+              },
+              "evidence_digests": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "frozen_at": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              "calculator_version": {
+                "const": "hk-cash-0.4.0"
+              }
+            },
+            "required": [
+              "quote",
+              "task",
+              "cash_minor",
+              "currency",
+              "evidence_digests",
+              "frozen_at",
+              "calculator_version"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "body"
+        ],
+        "additionalProperties": false
+      },
+      "ProductV1": {
+        "type": "object",
+        "properties": {
+          "brand": {
+            "type": "string",
+            "minLength": 1
+          },
+          "variant": {
+            "type": "string",
+            "minLength": 1
+          },
+          "net_content": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000000000
+          },
+          "unit": {
+            "enum": [
+              "g",
+              "ml",
+              "item"
+            ]
+          },
+          "pack_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000000000
+          },
+          "packaging": {
+            "type": "string",
+            "minLength": 1
+          },
+          "origin": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "region_version": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "brand",
+          "variant",
+          "net_content",
+          "unit",
+          "pack_count",
+          "packaging",
+          "origin",
+          "region_version"
+        ],
+        "additionalProperties": false
+      },
+      "TaskDraftV1": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "product": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "brand": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "variant": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "net_content": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1000000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "unit": {
+                    "anyOf": [
+                      {
+                        "enum": [
+                          "g",
+                          "ml",
+                          "item"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "pack_count": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1000000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "packaging": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "origin": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "region_version": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "purchase_quantity": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cash_cap_minor": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "destination_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "preference": {
+            "anyOf": [
+              {
+                "enum": [
+                  "lowest_cost",
+                  "fastest_delivery",
+                  "easiest_returns"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requires_change_of_mind_return": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "latest_delivery_epoch": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "QuoteV1": {
+        "type": "object",
+        "properties": {
+          "quote_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000000000
+          },
+          "merchant_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "merchant_sku": {
+            "type": "string",
+            "minLength": 1
+          },
+          "product": {
+            "type": "object",
+            "properties": {
+              "brand": {
+                "type": "string",
+                "minLength": 1
+              },
+              "variant": {
+                "type": "string",
+                "minLength": 1
+              },
+              "net_content": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000000000
+              },
+              "unit": {
+                "enum": [
+                  "g",
+                  "ml",
+                  "item"
+                ]
+              },
+              "pack_count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000000000
+              },
+              "packaging": {
+                "type": "string",
+                "minLength": 1
+              },
+              "origin": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "region_version": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "brand",
+              "variant",
+              "net_content",
+              "unit",
+              "pack_count",
+              "packaging",
+              "origin",
+              "region_version"
+            ],
+            "additionalProperties": false
+          },
+          "purchase_quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "unit_price_minor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "line_subtotal_minor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "currency": {
+            "const": "HKD"
+          },
+          "fee_lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "amount_minor": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "amount_minor"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "fees_complete": {
+            "type": "boolean"
+          },
+          "discounts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "coupon_instance_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "subject_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "order_scope_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "rule_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "amount_minor": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                "eligibility": {
+                  "enum": [
+                    "eligible",
+                    "ineligible",
+                    "unknown"
+                  ]
+                },
+                "expires_at": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                "stackable_with": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "uniqueItems": true
+                },
+                "exclusive_group": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "coupon_instance_id",
+                "subject_ref",
+                "order_scope_ref",
+                "rule_id",
+                "amount_minor",
+                "eligibility",
+                "expires_at",
+                "stackable_with",
+                "exclusive_group"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "benefit_subject_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "order_scope_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "stock": {
+            "enum": [
+              "available",
+              "unavailable",
+              "unknown"
+            ]
+          },
+          "destination_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "delivery": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "enum": [
+                  "confirmed",
+                  "unknown",
+                  "conflicting"
+                ]
+              },
+              "guaranteed_by_epoch": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "policy_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "segments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "segment_id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "origin_region": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "destination_region": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "carrier_ref": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "responsible_party": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "fee_minor": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "segment_id",
+                    "origin_region",
+                    "destination_region",
+                    "carrier_ref",
+                    "responsible_party",
+                    "fee_minor"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "status",
+              "guaranteed_by_epoch",
+              "policy_id",
+              "segments"
+            ],
+            "additionalProperties": false
+          },
+          "returns": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "enum": [
+                  "confirmed",
+                  "unknown",
+                  "conflicting"
+                ]
+              },
+              "change_of_mind": {
+                "type": "boolean"
+              },
+              "policy_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "window_days": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "return_fee_minor": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "responsible_party": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "status",
+              "change_of_mind",
+              "policy_id",
+              "window_days",
+              "return_fee_minor",
+              "responsible_party"
+            ],
+            "additionalProperties": false
+          },
+          "warranty": {
+            "type": "object",
+            "properties": {
+              "responsible_party": {
+                "type": "string",
+                "minLength": 1
+              },
+              "policy_id": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "responsible_party",
+              "policy_id"
+            ],
+            "additionalProperties": false
+          },
+          "payee_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "payee_mapping_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000000000
+          },
+          "observed_at": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "expires_at": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "environment": {
+            "enum": [
+              "local_simulator",
+              "provider_sandbox",
+              "production",
+              "public_research"
+            ]
+          },
+          "provenance": {
+            "enum": [
+              "synthetic_fixture",
+              "public_research",
+              "authorized_merchant_api"
+            ]
+          },
+          "submission_guard": {
+            "enum": [
+              "exact_terms",
+              "research_only"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "payment_options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "option_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "eligibility": {
+                  "enum": [
+                    "eligible",
+                    "ineligible",
+                    "unknown"
+                  ]
+                },
+                "provenance": {
+                  "enum": [
+                    "synthetic_fixture",
+                    "authorized_provider"
+                  ]
+                },
+                "source_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "observed_at": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                }
+              },
+              "required": [
+                "option_id",
+                "label",
+                "eligibility",
+                "provenance",
+                "source_ref",
+                "observed_at"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1
+          },
+          "rewards": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "expected_cashback",
+                    "expected_points"
+                  ]
+                },
+                "amount_minor": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "points": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "eligibility": {
+                  "enum": [
+                    "eligible",
+                    "ineligible",
+                    "unknown"
+                  ]
+                },
+                "rule_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "observed_at": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                "redemption_conditions": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "cash_equivalent_minor": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "amount_minor",
+                "points",
+                "eligibility",
+                "rule_id",
+                "source_ref",
+                "observed_at",
+                "redemption_conditions",
+                "cash_equivalent_minor"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "evidence": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "evidence_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "merchant_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "merchant_sku": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source_url": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "provenance": {
+                  "enum": [
+                    "synthetic_fixture",
+                    "public_research",
+                    "authorized_merchant_api"
+                  ]
+                },
+                "review_status": {
+                  "enum": [
+                    "released",
+                    "research_only",
+                    "revoked"
+                  ]
+                },
+                "observed_at": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                "expires_at": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                "assertions": {
+                  "type": "object"
+                },
+                "assertions_digest": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "evidence_id",
+                "merchant_id",
+                "merchant_sku",
+                "source_url",
+                "provenance",
+                "review_status",
+                "observed_at",
+                "expires_at",
+                "assertions",
+                "assertions_digest"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "claim_bindings": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "quote_id",
+          "version",
+          "merchant_id",
+          "merchant_sku",
+          "product",
+          "purchase_quantity",
+          "unit_price_minor",
+          "line_subtotal_minor",
+          "currency",
+          "fee_lines",
+          "fees_complete",
+          "discounts",
+          "benefit_subject_ref",
+          "order_scope_ref",
+          "stock",
+          "destination_ref",
+          "delivery",
+          "returns",
+          "warranty",
+          "payee_ref",
+          "payee_mapping_version",
+          "observed_at",
+          "expires_at",
+          "environment",
+          "provenance",
+          "submission_guard",
+          "description",
+          "payment_options",
+          "rewards",
+          "evidence",
+          "claim_bindings"
+        ],
+        "additionalProperties": false
+      },
+      "DiscountV1": {
+        "type": "object",
+        "properties": {
+          "coupon_instance_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "subject_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "order_scope_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rule_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "amount_minor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "eligibility": {
+            "enum": [
+              "eligible",
+              "ineligible",
+              "unknown"
+            ]
+          },
+          "expires_at": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "stackable_with": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "exclusive_group": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "coupon_instance_id",
+          "subject_ref",
+          "order_scope_ref",
+          "rule_id",
+          "amount_minor",
+          "eligibility",
+          "expires_at",
+          "stackable_with",
+          "exclusive_group"
+        ],
+        "additionalProperties": false
+      },
+      "EvidenceV1": {
+        "type": "object",
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "merchant_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "merchant_sku": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_url": {
+            "type": "string",
+            "minLength": 1
+          },
+          "provenance": {
+            "enum": [
+              "synthetic_fixture",
+              "public_research",
+              "authorized_merchant_api"
+            ]
+          },
+          "review_status": {
+            "enum": [
+              "released",
+              "research_only",
+              "revoked"
+            ]
+          },
+          "observed_at": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "expires_at": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "assertions": {
+            "type": "object"
+          },
+          "assertions_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "evidence_id",
+          "merchant_id",
+          "merchant_sku",
+          "source_url",
+          "provenance",
+          "review_status",
+          "observed_at",
+          "expires_at",
+          "assertions",
+          "assertions_digest"
+        ],
+        "additionalProperties": false
+      },
+      "EvaluationV1": {
+        "type": "object",
+        "properties": {
+          "quote_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "quote_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000000000
+          },
+          "merchant_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "eligible": {
+            "type": "boolean"
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "cash_minor": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "goods_minor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "fees_minor": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "discount_minor": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "delivery": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "enum": [
+                  "confirmed",
+                  "unknown",
+                  "conflicting"
+                ]
+              },
+              "guaranteed_by_epoch": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "policy_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "segments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "segment_id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "origin_region": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "destination_region": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "carrier_ref": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "responsible_party": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "fee_minor": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "segment_id",
+                    "origin_region",
+                    "destination_region",
+                    "carrier_ref",
+                    "responsible_party",
+                    "fee_minor"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "status",
+              "guaranteed_by_epoch",
+              "policy_id",
+              "segments"
+            ],
+            "additionalProperties": false
+          },
+          "returns": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "enum": [
+                  "confirmed",
+                  "unknown",
+                  "conflicting"
+                ]
+              },
+              "change_of_mind": {
+                "type": "boolean"
+              },
+              "policy_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "window_days": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "return_fee_minor": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "responsible_party": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "status",
+              "change_of_mind",
+              "policy_id",
+              "window_days",
+              "return_fee_minor",
+              "responsible_party"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "quote_id",
+          "quote_version",
+          "merchant_id",
+          "eligible",
+          "blockers",
+          "cash_minor",
+          "goods_minor",
+          "fees_minor",
+          "discount_minor",
+          "delivery",
+          "returns"
+        ],
+        "additionalProperties": false
+      },
+      "SnapshotV1": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "task_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "constraints_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000000000
+          },
+          "fact_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000000000
+          },
+          "quote": {
+            "type": "object",
+            "properties": {
+              "quote_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000000000
+              },
+              "merchant_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "merchant_sku": {
+                "type": "string",
+                "minLength": 1
+              },
+              "product": {
+                "type": "object",
+                "properties": {
+                  "brand": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "variant": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "net_content": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000000000
+                  },
+                  "unit": {
+                    "enum": [
+                      "g",
+                      "ml",
+                      "item"
+                    ]
+                  },
+                  "pack_count": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000000000
+                  },
+                  "packaging": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "origin": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "region_version": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "brand",
+                  "variant",
+                  "net_content",
+                  "unit",
+                  "pack_count",
+                  "packaging",
+                  "origin",
+                  "region_version"
+                ],
+                "additionalProperties": false
+              },
+              "purchase_quantity": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "unit_price_minor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              "line_subtotal_minor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              "currency": {
+                "const": "HKD"
+              },
+              "fee_lines": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "amount_minor": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "amount_minor"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "fees_complete": {
+                "type": "boolean"
+              },
+              "discounts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "coupon_instance_id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "subject_ref": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "order_scope_ref": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "rule_id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "amount_minor": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    "eligibility": {
+                      "enum": [
+                        "eligible",
+                        "ineligible",
+                        "unknown"
+                      ]
+                    },
+                    "expires_at": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    "stackable_with": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "uniqueItems": true
+                    },
+                    "exclusive_group": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "coupon_instance_id",
+                    "subject_ref",
+                    "order_scope_ref",
+                    "rule_id",
+                    "amount_minor",
+                    "eligibility",
+                    "expires_at",
+                    "stackable_with",
+                    "exclusive_group"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "benefit_subject_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "order_scope_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "stock": {
+                "enum": [
+                  "available",
+                  "unavailable",
+                  "unknown"
+                ]
+              },
+              "destination_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "delivery": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "confirmed",
+                      "unknown",
+                      "conflicting"
+                    ]
+                  },
+                  "guaranteed_by_epoch": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "policy_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "segments": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "segment_id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "origin_region": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "destination_region": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "carrier_ref": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "responsible_party": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "fee_minor": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 1000000000000
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "segment_id",
+                        "origin_region",
+                        "destination_region",
+                        "carrier_ref",
+                        "responsible_party",
+                        "fee_minor"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "status",
+                  "guaranteed_by_epoch",
+                  "policy_id",
+                  "segments"
+                ],
+                "additionalProperties": false
+              },
+              "returns": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "confirmed",
+                      "unknown",
+                      "conflicting"
+                    ]
+                  },
+                  "change_of_mind": {
+                    "type": "boolean"
+                  },
+                  "policy_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "window_days": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "return_fee_minor": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "responsible_party": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "status",
+                  "change_of_mind",
+                  "policy_id",
+                  "window_days",
+                  "return_fee_minor",
+                  "responsible_party"
+                ],
+                "additionalProperties": false
+              },
+              "warranty": {
+                "type": "object",
+                "properties": {
+                  "responsible_party": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "policy_id": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "responsible_party",
+                  "policy_id"
+                ],
+                "additionalProperties": false
+              },
+              "payee_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "payee_mapping_version": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000000000
+              },
+              "observed_at": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              "expires_at": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              "environment": {
+                "enum": [
+                  "local_simulator",
+                  "provider_sandbox",
+                  "production",
+                  "public_research"
+                ]
+              },
+              "provenance": {
+                "enum": [
+                  "synthetic_fixture",
+                  "public_research",
+                  "authorized_merchant_api"
+                ]
+              },
+              "submission_guard": {
+                "enum": [
+                  "exact_terms",
+                  "research_only"
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 20000
+              },
+              "payment_options": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "option_id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "label": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "eligibility": {
+                      "enum": [
+                        "eligible",
+                        "ineligible",
+                        "unknown"
+                      ]
+                    },
+                    "provenance": {
+                      "enum": [
+                        "synthetic_fixture",
+                        "authorized_provider"
+                      ]
+                    },
+                    "source_ref": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "observed_at": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    }
+                  },
+                  "required": [
+                    "option_id",
+                    "label",
+                    "eligibility",
+                    "provenance",
+                    "source_ref",
+                    "observed_at"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1
+              },
+              "rewards": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "expected_cashback",
+                        "expected_points"
+                      ]
+                    },
+                    "amount_minor": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "points": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "eligibility": {
+                      "enum": [
+                        "eligible",
+                        "ineligible",
+                        "unknown"
+                      ]
+                    },
+                    "rule_id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "source_ref": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "observed_at": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    "redemption_conditions": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cash_equivalent_minor": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "amount_minor",
+                    "points",
+                    "eligibility",
+                    "rule_id",
+                    "source_ref",
+                    "observed_at",
+                    "redemption_conditions",
+                    "cash_equivalent_minor"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "evidence": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "evidence_id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "merchant_id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "merchant_sku": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "source_url": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "provenance": {
+                      "enum": [
+                        "synthetic_fixture",
+                        "public_research",
+                        "authorized_merchant_api"
+                      ]
+                    },
+                    "review_status": {
+                      "enum": [
+                        "released",
+                        "research_only",
+                        "revoked"
+                      ]
+                    },
+                    "observed_at": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    "expires_at": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000000000
+                    },
+                    "assertions": {
+                      "type": "object"
+                    },
+                    "assertions_digest": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "evidence_id",
+                    "merchant_id",
+                    "merchant_sku",
+                    "source_url",
+                    "provenance",
+                    "review_status",
+                    "observed_at",
+                    "expires_at",
+                    "assertions",
+                    "assertions_digest"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "claim_bindings": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "quote_id",
+              "version",
+              "merchant_id",
+              "merchant_sku",
+              "product",
+              "purchase_quantity",
+              "unit_price_minor",
+              "line_subtotal_minor",
+              "currency",
+              "fee_lines",
+              "fees_complete",
+              "discounts",
+              "benefit_subject_ref",
+              "order_scope_ref",
+              "stock",
+              "destination_ref",
+              "delivery",
+              "returns",
+              "warranty",
+              "payee_ref",
+              "payee_mapping_version",
+              "observed_at",
+              "expires_at",
+              "environment",
+              "provenance",
+              "submission_guard",
+              "description",
+              "payment_options",
+              "rewards",
+              "evidence",
+              "claim_bindings"
+            ],
+            "additionalProperties": false
+          },
+          "draft": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "maxLength": 20000
+              },
+              "product": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "brand": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "variant": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "net_content": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 1000000000000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "unit": {
+                        "anyOf": [
+                          {
+                            "enum": [
+                              "g",
+                              "ml",
+                              "item"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "pack_count": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 1000000000000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "packaging": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "origin": {
+                        "anyOf": [
+                          {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "region_version": {
+                        "anyOf": [
+                          {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "purchase_quantity": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "cash_cap_minor": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "destination_ref": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "preference": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "lowest_cost",
+                      "fastest_delivery",
+                      "easiest_returns"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "requires_change_of_mind_return": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "latest_delivery_epoch": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "calculation": {
+            "type": "object",
+            "properties": {
+              "quote_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "quote_version": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000000000
+              },
+              "merchant_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "eligible": {
+                "type": "boolean"
+              },
+              "blockers": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "cash_minor": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "goods_minor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              "fees_minor": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "discount_minor": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "delivery": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "confirmed",
+                      "unknown",
+                      "conflicting"
+                    ]
+                  },
+                  "guaranteed_by_epoch": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "policy_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "segments": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "segment_id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "origin_region": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "destination_region": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "carrier_ref": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "responsible_party": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "fee_minor": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 1000000000000
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "segment_id",
+                        "origin_region",
+                        "destination_region",
+                        "carrier_ref",
+                        "responsible_party",
+                        "fee_minor"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "status",
+                  "guaranteed_by_epoch",
+                  "policy_id",
+                  "segments"
+                ],
+                "additionalProperties": false
+              },
+              "returns": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "confirmed",
+                      "unknown",
+                      "conflicting"
+                    ]
+                  },
+                  "change_of_mind": {
+                    "type": "boolean"
+                  },
+                  "policy_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "window_days": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "return_fee_minor": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "responsible_party": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "status",
+                  "change_of_mind",
+                  "policy_id",
+                  "window_days",
+                  "return_fee_minor",
+                  "responsible_party"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "quote_id",
+              "quote_version",
+              "merchant_id",
+              "eligible",
+              "blockers",
+              "cash_minor",
+              "goods_minor",
+              "fees_minor",
+              "discount_minor",
+              "delivery",
+              "returns"
+            ],
+            "additionalProperties": false
+          },
+          "payee_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "payee_mapping_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000000000
+          },
+          "expires_at": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "frozen_at": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "calculator_version": {
+            "const": "hk-cash-v1.0"
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "digest",
+          "task_id",
+          "constraints_version",
+          "fact_version",
+          "quote",
+          "draft",
+          "calculation",
+          "payee_ref",
+          "payee_mapping_version",
+          "expires_at",
+          "frozen_at",
+          "calculator_version"
+        ],
+        "additionalProperties": false
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "error",
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "Version": {
+        "type": "object",
+        "properties": {
+          "expected_state_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "expected_state_version"
+        ],
+        "additionalProperties": false
+      },
+      "CreateIntent": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 8000
+          },
+          "fields": {
+            "$ref": "#/components/schemas/TaskDraftV1"
+          },
+          "mode": {
+            "enum": [
+              "live",
+              "scripted"
+            ],
+            "default": "live"
+          },
+          "scenario": {
+            "enum": [
+              "normal",
+              "shipping_increase",
+              "injection",
+              "both_unavailable"
+            ],
+            "default": "normal"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "Answers": {
+        "type": "object",
+        "properties": {
+          "expected_state_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "base_constraints_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "answers": {
+            "$ref": "#/components/schemas/TaskDraftV1"
+          }
+        },
+        "required": [
+          "expected_state_version",
+          "base_constraints_version",
+          "answers"
+        ],
+        "additionalProperties": false
+      },
+      "Approval": {
+        "type": "object",
+        "properties": {
+          "expected_state_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "snapshot_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "challenge_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "expected_state_version",
+          "snapshot_id",
+          "challenge_id"
+        ],
+        "additionalProperties": false
+      },
+      "Actor": {
+        "type": "object",
+        "properties": {
+          "actor_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tenant_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "enum": [
+              "buyer",
+              "merchant",
+              "operator"
+            ]
+          },
+          "merchant_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "actor_id",
+          "tenant_id",
+          "role"
+        ],
+        "additionalProperties": false
+      },
+      "Session": {
+        "type": "object",
+        "properties": {
+          "actor": {
+            "$ref": "#/components/schemas/Actor"
+          },
+          "csrf_token": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "actor",
+          "csrf_token"
+        ],
+        "additionalProperties": false
+      },
+      "Login": {
+        "type": "object",
+        "properties": {
+          "access_code": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "access_code"
+        ],
+        "additionalProperties": false
+      },
+      "Proposal": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "challenge_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expires_at": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/SnapshotV1"
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "challenge_id",
+          "expires_at",
+          "snapshot"
+        ],
+        "additionalProperties": false
+      },
+      "Task": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "state_version",
+          "constraints_version",
+          "status",
+          "capabilities"
+        ],
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "state_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "constraints_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "status": {
+            "enum": [
+              "DRAFT",
+              "PLANNING",
+              "CLARIFYING",
+              "BLOCKED",
+              "AWAITING_APPROVAL",
+              "QUEUED",
+              "STOPPED",
+              "DISPATCH_COMMITTED",
+              "UNKNOWN",
+              "SUCCEEDED",
+              "FAILED"
+            ]
+          },
+          "draft": {
+            "$ref": "#/components/schemas/TaskDraftV1"
+          },
+          "missing_fields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "proposal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Proposal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "comparison": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "operation": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "run": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "capabilities": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "metrics": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "model_result": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "role_view": {
+            "enum": [
+              "merchant",
+              "operator"
+            ]
+          },
+          "item": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "created_at": {
+            "type": "integer"
+          },
+          "updated_at": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TaskList": {
+        "type": "object",
+        "properties": {
+          "tasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            }
+          }
+        },
+        "required": [
+          "tasks"
+        ],
+        "additionalProperties": false
+      },
+      "StorageHealth": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "reason",
+          "failure_count",
+          "last_error_at",
+          "recovery_required"
+        ],
+        "properties": {
+          "status": {
+            "enum": [
+              "starting",
+              "available",
+              "unavailable"
+            ]
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "failure_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "last_error_at": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "recovery_required": {
+            "type": "boolean",
+            "description": "Corruption or unexpected journal mode quarantines this process. No automatic repair or replacement is attempted."
+          }
+        }
+      },
+      "WorkerHealth": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "reason"
+        ],
+        "properties": {
+          "status": {
+            "enum": [
+              "starting",
+              "idle",
+              "running",
+              "unavailable",
+              "stopped",
+              "external_unmonitored"
+            ]
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "failure_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "consecutive_failures": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "last_progress_at": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "alive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ServiceHealth": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "storage",
+          "worker",
+          "automatic_payment_dispatch"
+        ],
+        "properties": {
+          "status": {
+            "enum": [
+              "ready",
+              "unavailable"
+            ]
+          },
+          "storage": {
+            "$ref": "#/components/schemas/StorageHealth"
+          },
+          "worker": {
+            "$ref": "#/components/schemas/WorkerHealth"
+          },
+          "automatic_payment_dispatch": {
+            "const": false
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "localSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "hacku_session",
+        "description": "Server-issued local session; production identity integration is not claimed."
+      }
+    }
+  }
+}

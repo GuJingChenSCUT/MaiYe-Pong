@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hacku:contract:CreateMandate",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "plan_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "plan_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "plan_digest": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "challenge_response": {
+      "type": "string",
+      "minLength": 1
+    },
+    "challenge_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "plan_id",
+    "plan_version",
+    "plan_digest",
+    "expires_at",
+    "challenge_response",
+    "challenge_id"
+  ]
+}

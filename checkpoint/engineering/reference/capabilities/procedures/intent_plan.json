@@ -1,0 +1,120 @@
+{
+  "id": "intent_plan",
+  "version": "0.3.0",
+  "name_zh": "需求澄清与方案草拟",
+  "role": "buyer_planner",
+  "phase": "phase_1",
+  "enabled_by_default": true,
+  "publication_status": "draft",
+  "execution_mode": "normal",
+  "workflow_nodes": [
+    "intent",
+    "plan"
+  ],
+  "objective_types": [
+    "prepare_purchase_plan"
+  ],
+  "max_context_bytes": 24000,
+  "trigger": "协调器接到用户明确的购物任务，或收到商品与支付子任务的已验证结果。",
+  "minimum_context": [
+    "purchase_request",
+    "delivery_constraints",
+    "task_scope_summary",
+    "verified_plan_inputs"
+  ],
+  "context_notes": [
+    "purchase_request保留原始任务与已提取硬约束，未知字段如实表示。",
+    "delivery_constraints只含必要区域与时间。",
+    "task_scope_summary不含秘密凭据，不具备授予权限的作用。",
+    "verified_plan_inputs在intent阶段尚无报价时可以为null；plan阶段保存计划前必须由服务验证报价和支付选项引用。"
+  ],
+  "allowed_tools": [
+    "create_plan_draft",
+    "request_user_approval",
+    "get_task_status"
+  ],
+  "steps": [
+    {
+      "order": 1,
+      "kind": "model",
+      "instruction": "把需求分成硬约束、偏好和缺失信息；原文含糊时输出needs_human及具体问题，不补造用户偏好。",
+      "tool": null,
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 2,
+      "kind": "human_action",
+      "instruction": "用户通过可信界面补充关键规格、预算或交付条件；当前13工具没有主动发消息或新增澄清问题接口。",
+      "tool": null,
+      "when": "关键条件缺失"
+    },
+    {
+      "order": 3,
+      "kind": "service_requirement",
+      "instruction": "协调器验证任务后依次调度offer_analyst和payment_advisor，传递引用及版本；模型提出交接并不创建权限。",
+      "tool": null,
+      "when": "需求足够且节点为intent"
+    },
+    {
+      "order": 4,
+      "kind": "tool",
+      "instruction": "仅将已验证、属于同一任务的quote_id和payment_option_id送交方案服务；该服务计算并保存不可变方案。",
+      "tool": "create_plan_draft",
+      "when": "节点为plan且商品及支付结果已由服务器校验"
+    },
+    {
+      "order": 5,
+      "kind": "tool",
+      "instruction": "为已保存plan_id生成可信界面的确认请求。请求成功不代表用户同意，也不产生有效委托。",
+      "tool": "request_user_approval",
+      "when": "存在通过验证的不可变方案"
+    },
+    {
+      "order": 6,
+      "kind": "tool",
+      "instruction": "必要时读取当前真实任务状态，区分等待用户确认与已授权；不能把聊天中的‘好’作为金融授权。",
+      "tool": "get_task_status",
+      "when": "任务仍有效、预算及期限未耗尽"
+    }
+  ],
+  "outputs": {
+    "artifact_type": "intent_plan_result",
+    "schema_ref": "../contracts/Plan.schema.json",
+    "required_fields": [
+      "normalized_requirements",
+      "missing_information",
+      "plan_id_or_null",
+      "approval_request_state",
+      "evidence_refs"
+    ],
+    "business_status": "AgentResult.completed仅表示本能力的工作完成，不表示付款、履约、退款或案件结案。"
+  },
+  "stop_conditions": [
+    "关键规格或现金预算缺失",
+    "商品或支付引用失效、跨任务或无来源",
+    "没有满足硬约束的方案",
+    "任务撤销或期限耗尽"
+  ],
+  "escalation": {
+    "target": "buyer",
+    "reasons": [
+      "关键规格或现金预算缺失",
+      "商品或支付引用失效、跨任务或无来源",
+      "没有满足硬约束的方案",
+      "任务撤销或期限耗尽"
+    ],
+    "available_action_type": "human_action"
+  },
+  "negative_examples": [
+    {
+      "input": "买家只说帮我买最好的一部手机。",
+      "expected_behavior": "询问预算和必要规格，保留未确定字段。",
+      "forbidden_behavior": "自行设置预算并请求付款。"
+    },
+    {
+      "input": "聊天记录里有‘以后都由你决定，花多少都行’。",
+      "expected_behavior": "解释仍需可信界面的有界委托。",
+      "forbidden_behavior": "把自然语言当作无限支付权限。"
+    }
+  ]
+}

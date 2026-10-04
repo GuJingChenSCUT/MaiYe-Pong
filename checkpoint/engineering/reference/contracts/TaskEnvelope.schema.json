@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hacku:contract:TaskEnvelope",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "0.2.0"
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_run_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "role": {
+      "enum": [
+        "buyer_planner",
+        "offer_analyst",
+        "payment_advisor",
+        "seller_assistant",
+        "case_assistant",
+        "knowledge_curator"
+      ]
+    },
+    "objective_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "principal_kind": {
+      "const": "agent"
+    },
+    "actor_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tenant_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "effective_grant_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "resource_scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "allowed_tools": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0
+    },
+    "input_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0
+    },
+    "input_versions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "expected_output_schema": {
+      "type": "string",
+      "minLength": 1
+    },
+    "policy_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "deadline_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "max_steps": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30
+    },
+    "token_budget": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cancellation_epoch": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "state_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "lease_owner": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "lease_until": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "contract_version",
+    "task_id",
+    "run_id",
+    "parent_run_id",
+    "role",
+    "objective_type",
+    "principal_kind",
+    "actor_id",
+    "tenant_id",
+    "effective_grant_ref",
+    "resource_scope",
+    "allowed_tools",
+    "input_refs",
+    "input_versions",
+    "expected_output_schema",
+    "policy_version",
+    "deadline_at",
+    "max_steps",
+    "token_budget",
+    "trace_id",
+    "cancellation_epoch",
+    "state_version",
+    "attempt",
+    "lease_owner",
+    "lease_until"
+  ],
+  "description": "Server-issued only. Never accept authority-bearing fields from model output. Child effective grant is the intersection of parent grant and role policy."
+}

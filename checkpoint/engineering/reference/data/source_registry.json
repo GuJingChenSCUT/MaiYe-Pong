@@ -1,0 +1,34 @@
+[
+  {
+    "source_id": "consumer_council_cases",
+    "kind": "published_cases",
+    "url": "https://www.consumer.org.hk/tc/complaints-and-services/complaint-record",
+    "access": "public_pages",
+    "bulk_status": "review_terms_and_rate_limit_before_collection",
+    "use": "Short paraphrases and provenance; no blanket full-text redistribution"
+  },
+  {
+    "source_id": "hktv_open_databank",
+    "kind": "platform_data",
+    "url": "https://opendatabank.hktvmall.com/portal/faqs",
+    "access": "account_token_required",
+    "bulk_status": "not_authorized_or_called",
+    "use": "Official documented route; current availability, fields and terms require account-level confirmation"
+  },
+  {
+    "source_id": "taobao_open_platform",
+    "kind": "authorized_account_data",
+    "url": "https://developer.alibaba.com/docs/doc.htm?articleId=102635&docType=1&treeId=796",
+    "access": "application_scope_and_user_oauth",
+    "bulk_status": "not_authorized_or_called",
+    "use": "Only authorized account and permitted API scopes; not arbitrary user histories"
+  },
+  {
+    "source_id": "partner_orders",
+    "kind": "operational_data",
+    "url": null,
+    "access": "partner_contract_and_user_scope",
+    "bulk_status": "no_partner_claimed",
+    "use": "Separate live operational records from anonymized research cases"
+  }
+]

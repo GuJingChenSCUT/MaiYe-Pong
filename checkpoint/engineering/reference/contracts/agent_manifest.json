@@ -1,0 +1,138 @@
+{
+  "contract_version": "0.2.0",
+  "status": "design_only",
+  "coordinator": {
+    "kind": "deterministic_service",
+    "mints_task_envelopes": true,
+    "free_form_agent_to_agent_authority": false
+  },
+  "agents": [
+    {
+      "role": "buyer_planner",
+      "purpose": "Interpret buyer intent, coordinate bounded shopping work, explain the selected plan",
+      "context_scope": "Buyer task view; approved offer and payment outputs",
+      "prohibition": "Cannot grant authority or send PSP commands",
+      "allowed_tools": [
+        "create_plan_draft",
+        "request_user_approval",
+        "request_execution",
+        "get_task_status",
+        "request_stop"
+      ],
+      "model_profile_ref": "deepseek_verified_profile",
+      "enabled_by_default": true,
+      "phase": "phase_1",
+      "deployment": "agent_worker",
+      "independent_context": true,
+      "shared_provider_permitted": true,
+      "human_money_authority": false,
+      "logical_role_not_microservice": true
+    },
+    {
+      "role": "offer_analyst",
+      "purpose": "Match specifications and compare evidence-backed quotes",
+      "context_scope": "Task-scoped catalogue and approved evidence; no payment credentials",
+      "prohibition": "Cannot finalize prices or execute purchases",
+      "allowed_tools": [
+        "search_evidence",
+        "search_catalog",
+        "get_verified_quote"
+      ],
+      "model_profile_ref": "deepseek_verified_profile",
+      "enabled_by_default": true,
+      "phase": "phase_1",
+      "deployment": "agent_worker",
+      "independent_context": true,
+      "shared_provider_permitted": true,
+      "human_money_authority": false,
+      "logical_role_not_microservice": true
+    },
+    {
+      "role": "payment_advisor",
+      "purpose": "Explain eligibility and rank deterministic payment/reward calculations",
+      "context_scope": "Authorized quote and minimal payment-profile projections",
+      "prohibition": "No arithmetic from model text becomes an authoritative charge; no PSP credential access",
+      "allowed_tools": [
+        "search_evidence",
+        "get_verified_quote",
+        "evaluate_payment_options"
+      ],
+      "model_profile_ref": "deepseek_verified_profile",
+      "enabled_by_default": true,
+      "phase": "phase_1",
+      "deployment": "agent_worker",
+      "independent_context": true,
+      "shared_provider_permitted": true,
+      "human_money_authority": false,
+      "logical_role_not_microservice": true
+    },
+    {
+      "role": "seller_assistant",
+      "purpose": "Draft seller replies and clarify this merchant's quote/fulfilment evidence",
+      "context_scope": "This merchant's participating orders and granted case evidence",
+      "prohibition": "Cannot view buyer cash cap, other offers or accept binding terms by default",
+      "allowed_tools": [
+        "search_evidence",
+        "get_verified_quote",
+        "get_task_status",
+        "draft_seller_response"
+      ],
+      "model_profile_ref": "deepseek_verified_profile",
+      "enabled_by_default": true,
+      "phase": "phase_1",
+      "deployment": "agent_worker",
+      "independent_context": true,
+      "shared_provider_permitted": true,
+      "human_money_authority": false,
+      "logical_role_not_microservice": true
+    },
+    {
+      "role": "case_assistant",
+      "purpose": "Separate claims, shared facts and uncertainties into evidence-linked drafts",
+      "context_scope": "Assigned case view excluding both parties' private agent memories",
+      "prohibition": "Cannot adjudicate, accept resolution or move money",
+      "allowed_tools": [
+        "search_evidence",
+        "get_task_status",
+        "draft_case_summary"
+      ],
+      "model_profile_ref": "deepseek_verified_profile",
+      "enabled_by_default": true,
+      "phase": "phase_1",
+      "deployment": "agent_worker",
+      "independent_context": true,
+      "shared_provider_permitted": true,
+      "human_money_authority": false,
+      "logical_role_not_microservice": true
+    },
+    {
+      "role": "knowledge_curator",
+      "purpose": "Produce reviewed-data learning candidates in an offline queue",
+      "context_scope": "De-identified, rights-cleared batch only",
+      "prohibition": "Cannot publish knowledge or change live rules",
+      "allowed_tools": [
+        "search_evidence",
+        "get_reviewed_case_batch",
+        "draft_knowledge_candidate"
+      ],
+      "model_profile_ref": "deepseek_verified_profile",
+      "enabled_by_default": false,
+      "phase": "phase_2",
+      "deployment": "agent_worker",
+      "independent_context": true,
+      "shared_provider_permitted": true,
+      "human_money_authority": false,
+      "logical_role_not_microservice": true
+    }
+  ],
+  "model_activation_gate": "Official docs map deepseek-flash to DeepSeek V4.1 Flash (docs checked 2026-10-02). Account-level probe has not run. All live roles remain disabled until a sandbox-verified profile and scoped service handlers are available.",
+  "model_documentation_status": {
+    "requested_label": "DeepSeek 4.1",
+    "documented_model_id": "deepseek-flash",
+    "documented_model_name": "DeepSeek V4.1 Flash",
+    "doc_verified": true,
+    "live_verified": false,
+    "checked_on": "2026-10-02"
+  },
+  "runtime_budgets_note": "max_steps and token limits are proposed configuration, not measured model performance."
+}

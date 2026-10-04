@@ -1,0 +1,112 @@
+{
+  "id": "authorized_execute",
+  "version": "0.3.0",
+  "name_zh": "有界委托下的执行请求",
+  "role": "buyer_planner",
+  "phase": "phase_1",
+  "enabled_by_default": true,
+  "publication_status": "draft",
+  "execution_mode": "command_request",
+  "workflow_nodes": [
+    "human_approval",
+    "dispatch"
+  ],
+  "objective_types": [
+    "request_authorized_execution"
+  ],
+  "max_context_bytes": 24000,
+  "trigger": "协调器在可信界面授权流程后恢复任务；模型只请求执行已保存方案，最终授权由服务实时判断。",
+  "minimum_context": [
+    "plan_ref",
+    "mandate_status_projection",
+    "execution_checkpoint"
+  ],
+  "context_notes": [
+    "plan_ref只引用服务保存的不可变方案。",
+    "mandate_status_projection是当前授权状态的非秘密投影，最终执行仍由服务实时核验。",
+    "execution_checkpoint首次请求时可以为null；存在未知原付款时必须提供其关联引用并转对账，不新建扣款。"
+  ],
+  "allowed_tools": [
+    "get_task_status",
+    "request_execution"
+  ],
+  "steps": [
+    {
+      "order": 1,
+      "kind": "tool",
+      "instruction": "读取已持久化任务状态，识别是否已有同一业务操作；等待或未知结果不能解释为付款失败。",
+      "tool": "get_task_status",
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 2,
+      "kind": "tool",
+      "instruction": "只提交plan_id。服务器读取计划金额与收款方，核验人类委托、范围、到期、撤销版本、报价、预算以及幂等键后决定是否接受。",
+      "tool": "request_execution",
+      "when": "协调器允许首次请求且不存在待核实的原付款操作"
+    },
+    {
+      "order": 3,
+      "kind": "service_requirement",
+      "instruction": "交易服务持久化执行命令与预算预留；支付worker在提交边界再次检查有效委托。金额、币种、收款方和幂等键不由模型生成。",
+      "tool": null,
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 4,
+      "kind": "model",
+      "instruction": "解释已收到的真实状态；accepted/pending只能说请求已受理或处理中，不能说付款成功。",
+      "tool": null,
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 5,
+      "kind": "service_requirement",
+      "instruction": "出现RESULT_UNKNOWN时由原命令编号进行查询和对账；待核实期间不得建立新扣款操作。",
+      "tool": null,
+      "when": "任务仍有效、预算及期限未耗尽"
+    }
+  ],
+  "outputs": {
+    "artifact_type": "authorized_execute_result",
+    "schema_ref": null,
+    "required_fields": [
+      "plan_id",
+      "execution_command_ref",
+      "observed_payment_state",
+      "observed_versions",
+      "next_action"
+    ],
+    "business_status": "AgentResult.completed仅表示本能力的工作完成，不表示付款、履约、退款或案件结案。"
+  },
+  "stop_conditions": [
+    "委托失效、过期、撤销或范围不符",
+    "报价或方案发生实质变化",
+    "余额或预算校验拒绝",
+    "已有付款结果未知",
+    "调用超时且是否提交无法确定"
+  ],
+  "escalation": {
+    "target": "buyer_or_assigned_operations",
+    "reasons": [
+      "委托失效、过期、撤销或范围不符",
+      "报价或方案发生实质变化",
+      "余额或预算校验拒绝",
+      "已有付款结果未知",
+      "调用超时且是否提交无法确定"
+    ],
+    "available_action_type": "human_action"
+  },
+  "negative_examples": [
+    {
+      "input": "付款接口超时，模型想换一个新订单号重试。",
+      "expected_behavior": "保持原操作关联并转入查询对账。",
+      "forbidden_behavior": "新建幂等键再扣款。"
+    },
+    {
+      "input": "工具参数里附带更高amount或新的payee。",
+      "expected_behavior": "输入契约拒绝额外字段；方案服务决定实际金融参数。",
+      "forbidden_behavior": "接受模型给出的金额或收款方。"
+    }
+  ]
+}

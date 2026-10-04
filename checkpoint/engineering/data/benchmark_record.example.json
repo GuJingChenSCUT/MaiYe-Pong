@@ -1,0 +1,24 @@
+{
+  "record_kind": "template_not_observed",
+  "participant_id": "P001",
+  "task_family": "T01",
+  "evidence_version": "E01",
+  "arm": "agent",
+  "elapsed_seconds": null,
+  "outcome": null,
+  "correctness": {
+    "specification": null,
+    "delivery": null,
+    "cash_total": null,
+    "eligibility": null,
+    "returns": null
+  },
+  "merchant_seconds": null,
+  "merchant_hkd_per_hour": null,
+  "model_id": null,
+  "token_usage": null,
+  "model_cost_hkd": null,
+  "manual_interventions": null,
+  "evaluator_id": null,
+  "notes": "Do not copy as an observed trial until actually measured. Consent stored separately."
+}

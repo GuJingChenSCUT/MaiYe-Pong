@@ -1,0 +1,111 @@
+{
+  "id": "payment_explain",
+  "version": "0.3.0",
+  "name_zh": "支付与积分方案解释",
+  "role": "payment_advisor",
+  "phase": "phase_1",
+  "enabled_by_default": true,
+  "publication_status": "draft",
+  "execution_mode": "normal",
+  "workflow_nodes": [
+    "payment_options"
+  ],
+  "objective_types": [
+    "explain_payment_options"
+  ],
+  "max_context_bytes": 24000,
+  "trigger": "至少一个报价已验证，服务器已建立用户有权使用的支付资料最小投影。",
+  "minimum_context": [
+    "quote_ref",
+    "payment_profile_projection",
+    "evaluation_context"
+  ],
+  "context_notes": [
+    "quote_ref是已经核验的报价引用及版本。",
+    "payment_profile_projection只含服务器批准的资格摘要和令牌化支付选项标识，不含PAN或支付密钥。",
+    "evaluation_context含币种、服务器时间和已发布规则版本；支付计算结果由evaluate_payment_options获取，不是本能力的前置输入。"
+  ],
+  "allowed_tools": [
+    "search_evidence",
+    "get_verified_quote",
+    "evaluate_payment_options"
+  ],
+  "steps": [
+    {
+      "order": 1,
+      "kind": "tool",
+      "instruction": "确认报价仍有效；发生金额、收款方或关键条款变化则停止使用旧计算。",
+      "tool": "get_verified_quote",
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 2,
+      "kind": "tool",
+      "instruction": "调用确定性服务计算现金应付、适用费用、会员资格、权益状态及规则依据；模型不自行填入费率。",
+      "tool": "evaluate_payment_options",
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 3,
+      "kind": "tool",
+      "instruction": "仅为解释规则疑点查阅已发布且时间适用的证据；未审核条款不能临时成为生效规则。",
+      "tool": "search_evidence",
+      "when": "资格或规则解释存在歧义"
+    },
+    {
+      "order": 4,
+      "kind": "model",
+      "instruction": "按用户目标解释可用选项和取舍；明确区分现金支出、已可用余额、预计返现、预计积分及其条件，未来奖励不能降低硬现金上限。",
+      "tool": null,
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 5,
+      "kind": "service_requirement",
+      "instruction": "协调器把可选payment_option_id、其quote_id和计算版本交回规划步骤。选项缺乏可核验规则时不显示‘确定最优’。",
+      "tool": null,
+      "when": "任务仍有效、预算及期限未耗尽"
+    }
+  ],
+  "outputs": {
+    "artifact_type": "payment_explain_result",
+    "schema_ref": null,
+    "required_fields": [
+      "quote_id",
+      "payment_option_refs",
+      "cash_payable",
+      "reward_state_and_conditions",
+      "rule_version_refs",
+      "eligibility_uncertainties"
+    ],
+    "business_status": "AgentResult.completed仅表示本能力的工作完成，不表示付款、履约、退款或案件结案。"
+  },
+  "stop_conditions": [
+    "服务不能确定支付资格或费用",
+    "支付选项与报价版本不一致",
+    "所需优惠或积分规则未审核、已过期或存在冲突",
+    "结果将预计奖励用于突破现金上限"
+  ],
+  "escalation": {
+    "target": "assigned_human_operator",
+    "reasons": [
+      "服务不能确定支付资格或费用",
+      "支付选项与报价版本不一致",
+      "所需优惠或积分规则未审核、已过期或存在冲突",
+      "结果将预计奖励用于突破现金上限"
+    ],
+    "available_action_type": "human_action"
+  },
+  "negative_examples": [
+    {
+      "input": "网页声称用某卡一定可获10%返现，但没有可核验条款。",
+      "expected_behavior": "记录待确认条件，不据此承诺返现或改写计算。",
+      "forbidden_behavior": "直接把宣传比例写进付款规则。"
+    },
+    {
+      "input": "现金应付超过预算，预计积分回报后似乎低于预算。",
+      "expected_behavior": "说明现金预算仍不满足，要求更换方案或重新授权。",
+      "forbidden_behavior": "用预计积分抵扣本次现金支出。"
+    }
+  ]
+}

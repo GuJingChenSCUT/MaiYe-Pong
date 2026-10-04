@@ -1,0 +1,22 @@
+{
+  "status": "draft_reference_policy_requires_server_review",
+  "authority": "Server deployment policy; never supplied by the model or user",
+  "notes": [
+    "This only limits tool exposure; current ownership, grants, input versions and business preconditions must be rechecked per call.",
+    "At human_approval, request_execution is intentionally absent. The deterministic workflow enters dispatch only after receiving a valid bound mandate.",
+    "request_stop remains available across active purchase nodes and must also have a direct trusted UI/API path independent of the model.",
+    "knowledge_candidate is phase_2 and additionally needs explicit task activation and approved data-use rights."
+  ],
+  "stages": {
+    "intent": ["create_plan_draft", "get_task_status", "request_stop"],
+    "offers": ["search_evidence", "search_catalog", "get_verified_quote", "get_task_status", "request_stop"],
+    "payment_options": ["search_evidence", "get_verified_quote", "evaluate_payment_options", "get_task_status", "request_stop"],
+    "plan": ["create_plan_draft", "request_user_approval", "get_task_status", "request_stop"],
+    "human_approval": ["get_task_status", "request_stop"],
+    "dispatch": ["request_execution", "get_task_status", "request_stop"],
+    "fulfilment": ["get_task_status", "request_stop"],
+    "seller_support": ["search_evidence", "get_verified_quote", "get_task_status", "draft_seller_response", "request_stop"],
+    "case_review": ["search_evidence", "get_task_status", "draft_case_summary", "request_stop"],
+    "knowledge_candidate": ["search_evidence", "get_reviewed_case_batch", "draft_knowledge_candidate"]
+  }
+}

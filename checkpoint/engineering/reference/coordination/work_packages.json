@@ -1,0 +1,74 @@
+[
+  {
+    "role": "product_evidence",
+    "owns": [
+      "data/",
+      "requirements/"
+    ],
+    "input": "User requirements and authoritative sources",
+    "output": "Prioritized acceptance criteria, reviewed cases and source register",
+    "depends_on": []
+  },
+  {
+    "role": "contracts_backend",
+    "owns": [
+      "contracts/",
+      "server/domain/",
+      "server/db/"
+    ],
+    "input": "Agreed business slice and authority boundaries",
+    "output": "State machines, schema, authorization, durable order/payment services",
+    "depends_on": [
+      "product_evidence"
+    ]
+  },
+  {
+    "role": "frontend",
+    "owns": [
+      "web/"
+    ],
+    "input": "Frozen API and projection contracts",
+    "output": "Buyer, seller, ops routes with independent identities and visible state",
+    "depends_on": [
+      "contracts_backend"
+    ]
+  },
+  {
+    "role": "deepseek_knowledge",
+    "owns": [
+      "server/agents/",
+      "server/knowledge/"
+    ],
+    "input": "Frozen local tool contracts, agent manifest, approved DeepSeek model profile and reviewed evidence",
+    "output": "DeepSeek verified-profile adapter, strict wire-schema adaptation, bounded tool loop, scoped retrieval and model evaluations",
+    "depends_on": [
+      "contracts_backend",
+      "product_evidence"
+    ]
+  },
+  {
+    "role": "integrations",
+    "owns": [
+      "server/connectors/"
+    ],
+    "input": "Contracts and documented provider permissions",
+    "output": "Merchant/payment adapters, signed callbacks, sandbox evidence, capability manifest",
+    "depends_on": [
+      "contracts_backend"
+    ]
+  },
+  {
+    "role": "qa_release",
+    "owns": [
+      "qa/",
+      "infra/"
+    ],
+    "input": "Acceptance matrix and built services",
+    "output": "Adversarial/concurrency/E2E evidence, deployment and recovery runbook",
+    "depends_on": [
+      "frontend",
+      "deepseek_knowledge",
+      "integrations"
+    ]
+  }
+]

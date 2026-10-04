@@ -1,0 +1,29 @@
+{
+  "name": "hacku-deepseek-integration-prep",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "DeepSeek-Flash integration preparation and Convex migration contracts",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.ts",
+    "demo": "node scripts/offline-demo.ts",
+    "smoke": "node scripts/live-smoke.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/deepseek": "3.0.58",
+    "@convex-dev/agent": "0.7.3",
+    "ai": "7.0.127",
+    "convex": "1.46.0",
+    "convex-helpers": "0.1.124",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.4",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
+  }
+}

@@ -1,0 +1,36 @@
+test_arbitrary_post_write_output_hook_failure_requires_reconcile (test_runtime.RuntimeTests.test_arbitrary_post_write_output_hook_failure_requires_reconcile) ... ok
+test_const_is_converted_and_default_is_not_sent (test_runtime.RuntimeTests.test_const_is_converted_and_default_is_not_sent) ... ok
+test_context_injection_and_local_min_length_rejected (test_runtime.RuntimeTests.test_context_injection_and_local_min_length_rejected) ... ok
+test_duplicate_call_id_rejected_across_rounds (test_runtime.RuntimeTests.test_duplicate_call_id_rejected_across_rounds) ... ok
+test_duplicate_json_keys_rejected (test_runtime.RuntimeTests.test_duplicate_json_keys_rejected) ... ok
+test_expired_task_never_contacts_model (test_runtime.RuntimeTests.test_expired_task_never_contacts_model) ... ok
+test_extra_fields_in_tool_output_never_reach_provider (test_runtime.RuntimeTests.test_extra_fields_in_tool_output_never_reach_provider) ... ok
+test_invalid_deadline_rejected_before_model_or_tool_call (test_runtime.RuntimeTests.test_invalid_deadline_rejected_before_model_or_tool_call) ... ok
+test_invalid_later_call_blocks_entire_batch (test_runtime.RuntimeTests.test_invalid_later_call_blocks_entire_batch) ... ok
+test_invalid_write_receipt_does_not_imply_no_write_happened (test_runtime.RuntimeTests.test_invalid_write_receipt_does_not_imply_no_write_happened) ... ok
+test_loop_limit_does_not_execute_unbounded_calls (test_runtime.RuntimeTests.test_loop_limit_does_not_execute_unbounded_calls) ... ok
+test_merchant_text_prompt_injection_cannot_add_tool_permission (test_runtime.RuntimeTests.test_merchant_text_prompt_injection_cannot_add_tool_permission) ... ok
+test_missing_real_service_is_closed (test_runtime.RuntimeTests.test_missing_real_service_is_closed) ... ok
+test_non_thinking_payload_and_role_filtered_tools (test_runtime.RuntimeTests.test_non_thinking_payload_and_role_filtered_tools) ... ok
+test_registry_output_contract_required (test_runtime.RuntimeTests.test_registry_output_contract_required) ... ok
+test_role_attack_cannot_invoke_known_seller_tool (test_runtime.RuntimeTests.test_role_attack_cannot_invoke_known_seller_tool) ... ok
+test_role_specific_output_contract_takes_precedence (test_runtime.RuntimeTests.test_role_specific_output_contract_takes_precedence) ... ok
+test_schema_valid_but_inconsistent_envelope_is_rejected (test_runtime.RuntimeTests.test_schema_valid_but_inconsistent_envelope_is_rejected) ... ok
+test_scope_and_stale_authorization_hooks (test_runtime.RuntimeTests.test_scope_and_stale_authorization_hooks) ... ok
+test_slow_first_read_prevents_late_second_dispatch (test_runtime.RuntimeTests.test_slow_first_read_prevents_late_second_dispatch) ... ok
+test_stale_output_is_not_forwarded (test_runtime.RuntimeTests.test_stale_output_is_not_forwarded) ... ok
+test_telemetry_failure_cannot_turn_committed_write_into_retry (test_runtime.RuntimeTests.test_telemetry_failure_cannot_turn_committed_write_into_retry) ... ok
+test_thinking_preserves_complete_messages_and_call_ids_without_audit_reasoning (test_runtime.RuntimeTests.test_thinking_preserves_complete_messages_and_call_ids_without_audit_reasoning) ... ok
+test_transport_rejects_redirect_without_network_access (test_runtime.RuntimeTests.test_transport_rejects_redirect_without_network_access) ... ok
+test_truncated_completion_never_executes_tools (test_runtime.RuntimeTests.test_truncated_completion_never_executes_tools) ... ok
+test_uncertain_workflow_outcome_requires_reconcile_no_retry (test_runtime.RuntimeTests.test_uncertain_workflow_outcome_requires_reconcile_no_retry) ... ok
+test_unknown_tool_is_never_executed (test_runtime.RuntimeTests.test_unknown_tool_is_never_executed) ... ok
+test_wire_constraints_removed_but_local_schema_remains_strong (test_runtime.RuntimeTests.test_wire_constraints_removed_but_local_schema_remains_strong) ... ok
+test_write_handoff_stops_model_loop_and_uses_server_operation_key (test_runtime.RuntimeTests.test_write_handoff_stops_model_loop_and_uses_server_operation_key) ... ok
+test_write_mixed_with_reads_rejected_before_dispatch (test_runtime.RuntimeTests.test_write_mixed_with_reads_rejected_before_dispatch) ... ok
+test_write_without_workflow_cannot_fake_success (test_runtime.RuntimeTests.test_write_without_workflow_cannot_fake_success) ... ok
+
+----------------------------------------------------------------------
+Ran 31 tests in 0.134s
+
+OK

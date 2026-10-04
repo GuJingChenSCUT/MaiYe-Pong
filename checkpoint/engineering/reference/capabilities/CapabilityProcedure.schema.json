@@ -1,0 +1,311 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hacku:capability:procedure:1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name_zh": {
+      "type": "string",
+      "minLength": 1
+    },
+    "role": {
+      "enum": [
+        "buyer_planner",
+        "offer_analyst",
+        "payment_advisor",
+        "seller_assistant",
+        "case_assistant",
+        "knowledge_curator"
+      ]
+    },
+    "phase": {
+      "enum": [
+        "phase_1",
+        "phase_2"
+      ]
+    },
+    "enabled_by_default": {
+      "type": "boolean"
+    },
+    "publication_status": {
+      "enum": [
+        "draft",
+        "published",
+        "withdrawn"
+      ]
+    },
+    "execution_mode": {
+      "enum": [
+        "normal",
+        "command_request",
+        "interrupt",
+        "offline"
+      ]
+    },
+    "workflow_nodes": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "intent",
+          "offers",
+          "payment_options",
+          "plan",
+          "human_approval",
+          "dispatch",
+          "fulfilment",
+          "seller_support",
+          "case_review",
+          "knowledge_candidate"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "objective_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "max_context_bytes": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 64000
+    },
+    "trigger": {
+      "type": "string",
+      "minLength": 1
+    },
+    "minimum_context": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "context_notes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "allowed_tools": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "order": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "kind": {
+            "enum": [
+              "model",
+              "tool",
+              "human_action",
+              "service_requirement"
+            ]
+          },
+          "instruction": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tool": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "when": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "order",
+          "kind",
+          "instruction",
+          "tool",
+          "when"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "tool"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "tool": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "tool": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "artifact_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "schema_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "required_fields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "business_status": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "artifact_type",
+        "schema_ref",
+        "required_fields",
+        "business_status"
+      ]
+    },
+    "stop_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "escalation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "available_action_type": {
+          "enum": [
+            "human_action",
+            "service_requirement"
+          ]
+        }
+      },
+      "required": [
+        "target",
+        "reasons",
+        "available_action_type"
+      ]
+    },
+    "negative_examples": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "input": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expected_behavior": {
+            "type": "string",
+            "minLength": 1
+          },
+          "forbidden_behavior": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "input",
+          "expected_behavior",
+          "forbidden_behavior"
+        ]
+      }
+    }
+  },
+  "required": [
+    "id",
+    "version",
+    "name_zh",
+    "role",
+    "phase",
+    "enabled_by_default",
+    "publication_status",
+    "execution_mode",
+    "workflow_nodes",
+    "objective_types",
+    "max_context_bytes",
+    "trigger",
+    "minimum_context",
+    "context_notes",
+    "allowed_tools",
+    "steps",
+    "outputs",
+    "stop_conditions",
+    "escalation",
+    "negative_examples"
+  ],
+  "description": "Application-defined draft capability procedure. Natural-language instructions do not enforce authorization, publishing or financial invariants."
+}

@@ -1,0 +1,45 @@
+test_all_five_tool_scopes_intersect (test_capabilities.LoaderTests.test_all_five_tool_scopes_intersect) ... ok
+test_default_disabled_requires_explicit_task_enable (test_capabilities.LoaderTests.test_default_disabled_requires_explicit_task_enable) ... ok
+test_draft_pack_needs_explicit_offline_flag (test_capabilities.LoaderTests.test_draft_pack_needs_explicit_offline_flag) ... ok
+test_expired_context_rejected (test_capabilities.LoaderTests.test_expired_context_rejected) ... ok
+test_index_procedure_version_mismatch (test_capabilities.LoaderTests.test_index_procedure_version_mismatch) ... ok
+test_manifest_tamper_detected (test_capabilities.LoaderTests.test_manifest_tamper_detected) ... ok
+test_metadata_does_not_read_procedure (test_capabilities.LoaderTests.test_metadata_does_not_read_procedure) ... ok
+test_missing_context_rejected (test_capabilities.LoaderTests.test_missing_context_rejected) ... ok
+test_nonfinite_context_rejected (test_capabilities.LoaderTests.test_nonfinite_context_rejected) ... ok
+test_nonfinite_deadline_cannot_bypass_expiration (test_capabilities.LoaderTests.test_nonfinite_deadline_cannot_bypass_expiration) ... ok
+test_oversized_context_rejected_without_truncating (test_capabilities.LoaderTests.test_oversized_context_rejected_without_truncating) ... ok
+test_pack_version_pin_required (test_capabilities.LoaderTests.test_pack_version_pin_required) ... ok
+test_procedure_tamper_detected (test_capabilities.LoaderTests.test_procedure_tamper_detected) ... ok
+test_prompt_injection_does_not_expand_tools (test_capabilities.LoaderTests.test_prompt_injection_does_not_expand_tools) ... ok
+test_remote_or_traversal_path_rejected (test_capabilities.LoaderTests.test_remote_or_traversal_path_rejected) ... ok
+test_unknown_workflow_stage_is_rejected (test_capabilities.LoaderTests.test_unknown_workflow_stage_is_rejected) ... ok
+test_unpublished_procedure_cannot_hide_in_published_manifest (test_capabilities.LoaderTests.test_unpublished_procedure_cannot_hide_in_published_manifest) ... ok
+test_wrong_objective_is_rejected (test_capabilities.LoaderTests.test_wrong_objective_is_rejected) ... ok
+test_wrong_phase_is_rejected (test_capabilities.LoaderTests.test_wrong_phase_is_rejected) ... ok
+test_wrong_role_is_hidden_and_rejected (test_capabilities.LoaderTests.test_wrong_role_is_hidden_and_rejected) ... ok
+test_wrong_stage_is_rejected (test_capabilities.LoaderTests.test_wrong_stage_is_rejected) ... ok
+test_applicable_does_not_authorize_payment (test_capabilities.RuleTests.test_applicable_does_not_authorize_payment) ... ok
+test_boolean_cannot_be_replaced_by_integer (test_capabilities.RuleTests.test_boolean_cannot_be_replaced_by_integer) ... ok
+test_conflict_does_not_pick_favorable_rule (test_capabilities.RuleTests.test_conflict_does_not_pick_favorable_rule) ... ok
+test_draft_case_cannot_become_rule (test_capabilities.RuleTests.test_draft_case_cannot_become_rule) ... ok
+test_draft_executable_rule_denied (test_capabilities.RuleTests.test_draft_executable_rule_denied) ... ok
+test_expired_rule_denied (test_capabilities.RuleTests.test_expired_rule_denied) ... ok
+test_false_eligibility_is_not_unknown (test_capabilities.RuleTests.test_false_eligibility_is_not_unknown) ... ok
+test_future_verification_denied (test_capabilities.RuleTests.test_future_verification_denied) ... ok
+test_invalid_timestamp_type_returns_safe_decision (test_capabilities.RuleTests.test_invalid_timestamp_type_returns_safe_decision) ... ok
+test_malformed_record_list_blocked (test_capabilities.RuleTests.test_malformed_record_list_blocked) ... ok
+test_no_rule_no_invention (test_capabilities.RuleTests.test_no_rule_no_invention) ... ok
+test_nonfinite_rule_parameter_blocked (test_capabilities.RuleTests.test_nonfinite_rule_parameter_blocked) ... ok
+test_preference_and_mandate_are_not_tariffs (test_capabilities.RuleTests.test_preference_and_mandate_are_not_tariffs) ... ok
+test_stale_verification_denied (test_capabilities.RuleTests.test_stale_verification_denied) ... ok
+test_synthetic_forbidden_in_live_mode (test_capabilities.RuleTests.test_synthetic_forbidden_in_live_mode) ... ok
+test_unknown_eligibility_requires_clarification (test_capabilities.RuleTests.test_unknown_eligibility_requires_clarification) ... ok
+test_unknown_release_denied (test_capabilities.RuleTests.test_unknown_release_denied) ... ok
+test_valid_plus_unknown_rule_still_requires_clarification (test_capabilities.RuleTests.test_valid_plus_unknown_rule_still_requires_clarification) ... ok
+test_wrong_currency_or_jurisdiction_not_applied (test_capabilities.RuleTests.test_wrong_currency_or_jurisdiction_not_applied) ... ok
+
+----------------------------------------------------------------------
+Ran 40 tests in 0.016s
+
+OK

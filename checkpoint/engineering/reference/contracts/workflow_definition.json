@@ -1,0 +1,122 @@
+{
+  "contract_version": "0.2.0",
+  "name": "single_merchant_purchase",
+  "scope": "Compare at least two eligible offers where available, select one merchant and one order",
+  "status": "design_only",
+  "nodes": [
+    {
+      "id": "intent",
+      "owner": "buyer_planner",
+      "kind": "agent",
+      "output": "normalized requirements or needs_human"
+    },
+    {
+      "id": "offers",
+      "owner": "offer_analyst",
+      "kind": "agent",
+      "output": "verified quote references and mismatch evidence"
+    },
+    {
+      "id": "payment_options",
+      "owner": "payment_advisor",
+      "kind": "agent",
+      "output": "ranked references to deterministic service calculations"
+    },
+    {
+      "id": "plan",
+      "owner": "buyer_planner",
+      "kind": "agent",
+      "output": "immutable draft plan"
+    },
+    {
+      "id": "human_approval",
+      "owner": "trusted_ui",
+      "kind": "human",
+      "output": "plan-bound mandate"
+    },
+    {
+      "id": "dispatch",
+      "owner": "transaction_worker",
+      "kind": "deterministic",
+      "output": "durable operation and authorized external dispatch"
+    },
+    {
+      "id": "fulfilment",
+      "owner": "merchant_business_service",
+      "kind": "deterministic",
+      "output": "order evidence and role-specific state"
+    },
+    {
+      "id": "seller_support",
+      "owner": "seller_assistant",
+      "kind": "agent",
+      "output": "seller draft; no unilateral shared-case conclusion"
+    },
+    {
+      "id": "case_review",
+      "owner": "case_assistant",
+      "kind": "agent",
+      "output": "evidence draft for human disposition"
+    },
+    {
+      "id": "knowledge_candidate",
+      "owner": "knowledge_curator",
+      "kind": "agent_phase_2_disabled",
+      "output": "unpublished candidate"
+    }
+  ],
+  "edges": [
+    [
+      "intent",
+      "offers"
+    ],
+    [
+      "offers",
+      "payment_options"
+    ],
+    [
+      "payment_options",
+      "plan"
+    ],
+    [
+      "plan",
+      "human_approval"
+    ],
+    [
+      "human_approval",
+      "dispatch"
+    ],
+    [
+      "dispatch",
+      "fulfilment"
+    ],
+    [
+      "fulfilment",
+      "seller_support"
+    ],
+    [
+      "seller_support",
+      "case_review"
+    ],
+    [
+      "case_review",
+      "knowledge_candidate"
+    ]
+  ],
+  "edge_conditions": {
+    "intent->offers": "Requirements sufficient and scoped task valid",
+    "offers->payment_options": "At least one usable quote; otherwise needs_human/no_offer",
+    "plan->human_approval": "Server validated immutable plan",
+    "human_approval->dispatch": "Active signed/bound mandate and fresh quote; never ordinary chat acceptance",
+    "fulfilment->seller_support": "Only if seller requests help or an exception exists",
+    "seller_support->case_review": "Case opened and assigned; not every order",
+    "case_review->knowledge_candidate": "Case closed, result reconciled, purpose/de-identification/rights approved; phase 2 enabled"
+  },
+  "parallelism": "Independent read queries only. Quote-dependent payment calculation follows quote resolution. Writes serialized by entity version and database constraints.",
+  "interruption": {
+    "business_stop": "Revoke mandate and prevent future dispatch commits independently of model availability",
+    "agent_cancel": "Cancel unneeded model jobs after durable business stop; cancellation does not recall prior external dispatch",
+    "unknown_payment": "Retain reservation, query/cancel/reconcile original operation; do not create a new debit"
+  },
+  "checkpoint": "Persist workflow node, version, run attempt, lease/fencing value and command result; failed model calls cannot roll back already committed business facts."
+}

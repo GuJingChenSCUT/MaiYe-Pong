@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hacku:contract:StopResult",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "mandate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mandate_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "stop_state": {
+      "enum": [
+        "stopped_before_dispatch",
+        "dispatch_already_started",
+        "payment_state_unknown",
+        "no_pending_submission"
+      ]
+    },
+    "new_submissions_disabled": {
+      "const": true
+    },
+    "next_action": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "dispatch_state": {
+            "enum": [
+              "not_dispatched",
+              "committed",
+              "sent",
+              "unknown"
+            ]
+          },
+          "provider_state": {
+            "enum": [
+              "not_submitted",
+              "pending",
+              "succeeded",
+              "failed",
+              "cancelled",
+              "unknown"
+            ]
+          }
+        },
+        "required": [
+          "operation_id",
+          "dispatch_state",
+          "provider_state"
+        ]
+      }
+    }
+  },
+  "required": [
+    "mandate_id",
+    "mandate_version",
+    "stop_state",
+    "new_submissions_disabled",
+    "next_action",
+    "operations"
+  ]
+}

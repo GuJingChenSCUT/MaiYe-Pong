@@ -1,0 +1,3483 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "HacKU three-party commerce contract",
+    "version": "0.2.0",
+    "description": "Design contract, not an implemented or deployed API. Payment provider webhook routes are provider-specific and must verify signatures and replay before durable writes. No model can approve a mandate or publish a rule."
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/intents": {
+      "post": {
+        "operationId": "createIntent",
+        "summary": "createIntent",
+        "x-authorized-roles": [
+          "buyer"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "201": {
+            "description": "Accepted or completed only according to durable server state."
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "locale": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "text",
+                  "locale"
+                ]
+              }
+            }
+          }
+        },
+        "x-principal-kinds": [
+          "human",
+          "agent"
+        ],
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential."
+      }
+    },
+    "/plans/{plan_id}": {
+      "get": {
+        "operationId": "readPlan",
+        "summary": "readPlan",
+        "x-authorized-roles": [
+          "buyer"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "200": {
+            "description": "Accepted or completed only according to durable server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plan"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "x-principal-kinds": [
+          "human",
+          "agent"
+        ],
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential."
+      }
+    },
+    "/mandates": {
+      "post": {
+        "operationId": "approveMandateFromTrustedUI",
+        "summary": "approveMandateFromTrustedUI",
+        "x-authorized-roles": [
+          "buyer"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "201": {
+            "description": "Accepted or completed only according to durable server state."
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMandate"
+              }
+            }
+          }
+        },
+        "x-principal-kinds": [
+          "human"
+        ],
+        "x-human-proof": "Single-use, short-lived challenge binds authenticated human, session, plan version/digest and complete authorization digest including expiry and limits; reject agent credentials. Consume atomically. No challenge may grant broader authority than its bound contents.",
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential.",
+        "x-agent-boundary": "Agent may only create a separately scoped draft or request human review. Explicit server authorization rejects agent credentials even if role and resource match."
+      }
+    },
+    "/mandate-challenges": {
+      "post": {
+        "operationId": "issueMandateChallenge",
+        "summary": "issueMandateChallenge",
+        "x-authorized-roles": [
+          "buyer"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "201": {
+            "description": "Accepted or completed only according to durable server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MandateChallenge"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "plan_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "plan_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "plan_digest": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "requested_expires_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "plan_id",
+                  "plan_version",
+                  "plan_digest",
+                  "requested_expires_at"
+                ]
+              }
+            }
+          }
+        },
+        "x-principal-kinds": [
+          "human"
+        ],
+        "x-human-proof": "Single-use, short-lived challenge binds authenticated human, session, plan version/digest and complete authorization digest including expiry and limits; reject agent credentials. Consume atomically. No challenge may grant broader authority than its bound contents.",
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential.",
+        "x-agent-boundary": "Agent may only create a separately scoped draft or request human review. Explicit server authorization rejects agent credentials even if role and resource match."
+      }
+    },
+    "/mandates/{mandate_id}/revocations": {
+      "post": {
+        "operationId": "revokeMandate",
+        "summary": "revokeMandate",
+        "x-authorized-roles": [
+          "buyer"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "200": {
+            "description": "Accepted or completed only according to durable server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StopResult"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "mandate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "x-monotonic-revocation": "Within owned mandate scope revoke current authority regardless of stale view version; repeated requests return latest state. StopResult covers related operations. Unknown prior operations are query/cancel only after revocation, never first-time debit resubmission even with same key.",
+        "x-principal-kinds": [
+          "human",
+          "agent"
+        ],
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential."
+      }
+    },
+    "/plans/{plan_id}/executions": {
+      "post": {
+        "operationId": "requestExecution",
+        "summary": "requestExecution",
+        "x-authorized-roles": [
+          "buyer"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "202": {
+            "description": "Accepted or completed only according to durable server state."
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecutePlan"
+              }
+            }
+          }
+        },
+        "x-principal-kinds": [
+          "human",
+          "agent"
+        ],
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential."
+      }
+    },
+    "/orders/{order_id}": {
+      "get": {
+        "operationId": "readOrder",
+        "summary": "readOrder",
+        "x-authorized-roles": [
+          "buyer",
+          "seller",
+          "ops_assigned"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "200": {
+            "description": "Accepted or completed only according to durable server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/BuyerOrderView"
+                    },
+                    {
+                      "$ref": "#/components/schemas/SellerOrderView"
+                    },
+                    {
+                      "$ref": "#/components/schemas/OpsOrderView"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "x-principal-kinds": [
+          "human",
+          "agent"
+        ],
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential.",
+        "x-output-projection": "Select exactly one role schema from server identity/assignment, construct whitelisted fields, then validate; a broad oneOf alone is not authorization."
+      }
+    },
+    "/orders/{order_id}/events": {
+      "get": {
+        "operationId": "streamAuthorizedOrderEvents",
+        "summary": "streamAuthorizedOrderEvents",
+        "x-authorized-roles": [
+          "buyer",
+          "seller",
+          "ops_assigned"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "200": {
+            "description": "SSE with event ID cursor; events are role-specific invalidation/projection signals. Reload authorized snapshot after gaps.",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          },
+          "410": {
+            "description": "Cursor expired. Fetch authorized snapshot with stream_cursor, then resume stream from that cursor."
+          }
+        },
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Last-Event-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "x-event-contract": "EventEnvelope only; no free payload. Scoped invalidation notification, then read role-specific snapshot. Recheck authorization; close stream on revoked access. Per-audience durable cursor, never assume global database ID equals commit order.",
+        "x-principal-kinds": [
+          "human",
+          "agent"
+        ],
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential."
+      }
+    },
+    "/seller/quotes/{quote_id}/confirmations": {
+      "post": {
+        "operationId": "confirmSellerQuote",
+        "summary": "confirmSellerQuote",
+        "x-authorized-roles": [
+          "seller"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "200": {
+            "description": "Accepted or completed only according to durable server state."
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "quote_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "expected_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "terms_digest": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "expected_version",
+                  "terms_digest"
+                ]
+              }
+            }
+          }
+        },
+        "x-principal-kinds": [
+          "human"
+        ],
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential.",
+        "x-agent-boundary": "Agent may only create a separately scoped draft or request human review. Explicit server authorization rejects agent credentials even if role and resource match."
+      }
+    },
+    "/seller/orders/{order_id}/fulfilments": {
+      "post": {
+        "operationId": "recordFulfilment",
+        "summary": "recordFulfilment",
+        "x-authorized-roles": [
+          "seller"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "200": {
+            "description": "Accepted or completed only according to durable server state."
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "expected_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "tracking_reference": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "expected_version",
+                  "tracking_reference"
+                ]
+              }
+            }
+          }
+        },
+        "x-principal-kinds": [
+          "human"
+        ],
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential.",
+        "x-agent-boundary": "Agent may only create a separately scoped draft or request human review. Explicit server authorization rejects agent credentials even if role and resource match."
+      }
+    },
+    "/orders/{order_id}/cases": {
+      "post": {
+        "operationId": "openCase",
+        "summary": "openCase",
+        "x-authorized-roles": [
+          "buyer",
+          "seller"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "201": {
+            "description": "Accepted or completed only according to durable server state."
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "statement": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "evidence_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "category",
+                  "statement",
+                  "evidence_ids"
+                ]
+              }
+            }
+          }
+        },
+        "x-principal-kinds": [
+          "human",
+          "agent"
+        ],
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential."
+      }
+    },
+    "/cases/{case_id}/responses": {
+      "post": {
+        "operationId": "submitCaseResponse",
+        "summary": "submitCaseResponse",
+        "x-authorized-roles": [
+          "buyer",
+          "seller"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "200": {
+            "description": "Accepted or completed only according to durable server state."
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "expected_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "statement": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "evidence_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "expected_version",
+                  "statement",
+                  "evidence_ids"
+                ]
+              }
+            }
+          }
+        },
+        "x-principal-kinds": [
+          "human"
+        ],
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential.",
+        "x-agent-boundary": "Agent may only create a separately scoped draft or request human review. Explicit server authorization rejects agent credentials even if role and resource match."
+      }
+    },
+    "/cases/{case_id}/proposals": {
+      "post": {
+        "operationId": "proposeResolution",
+        "summary": "proposeResolution",
+        "x-authorized-roles": [
+          "seller",
+          "ops_assigned"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "201": {
+            "description": "Accepted or completed only according to durable server state."
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolutionProposal"
+              }
+            }
+          }
+        },
+        "x-resolution-constraints": "Refund offers require positive amount, currency matching original payment, verified original payment reference, responsible merchant, applicable conditions and deadline. Server derives permitted acceptors and digest; client cannot nominate arbitrary acceptors or alter digest. Never execute natural-language summary.",
+        "x-principal-kinds": [
+          "human"
+        ],
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential.",
+        "x-agent-boundary": "Agent may only create a separately scoped draft or request human review. Explicit server authorization rejects agent credentials even if role and resource match."
+      }
+    },
+    "/cases/{case_id}/acceptances": {
+      "post": {
+        "operationId": "acceptResolution",
+        "summary": "acceptResolution",
+        "x-authorized-roles": [
+          "buyer",
+          "seller"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "200": {
+            "description": "Accepted or completed only according to durable server state."
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "proposal_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "proposal_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                },
+                "required": [
+                  "proposal_id",
+                  "proposal_version"
+                ]
+              }
+            }
+          }
+        },
+        "x-acceptance-constraints": "Authenticated required participant accepts current immutable proposal in this owned case; collect all required acceptances; reject stale/cross-case proposals. Acceptance does not mean refund settled.",
+        "x-principal-kinds": [
+          "human"
+        ],
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential.",
+        "x-agent-boundary": "Agent may only create a separately scoped draft or request human review. Explicit server authorization rejects agent credentials even if role and resource match.",
+        "x-human-proof": "Trusted UI human action bound to current immutable proposal digest and authenticated required party; consume any challenge once. No chat-text or model-supplied acceptance."
+      }
+    },
+    "/ops/cases/{case_id}/closures": {
+      "post": {
+        "operationId": "closeCaseWithEvidence",
+        "summary": "closeCaseWithEvidence",
+        "x-authorized-roles": [
+          "ops_assigned"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "200": {
+            "description": "Accepted or completed only according to durable server state."
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "expected_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "evidence_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "expected_version",
+                  "outcome",
+                  "evidence_ids"
+                ]
+              }
+            }
+          }
+        },
+        "x-closure-constraints": "Nonempty evidence and reviewed outcome authority required. Separate resolved_executed, withdrawn and administratively_closed_unresolved. Pending execution cannot be represented as refund succeeded. Ops cannot issue financial adjudication beyond documented authority.",
+        "x-principal-kinds": [
+          "human"
+        ],
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential.",
+        "x-agent-boundary": "Agent may only create a separately scoped draft or request human review. Explicit server authorization rejects agent credentials even if role and resource match."
+      }
+    },
+    "/ops/rule-candidates/{candidate_id}/reviews": {
+      "post": {
+        "operationId": "reviewKnowledgeCandidate",
+        "summary": "reviewKnowledgeCandidate",
+        "x-authorized-roles": [
+          "knowledge_reviewer"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "200": {
+            "description": "Accepted or completed only according to durable server state."
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "expected_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "decision": {
+                    "enum": [
+                      "reject",
+                      "approve_for_test"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "expected_version",
+                  "decision",
+                  "reason"
+                ]
+              }
+            }
+          }
+        },
+        "x-principal-kinds": [
+          "human"
+        ],
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential.",
+        "x-agent-boundary": "Agent may only create a separately scoped draft or request human review. Explicit server authorization rejects agent credentials even if role and resource match."
+      }
+    },
+    "/ops/knowledge/releases": {
+      "post": {
+        "operationId": "publishReviewedKnowledgeRelease",
+        "summary": "publishReviewedKnowledgeRelease",
+        "x-authorized-roles": [
+          "knowledge_publisher"
+        ],
+        "x-resource-authorization": "Server derives actor and tenant from authenticated session; enforce ownership and field projection on every read/write.",
+        "responses": {
+          "201": {
+            "description": "Accepted or completed only according to durable server state."
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "409": {
+            "description": "Version or state conflict"
+          },
+          "422": {
+            "description": "Schema or business constraint rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "candidate_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "evaluation_report_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "rollback_release_id": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "candidate_ids",
+                  "evaluation_report_id",
+                  "rollback_release_id"
+                ]
+              }
+            }
+          }
+        },
+        "x-separation-of-duties": "Human publisher differs from draft author and approving reviewer; verify candidate versions, scoped test report actually passed, source rights, approved state and rollback target; reject stale approvals.",
+        "x-principal-kinds": [
+          "human"
+        ],
+        "x-principal-enforcement": "Server verifies signed credential principal_kind and effective delegated scope. Authenticated human role is not inherited by an agent credential.",
+        "x-agent-boundary": "Agent may only create a separately scoped draft or request human review. Explicit server authorization rejects agent credentials even if role and resource match."
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Money": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "amount_minor": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "currency",
+          "amount_minor"
+        ]
+      },
+      "EvidenceRef": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "locator": {
+            "type": "string",
+            "minLength": 1
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "enum": [
+              "verified",
+              "reported",
+              "unverified",
+              "superseded"
+            ]
+          }
+        },
+        "required": [
+          "source_id",
+          "locator",
+          "checked_at",
+          "status"
+        ]
+      },
+      "CaseRecord": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "case_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source_group_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "canonical_url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "published_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^[0-9]{4}-[0-9]{2}(-[0-9]{2})?$"
+              },
+              "published_precision": {
+                "enum": [
+                  "day",
+                  "month",
+                  "unknown"
+                ]
+              },
+              "retrieved_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "checked_on": {
+                "type": "string",
+                "format": "date"
+              },
+              "record_kind": {
+                "enum": [
+                  "reported_complaint",
+                  "reported_complaint_summary",
+                  "reported_enforcement_case"
+                ]
+              },
+              "jurisdiction": {
+                "type": "string",
+                "minLength": 1
+              },
+              "platform_identity": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "named",
+                      "anonymous",
+                      "unknown"
+                    ]
+                  },
+                  "name": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "status",
+                  "name"
+                ]
+              },
+              "buyer_claim": {
+                "type": "string",
+                "minLength": 1
+              },
+              "seller_response": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "reported_outcome": {
+                "type": "string",
+                "minLength": 1
+              },
+              "outcome_authority": {
+                "enum": [
+                  "court",
+                  "regulator",
+                  "mediator_report",
+                  "platform_record",
+                  "party_claim",
+                  "unknown"
+                ]
+              },
+              "root_cause_hypothesis": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_limitations": {
+                "type": "string",
+                "minLength": 1
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "rights": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "basis": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "raw_redistribution": {
+                    "type": "boolean"
+                  },
+                  "external_model_use": {
+                    "enum": [
+                      "allowed",
+                      "denied",
+                      "review_required"
+                    ]
+                  }
+                },
+                "required": [
+                  "basis",
+                  "raw_redistribution",
+                  "external_model_use"
+                ]
+              },
+              "review_status": {
+                "enum": [
+                  "quarantined",
+                  "draft",
+                  "reviewed",
+                  "published",
+                  "withdrawn"
+                ]
+              },
+              "dataset_split": {
+                "enum": [
+                  "unassigned",
+                  "development",
+                  "validation",
+                  "holdout"
+                ]
+              }
+            },
+            "required": [
+              "case_id",
+              "source_group_id",
+              "canonical_url",
+              "published_at",
+              "published_precision",
+              "retrieved_at",
+              "checked_on",
+              "record_kind",
+              "jurisdiction",
+              "platform_identity",
+              "buyer_claim",
+              "seller_response",
+              "reported_outcome",
+              "outcome_authority",
+              "root_cause_hypothesis",
+              "evidence_limitations",
+              "tags",
+              "rights",
+              "review_status",
+              "dataset_split"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "case_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source_group_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "canonical_url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "published_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^[0-9]{4}-[0-9]{2}(-[0-9]{2})?$"
+              },
+              "published_precision": {
+                "enum": [
+                  "day",
+                  "month",
+                  "unknown"
+                ]
+              },
+              "retrieved_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "checked_on": {
+                "type": "string",
+                "format": "date"
+              },
+              "jurisdiction": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_limitations": {
+                "type": "string",
+                "minLength": 1
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "rights": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "basis": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "raw_redistribution": {
+                    "type": "boolean"
+                  },
+                  "external_model_use": {
+                    "enum": [
+                      "allowed",
+                      "denied",
+                      "review_required"
+                    ]
+                  }
+                },
+                "required": [
+                  "basis",
+                  "raw_redistribution",
+                  "external_model_use"
+                ]
+              },
+              "review_status": {
+                "enum": [
+                  "quarantined",
+                  "draft",
+                  "reviewed",
+                  "published",
+                  "withdrawn"
+                ]
+              },
+              "dataset_split": {
+                "enum": [
+                  "unassigned",
+                  "development",
+                  "validation",
+                  "holdout"
+                ]
+              },
+              "record_kind": {
+                "const": "research_observation"
+              },
+              "finding": {
+                "type": "string",
+                "minLength": 1
+              },
+              "study_method": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sample_description": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "case_id",
+              "source_group_id",
+              "canonical_url",
+              "published_at",
+              "published_precision",
+              "retrieved_at",
+              "checked_on",
+              "jurisdiction",
+              "evidence_limitations",
+              "tags",
+              "rights",
+              "review_status",
+              "dataset_split",
+              "record_kind",
+              "finding",
+              "study_method",
+              "sample_description"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "record_kind": {
+                "const": "operational_case"
+              },
+              "case_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "order_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "participant_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 2
+              },
+              "buyer_statement": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "seller_statement": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "visibility_scope": {
+                "type": "string",
+                "minLength": 1
+              },
+              "state": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "record_kind",
+              "case_id",
+              "order_id",
+              "participant_refs",
+              "buyer_statement",
+              "seller_statement",
+              "evidence_refs",
+              "visibility_scope",
+              "state",
+              "version"
+            ]
+          }
+        ]
+      },
+      "Plan": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "plan_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "order_scope": {
+            "const": "single_merchant_single_order"
+          },
+          "quote_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "quote_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "quote_expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cash_payable": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "amount_minor": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "currency",
+              "amount_minor"
+            ]
+          },
+          "cash_cap": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "amount_minor": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "currency",
+              "amount_minor"
+            ]
+          },
+          "payment_route_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "requirements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "required_value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "verification": {
+                  "enum": [
+                    "verified",
+                    "unverified",
+                    "rejected"
+                  ]
+                },
+                "evidence": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "source_id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "locator": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "checked_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "status": {
+                        "enum": [
+                          "verified",
+                          "reported",
+                          "unverified",
+                          "superseded"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "source_id",
+                      "locator",
+                      "checked_at",
+                      "status"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "key",
+                "required_value",
+                "verification",
+                "evidence"
+              ]
+            }
+          },
+          "benefits": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "program": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "status": {
+                  "enum": [
+                    "estimated",
+                    "eligible",
+                    "pending",
+                    "posted",
+                    "reversed",
+                    "unknown"
+                  ]
+                },
+                "value": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$"
+                        },
+                        "amount_minor": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "currency",
+                        "amount_minor"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "rule_version": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "evidence": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "source_id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "locator": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "checked_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "status": {
+                        "enum": [
+                          "verified",
+                          "reported",
+                          "unverified",
+                          "superseded"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "source_id",
+                      "locator",
+                      "checked_at",
+                      "status"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "program",
+                "status",
+                "value",
+                "rule_version",
+                "evidence"
+              ]
+            }
+          },
+          "plan_digest": {
+            "type": "string",
+            "minLength": 1
+          },
+          "eligibility_status": {
+            "enum": [
+              "ready",
+              "needs_information",
+              "ineligible"
+            ]
+          }
+        },
+        "required": [
+          "plan_id",
+          "version",
+          "order_scope",
+          "quote_id",
+          "quote_version",
+          "quote_expires_at",
+          "cash_payable",
+          "cash_cap",
+          "payment_route_id",
+          "requirements",
+          "benefits",
+          "plan_digest",
+          "eligibility_status"
+        ]
+      },
+      "CreateMandate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "plan_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "plan_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "plan_digest": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "challenge_response": {
+            "type": "string",
+            "minLength": 1
+          },
+          "challenge_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "plan_id",
+          "plan_version",
+          "plan_digest",
+          "expires_at",
+          "challenge_response",
+          "challenge_id"
+        ]
+      },
+      "ExecutePlan": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "mandate_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "plan_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "mandate_id",
+          "plan_version"
+        ]
+      },
+      "StopResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "mandate_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mandate_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "stop_state": {
+            "enum": [
+              "stopped_before_dispatch",
+              "dispatch_already_started",
+              "payment_state_unknown",
+              "no_pending_submission"
+            ]
+          },
+          "new_submissions_disabled": {
+            "const": true
+          },
+          "next_action": {
+            "type": "string",
+            "minLength": 1
+          },
+          "operations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "operation_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "dispatch_state": {
+                  "enum": [
+                    "not_dispatched",
+                    "committed",
+                    "sent",
+                    "unknown"
+                  ]
+                },
+                "provider_state": {
+                  "enum": [
+                    "not_submitted",
+                    "pending",
+                    "succeeded",
+                    "failed",
+                    "cancelled",
+                    "unknown"
+                  ]
+                }
+              },
+              "required": [
+                "operation_id",
+                "dispatch_state",
+                "provider_state"
+              ]
+            }
+          }
+        },
+        "required": [
+          "mandate_id",
+          "mandate_version",
+          "stop_state",
+          "new_submissions_disabled",
+          "next_action",
+          "operations"
+        ]
+      },
+      "EventEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "event_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "aggregate_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "aggregate_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "correlation_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "projection": {
+            "enum": [
+              "buyer",
+              "seller",
+              "ops"
+            ]
+          },
+          "refresh_required": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "event_id",
+          "event_type",
+          "aggregate_id",
+          "aggregate_version",
+          "occurred_at",
+          "correlation_id",
+          "projection",
+          "refresh_required"
+        ]
+      },
+      "ResolutionProposal": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "case_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "proposal_type": {
+            "enum": [
+              "request_evidence",
+              "merchant_refund_offer",
+              "replacement_offer",
+              "escalate"
+            ]
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "uncertainties": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "execution_terms": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "original_payment_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "refund_amount": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{3}$"
+                      },
+                      "amount_minor": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "currency",
+                      "amount_minor"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "responsible_merchant_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "return_conditions": {
+                "type": "string",
+                "minLength": 1
+              },
+              "deadline": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "original_payment_id",
+              "refund_amount",
+              "responsible_merchant_id",
+              "return_conditions",
+              "deadline"
+            ]
+          },
+          "required_acceptor_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "terms_digest": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "case_id",
+          "case_version",
+          "proposal_type",
+          "summary",
+          "evidence_ids",
+          "uncertainties",
+          "execution_terms",
+          "required_acceptor_refs",
+          "terms_digest"
+        ]
+      },
+      "RuleCandidate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "case_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "jurisdiction": {
+            "type": "string",
+            "minLength": 1
+          },
+          "applicability": {
+            "type": "string",
+            "minLength": 1
+          },
+          "proposed_text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_rule_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "rejected",
+              "approved_for_test",
+              "published",
+              "withdrawn"
+            ]
+          },
+          "reviewer_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "regression_suite_version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "candidate_id",
+          "case_ids",
+          "jurisdiction",
+          "applicability",
+          "proposed_text",
+          "source_rule_ids",
+          "status",
+          "reviewer_ids",
+          "regression_suite_version"
+        ]
+      },
+      "PublishedCaseRecord": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_group_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "canonical_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "published_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]{4}-[0-9]{2}(-[0-9]{2})?$"
+          },
+          "published_precision": {
+            "enum": [
+              "day",
+              "month",
+              "unknown"
+            ]
+          },
+          "retrieved_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "checked_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "record_kind": {
+            "enum": [
+              "reported_complaint",
+              "reported_complaint_summary",
+              "reported_enforcement_case"
+            ]
+          },
+          "jurisdiction": {
+            "type": "string",
+            "minLength": 1
+          },
+          "platform_identity": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "enum": [
+                  "named",
+                  "anonymous",
+                  "unknown"
+                ]
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "status",
+              "name"
+            ]
+          },
+          "buyer_claim": {
+            "type": "string",
+            "minLength": 1
+          },
+          "seller_response": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reported_outcome": {
+            "type": "string",
+            "minLength": 1
+          },
+          "outcome_authority": {
+            "enum": [
+              "court",
+              "regulator",
+              "mediator_report",
+              "platform_record",
+              "party_claim",
+              "unknown"
+            ]
+          },
+          "root_cause_hypothesis": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_limitations": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "rights": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "basis": {
+                "type": "string",
+                "minLength": 1
+              },
+              "raw_redistribution": {
+                "type": "boolean"
+              },
+              "external_model_use": {
+                "enum": [
+                  "allowed",
+                  "denied",
+                  "review_required"
+                ]
+              }
+            },
+            "required": [
+              "basis",
+              "raw_redistribution",
+              "external_model_use"
+            ]
+          },
+          "review_status": {
+            "enum": [
+              "quarantined",
+              "draft",
+              "reviewed",
+              "published",
+              "withdrawn"
+            ]
+          },
+          "dataset_split": {
+            "enum": [
+              "unassigned",
+              "development",
+              "validation",
+              "holdout"
+            ]
+          }
+        },
+        "required": [
+          "case_id",
+          "source_group_id",
+          "canonical_url",
+          "published_at",
+          "published_precision",
+          "retrieved_at",
+          "checked_on",
+          "record_kind",
+          "jurisdiction",
+          "platform_identity",
+          "buyer_claim",
+          "seller_response",
+          "reported_outcome",
+          "outcome_authority",
+          "root_cause_hypothesis",
+          "evidence_limitations",
+          "tags",
+          "rights",
+          "review_status",
+          "dataset_split"
+        ]
+      },
+      "ResearchObservation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_group_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "canonical_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "published_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]{4}-[0-9]{2}(-[0-9]{2})?$"
+          },
+          "published_precision": {
+            "enum": [
+              "day",
+              "month",
+              "unknown"
+            ]
+          },
+          "retrieved_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "checked_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "jurisdiction": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_limitations": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "rights": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "basis": {
+                "type": "string",
+                "minLength": 1
+              },
+              "raw_redistribution": {
+                "type": "boolean"
+              },
+              "external_model_use": {
+                "enum": [
+                  "allowed",
+                  "denied",
+                  "review_required"
+                ]
+              }
+            },
+            "required": [
+              "basis",
+              "raw_redistribution",
+              "external_model_use"
+            ]
+          },
+          "review_status": {
+            "enum": [
+              "quarantined",
+              "draft",
+              "reviewed",
+              "published",
+              "withdrawn"
+            ]
+          },
+          "dataset_split": {
+            "enum": [
+              "unassigned",
+              "development",
+              "validation",
+              "holdout"
+            ]
+          },
+          "record_kind": {
+            "const": "research_observation"
+          },
+          "finding": {
+            "type": "string",
+            "minLength": 1
+          },
+          "study_method": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sample_description": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "case_id",
+          "source_group_id",
+          "canonical_url",
+          "published_at",
+          "published_precision",
+          "retrieved_at",
+          "checked_on",
+          "jurisdiction",
+          "evidence_limitations",
+          "tags",
+          "rights",
+          "review_status",
+          "dataset_split",
+          "record_kind",
+          "finding",
+          "study_method",
+          "sample_description"
+        ]
+      },
+      "OperationalCase": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "record_kind": {
+            "const": "operational_case"
+          },
+          "case_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "participant_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 2
+          },
+          "buyer_statement": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "seller_statement": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "visibility_scope": {
+            "type": "string",
+            "minLength": 1
+          },
+          "state": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "record_kind",
+          "case_id",
+          "order_id",
+          "participant_refs",
+          "buyer_statement",
+          "seller_statement",
+          "evidence_refs",
+          "visibility_scope",
+          "state",
+          "version"
+        ]
+      },
+      "MandateChallenge": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "challenge_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "bound_plan_digest": {
+            "type": "string",
+            "minLength": 1
+          },
+          "bound_authorization_digest": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "challenge_id",
+          "expires_at",
+          "bound_plan_digest",
+          "bound_authorization_digest"
+        ]
+      },
+      "BuyerOrderView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "quote_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "order_state": {
+            "type": "string",
+            "minLength": 1
+          },
+          "payment_state": {
+            "type": "string",
+            "minLength": 1
+          },
+          "cash_payable": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "amount_minor": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "currency",
+              "amount_minor"
+            ]
+          },
+          "fulfilment_state": {
+            "type": "string",
+            "minLength": 1
+          },
+          "case_state": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stream_cursor": {
+            "type": "string",
+            "minLength": 1
+          },
+          "projection": {
+            "const": "buyer"
+          },
+          "cash_cap": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "amount_minor": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "currency",
+              "amount_minor"
+            ]
+          },
+          "mandate_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "order_id",
+          "version",
+          "quote_id",
+          "order_state",
+          "payment_state",
+          "cash_payable",
+          "fulfilment_state",
+          "case_state",
+          "stream_cursor",
+          "projection",
+          "cash_cap",
+          "mandate_id"
+        ]
+      },
+      "SellerOrderView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "quote_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "order_state": {
+            "type": "string",
+            "minLength": 1
+          },
+          "payment_state": {
+            "type": "string",
+            "minLength": 1
+          },
+          "cash_payable": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "amount_minor": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "currency",
+              "amount_minor"
+            ]
+          },
+          "fulfilment_state": {
+            "type": "string",
+            "minLength": 1
+          },
+          "case_state": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stream_cursor": {
+            "type": "string",
+            "minLength": 1
+          },
+          "projection": {
+            "const": "seller"
+          },
+          "merchant_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "order_id",
+          "version",
+          "quote_id",
+          "order_state",
+          "payment_state",
+          "cash_payable",
+          "fulfilment_state",
+          "case_state",
+          "stream_cursor",
+          "projection",
+          "merchant_id"
+        ]
+      },
+      "OpsOrderView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "quote_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "order_state": {
+            "type": "string",
+            "minLength": 1
+          },
+          "payment_state": {
+            "type": "string",
+            "minLength": 1
+          },
+          "cash_payable": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "amount_minor": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "currency",
+              "amount_minor"
+            ]
+          },
+          "fulfilment_state": {
+            "type": "string",
+            "minLength": 1
+          },
+          "case_state": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stream_cursor": {
+            "type": "string",
+            "minLength": 1
+          },
+          "projection": {
+            "const": "ops"
+          },
+          "assigned_case_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "order_id",
+          "version",
+          "quote_id",
+          "order_state",
+          "payment_state",
+          "cash_payable",
+          "fulfilment_state",
+          "case_state",
+          "stream_cursor",
+          "projection",
+          "assigned_case_id"
+        ]
+      },
+      "TaskEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "contract_version": {
+            "const": "0.2.0"
+          },
+          "task_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "run_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "parent_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "role": {
+            "enum": [
+              "buyer_planner",
+              "offer_analyst",
+              "payment_advisor",
+              "seller_assistant",
+              "case_assistant",
+              "knowledge_curator"
+            ]
+          },
+          "objective_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "principal_kind": {
+            "const": "agent"
+          },
+          "actor_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tenant_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "effective_grant_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "resource_scope": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "allowed_tools": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0
+          },
+          "input_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0
+          },
+          "input_versions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "expected_output_schema": {
+            "type": "string",
+            "minLength": 1
+          },
+          "policy_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "deadline_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "max_steps": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30
+          },
+          "token_budget": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "cancellation_epoch": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "state_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "attempt": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "lease_owner": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lease_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "contract_version",
+          "task_id",
+          "run_id",
+          "parent_run_id",
+          "role",
+          "objective_type",
+          "principal_kind",
+          "actor_id",
+          "tenant_id",
+          "effective_grant_ref",
+          "resource_scope",
+          "allowed_tools",
+          "input_refs",
+          "input_versions",
+          "expected_output_schema",
+          "policy_version",
+          "deadline_at",
+          "max_steps",
+          "token_budget",
+          "trace_id",
+          "cancellation_epoch",
+          "state_version",
+          "attempt",
+          "lease_owner",
+          "lease_until"
+        ],
+        "description": "Server-issued only. Never accept authority-bearing fields from model output. Child effective grant is the intersection of parent grant and role policy."
+      },
+      "AgentHandoff": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "contract_version": {
+            "const": "0.2.0"
+          },
+          "handoff_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "parent_task_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_run_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target_role": {
+            "enum": [
+              "buyer_planner",
+              "offer_analyst",
+              "payment_advisor",
+              "seller_assistant",
+              "case_assistant",
+              "knowledge_curator"
+            ]
+          },
+          "objective_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "input_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0
+          },
+          "observed_versions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "requested_output_schema": {
+            "type": "string",
+            "minLength": 1
+          },
+          "deadline_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "contract_version",
+          "handoff_id",
+          "parent_task_id",
+          "source_run_id",
+          "target_role",
+          "objective_type",
+          "input_refs",
+          "observed_versions",
+          "requested_output_schema",
+          "deadline_at",
+          "trace_id"
+        ],
+        "description": "A proposal to the coordinator, not delegated authority. Server checks the allowed workflow edge, authorized references, shrinking grant, resource versions and deadline before issuing TaskEnvelope."
+      },
+      "AgentResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "contract_version": {
+            "const": "0.2.0"
+          },
+          "task_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "run_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "state_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "status": {
+            "enum": [
+              "completed",
+              "needs_human",
+              "failed",
+              "cancelled",
+              "expired"
+            ]
+          },
+          "output_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "output_schema_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0
+          },
+          "uncertainties": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0
+          },
+          "observed_versions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "contract_version",
+          "task_id",
+          "run_id",
+          "state_version",
+          "status",
+          "output_ref",
+          "output_schema_version",
+          "evidence_refs",
+          "uncertainties",
+          "observed_versions",
+          "error_code",
+          "trace_id"
+        ]
+      },
+      "ModelProfile": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "profile_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "provider": {
+            "const": "deepseek"
+          },
+          "requested_model_label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "base_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "verification_status": {
+            "enum": [
+              "unverified",
+              "docs_verified",
+              "sandbox_verified",
+              "production_verified"
+            ]
+          },
+          "verified_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "doc_verified": {
+            "type": "boolean"
+          },
+          "live_verified": {
+            "type": "boolean"
+          },
+          "capabilities": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "tool_calling": {
+                "type": "boolean"
+              },
+              "strict_schema": {
+                "type": "boolean"
+              },
+              "streaming": {
+                "type": "boolean"
+              },
+              "thinking": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "tool_calling",
+              "strict_schema",
+              "streaming",
+              "thinking"
+            ]
+          },
+          "request_adapter_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "wire_schema_adapter_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "local_contract_version": {
+            "const": "0.2.0"
+          },
+          "data_policy_review_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "max_output_tokens": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "timeout_seconds": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "credential_secret_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "profile_id",
+          "provider",
+          "requested_model_label",
+          "model_id",
+          "base_url",
+          "enabled",
+          "verification_status",
+          "verified_at",
+          "doc_verified",
+          "live_verified",
+          "capabilities",
+          "request_adapter_version",
+          "wire_schema_adapter_version",
+          "local_contract_version",
+          "data_policy_review_ref",
+          "max_output_tokens",
+          "timeout_seconds",
+          "credential_secret_ref"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "enabled": {
+                  "const": true
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "model_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "doc_verified": {
+                  "const": true
+                },
+                "live_verified": {
+                  "const": true
+                },
+                "verification_status": {
+                  "enum": [
+                    "sandbox_verified",
+                    "production_verified"
+                  ]
+                },
+                "credential_secret_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "data_policy_review_ref": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "x-principal-contract": "Signed server credentials include principal_kind human/agent, actor_id, delegation_ref, scopes and task binding. Agent credentials are independently scoped and cannot call human-only endpoints even when acting for a buyer. x-* constraints are mandatory implementation requirements, not controls supplied by an OpenAPI validator.",
+  "x-runtime-contract": "AgentManifest defines six logical roles. Coordinator is deterministic. Tool schemas and outputs checked server-side; model profile migration cannot relax domain contracts."
+}

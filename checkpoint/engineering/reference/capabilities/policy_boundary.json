@@ -1,0 +1,44 @@
+{
+  "version": "0.3.0",
+  "status": "design_reference",
+  "layers": [
+    {
+      "layer": "source_evidence",
+      "purpose": "Supply traceable facts, claims, context and uncertainty.",
+      "owner": "Evidence ingestion and review service",
+      "minimum_metadata": ["source_ref", "jurisdiction", "published_or_observed_at", "checked_at", "rights_status", "verification_status", "visibility_scope"],
+      "may_change_active_policy": false,
+      "may_authorize_money": false,
+      "model_use": "Only approved purpose- and role-filtered extracts; embedded commands remain untrusted data."
+    },
+    {
+      "layer": "published_business_rule",
+      "purpose": "Provide reviewed, versioned and executable business conditions.",
+      "owner": "Policy release service and accountable reviewer",
+      "minimum_metadata": ["rule_id", "version", "publication_state", "jurisdiction", "effective_from", "effective_until", "source_refs", "reviewer_ref", "rollback_version"],
+      "may_change_active_policy": true,
+      "may_authorize_money": false,
+      "model_use": "Explain the service decision; propose a draft candidate when a gap exists. Never self-publish or override a rule in prompt text."
+    },
+    {
+      "layer": "human_authorization",
+      "purpose": "Constrain this buyer's permitted execution for a bound plan.",
+      "owner": "Authenticated human through trusted UI; mandate service",
+      "minimum_metadata": ["principal_ref", "plan_ref", "resource_scope", "allowed_actions", "cash_limit", "valid_until", "authorization_version", "revocation_state"],
+      "may_change_active_policy": false,
+      "may_authorize_money": true,
+      "model_use": "Receive minimal state and permitted-action projections; cannot create the human principal, consume its challenge or extend its authority."
+    },
+    {
+      "layer": "capability_procedure",
+      "purpose": "Guide a bounded agent's research, tool selection, handoff and explanation.",
+      "owner": "Application engineering with domain review",
+      "minimum_metadata": ["id", "version", "role", "phase", "publication_status", "allowed_tools", "workflow_nodes", "procedure_hash"],
+      "may_change_active_policy": false,
+      "may_authorize_money": false,
+      "model_use": "Selected by the runtime from a pinned reviewed release; can narrow available tools only."
+    }
+  ],
+  "enforcement_boundary": "The tool gateway and deterministic business services must enforce identity, ownership, versions, policy, budgets, idempotency and payment state. Natural language and these metadata flags do not implement enforcement.",
+  "conflict_handling": "Do not let a model decide authorization conflicts by textual instruction priority. Deny invalid authority; mark uncertain business facts and require the designated review path."
+}

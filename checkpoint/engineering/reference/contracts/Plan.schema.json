@@ -1,0 +1,256 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hacku:contract:Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "plan_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "order_scope": {
+      "const": "single_merchant_single_order"
+    },
+    "quote_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "quote_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "quote_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "cash_payable": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "amount_minor": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "currency",
+        "amount_minor"
+      ]
+    },
+    "cash_cap": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "amount_minor": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "currency",
+        "amount_minor"
+      ]
+    },
+    "payment_route_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "required_value": {
+            "type": "string",
+            "minLength": 1
+          },
+          "verification": {
+            "enum": [
+              "verified",
+              "unverified",
+              "rejected"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "source_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "locator": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "checked_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "status": {
+                  "enum": [
+                    "verified",
+                    "reported",
+                    "unverified",
+                    "superseded"
+                  ]
+                }
+              },
+              "required": [
+                "source_id",
+                "locator",
+                "checked_at",
+                "status"
+              ]
+            }
+          }
+        },
+        "required": [
+          "key",
+          "required_value",
+          "verification",
+          "evidence"
+        ]
+      }
+    },
+    "benefits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "program": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": [
+              "estimated",
+              "eligible",
+              "pending",
+              "posted",
+              "reversed",
+              "unknown"
+            ]
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "currency": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{3}$"
+                  },
+                  "amount_minor": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "currency",
+                  "amount_minor"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rule_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "source_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "locator": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "checked_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "status": {
+                  "enum": [
+                    "verified",
+                    "reported",
+                    "unverified",
+                    "superseded"
+                  ]
+                }
+              },
+              "required": [
+                "source_id",
+                "locator",
+                "checked_at",
+                "status"
+              ]
+            }
+          }
+        },
+        "required": [
+          "program",
+          "status",
+          "value",
+          "rule_version",
+          "evidence"
+        ]
+      }
+    },
+    "plan_digest": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eligibility_status": {
+      "enum": [
+        "ready",
+        "needs_information",
+        "ineligible"
+      ]
+    }
+  },
+  "required": [
+    "plan_id",
+    "version",
+    "order_scope",
+    "quote_id",
+    "quote_version",
+    "quote_expires_at",
+    "cash_payable",
+    "cash_cap",
+    "payment_route_id",
+    "requirements",
+    "benefits",
+    "plan_digest",
+    "eligibility_status"
+  ]
+}

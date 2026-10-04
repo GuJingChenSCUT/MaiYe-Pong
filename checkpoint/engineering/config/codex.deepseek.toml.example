@@ -1,0 +1,21 @@
+# Merge into a BACKUP of your own Codex config; do not replace the whole file.
+# DEEPSEEK_API_KEY comes from the engineer's secret manager / shell environment.
+# Current official integration uses Responses, not the product's Chat tool loop.
+model = "deepseek-flash"
+model_provider = "deepseek"
+model_reasoning_effort = "high"
+web_search = "disabled"
+show_raw_agent_reasoning = false
+model_catalog_json = "/ABSOLUTE/PATH/TO/deepseek-models.json"
+
+[model_providers.deepseek]
+name = "DeepSeek"
+base_url = "https://api.deepseek.com/"
+wire_api = "responses"
+env_key = "DEEPSEEK_API_KEY"
+requires_openai_auth = false
+supports_websockets = false
+
+# Desktop users: merge the official [desktop] reasoning-effort mappings into
+# any EXISTING [desktop] table if your installed version requires them.
+# Do not put experimental_bearer_token or a real key into a repository.

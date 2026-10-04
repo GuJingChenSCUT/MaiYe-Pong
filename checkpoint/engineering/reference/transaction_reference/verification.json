@@ -1,0 +1,22 @@
+{
+  "checked_at_utc": "2026-10-03T02:48:40.500928+00:00",
+  "component": "local_sqlite_transaction_reference",
+  "tests_run": 33,
+  "failures": 0,
+  "errors": 0,
+  "successful": true,
+  "external_api_calls": 0,
+  "payment_provider": "synthetic_local_simulator_only",
+  "real_payment_or_bank_sandbox_verified": false,
+  "production_identity_verified": false,
+  "production_database_verified": false,
+  "model_api_verified": false,
+  "application_end_to_end_verified": false,
+  "evidence": [
+    "independent SQLite connections race a shared cash limit",
+    "stop/dispatch race resolves to one serialized outcome",
+    "fresh Python process reconciles an accepted-but-timed-out payment",
+    "failed outbox insertion rolls back cash reservation and operation",
+    "callback and refund idempotency preserve cash and fixture reward state"
+  ]
+}

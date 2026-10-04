@@ -1,0 +1,81 @@
+买嘢帮：淘宝 + WeChat Pay HK 内部接口预留（reservation-1）
+
+状态：designed。用户当前未提供淘宝或微信 API 凭据。
+首发目标为淘宝、WeChat Pay HK 与 HKD；这不是已经获准的支付路线。
+WeChat CN/CNY 仅保留差异参考，HKD 执行策略明确阻断。
+没有官方网络客户端，没有官方沙盒调用，没有新增真实交易路由或 worker。
+所有 adapter 方法均抛 CapabilityUnavailable；填写完整字段也不会启用。
+contracts.example.json 是内部设计样例，不是任何官方 API 请求。
+
+接口边界
+1. contracts.py：不可变 DTO；Money 使用整数最小单位及显式币种。
+   SecretRef 仅接受 secret:// 不透明引用，不接收或读取真正密钥。
+2. ports.py：MerchantPort 预留报价、官方收银台交接、订单创建及原单查询。
+   PaymentPort 预留付款会话、原单查询、关闭、退款、独立原退款查询和经验证回调。
+   这些是应用内部方法名，不是淘宝或微信官方接口名。
+3. gates.py：纯预检和诊断。PreflightReport.executable 永远是 False。
+4. adapters.py：DisabledTaobaoAdapter 仅将报价数据与官方交接列入建议范围；
+   淘宝订单创建/查询权限尚未取得。DisabledWeChatAdapter 默认 wechat_hk；
+   允许显式区分 wechat_cn，但不支持将 CNY 解释为 HKD 执行。
+
+必需的可信后端输入
+AccountReservation 记录账号、平台授权及权限、商户/收款方映射版本、币种、
+证据与有效期；默认全部缺失。模型或 HTTP 请求不能自行填写这些授权记录。
+PurchaseBinding 同时绑定 tenant、用户、任务、商户、SKU、规格摘要、数量、
+香港目的地、报价 id/版本/摘要、现金金额与币种、收款方及映射版本。
+QuoteEnvelope 另需完整费用、商品、配送和售后证据，及报价有效期。
+UserAuthorization 绑定同一个 PurchaseBinding、审批事件和快照，包含显式
+capability scope、现金上限、有效期及撤销状态。字段变化必须重新确认。
+引用字符串不是证据验证器；未来实现必须从可信注册表和现有服务读取记录。
+
+报价、金额与交易状态
+金额不在此包重新计算。未来商户响应须转为现有 QuoteV1，交给
+slice04/domain.py 的证据、规格、费用和快照校验，再进入现有交易内核。
+未来积分/返现没有现金抵扣字段，不能降低当前付款预算。
+KernelCommandRef 指向现有持久化 operation、idempotency key 和 snapshot；
+新付款须已由内核取得 DISPATCH_COMMITTED 权限。此包不持有交易状态表、
+幂等缓存、预算预留或另一套内存状态机。
+UNKNOWN 不得创建新付款；query_original 使用同一个持久化原单标识。
+退款另有不可变 OriginalRefundRef：绑定原付款、独立退款 operation_id、稳定
+退款幂等键、退款金额/币种与原退款状态。query_refund_original 只查询该退款；
+退款 UNKNOWN 不重提申请，不使用付款查询代替退款查询，也不复用付款的
+operation_id/幂等键。provider_refund_ref 在超时场景可未知，未来适配器需按
+实际官方协议使用原持久化退款标识，不因此生成新退款。
+退款申请和退款查询均预留独立 RefundObservation；退款状态与原付款状态分开，
+提供方退款成功也不能自动证明用户资金已可用，funds_availability 默认 UNKNOWN。
+close/refund 也需要独立持久化命令及人的授权引用。已支付或终态原单禁止关单，
+其它关单请求还需提供方已核验的未支付状态证据；UNKNOWN 仍先查原单。
+付款结果和商户订单接受
+是两个不同字段。浏览器成功页或任意回调 JSON 都不能成为成功凭据。
+WebhookEnvelope 原样保留 raw_body 与完整 raw_headers 元组（含未来提供方要求
+的签名、证书序列号、时间戳、nonce 等），两者均不进入 repr。不得只保留一个
+签名字段或重序列化正文后验签。verify_webhook 尚无验签实现，不会输出伪造的
+verified/success 结果；具体 WeChat Pay HK 收单方及签名协议仍待提供并核验。
+
+淘宝与微信不得错误拼接
+淘宝商品数据权限不等于下单或代收权限。即使用户有自己的微信商户账号，
+也不能用本团队收款二维码/PSP 会话收取淘宝订单款项并宣称淘宝已成交。
+首阶段只能在取得能力和证据之后比较数据、交回淘宝官方收银台。
+淘宝实际支持的支付方式必须由它自己的官方结算流程及账户能力证明。
+香港微信渠道用于获准直接商户时，仍须另行核验商户/收款方/币种与授权。
+本包 official_checkout_handoff 是受 HKD 执行策略约束的交接预留。CNY 报价
+只能作为资料；若用户离开应用在淘宝自行完成 CNY 结算，应另标人工接管，
+不能冒记为本系统完成的 HKD 代理交易，也不能隐含进行汇率换算。
+
+官方交接 URL
+inspect_handoff_url 只作纯本地校验：HTTPS、无用户信息、无片段、默认 443，
+禁止控制字符/反斜线/编码主机名，并与后端审核过的精确 origin 白名单匹配。
+默认白名单为空；不按后缀、包含字符串或模型提供的域名放行。
+白名单证据需另行核实。此函数不建立网络连接、不跟随重定向，也不能证明
+页面真实性；未来实现必须独立核验官方端点及其重定向行为。
+
+模型边界
+MODEL_TOOL_CAPABILITIES 为空。当前 app/task_tools.py 的八个研究工具不变。
+模型只能提出研究信息；不得构造账号凭据、UserAuthorization、内核命令或
+调用订单、付款、退款、回调验证。BackendContext 亦须来自认证服务。
+
+测试
+python -m unittest tests.test_integration_reservations -v
+测试检查缺失/改变绑定、授权撤销过期、HKD/CNY 分离、淘宝跨平台代收阻断、
+未知费用、UNKNOWN、订单/回调不可伪造成功、URL 白名单及所有端口无网络。
+通过这些测试仅说明预留代码按设计拒绝，不能标记为外部集成通过。

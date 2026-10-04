@@ -1,0 +1,61 @@
+02 DeepSeek、Codex 与 Harness（重点）
+
+官方资料核对日：2026-10-03。URL 与固定源码提交见 data/source_index.json。
+用户称 DeepSeek-v4-flash；当前官方推荐请求名为 deepseek-flash，文档映射到 V4.1-Flash。
+原 deepseek-v4-flash 别名继续接受不表示锁定旧 V4 模型。上线需核验本账户 /models，保存请求名和返回名。
+不要把“已读文档”或 Codex 接通等同 HacKU 产品运行时已接通。
+
+A. 接入 Codex：工程师的编程工具
+1. 在独立工作目录核对 codex --version，备份自己已有的 config.toml、models.json 与相关自定义配置。
+   当前官方模型目录标明 minimal_client_version 为 0.144.0；以准备时重新取得的目录和客户端为准。
+2. 通过团队密钥管理器/会话环境提供 DEEPSEEK_API_KEY；不要粘贴到工程文档或 ChatGPT 对话。
+3. 在本包虚拟环境执行：
+   python tools/prepare_codex_catalog.py --out /ABSOLUTE/PATH/deepseek-models.json
+   此步骤只下载官方公开教程、提取 models JSON 并写来源摘要；不会编辑 ~/.codex，不调用收费模型。
+   教程格式变化时脚本失败关闭，人工核对官方代码块，不能猜造目录内容。
+4. 按 config/codex.deepseek.toml.example 合并自己的 config.toml，替换绝对目录路径。
+   核心：model=deepseek-flash；provider=deepseek；base_url=https://api.deepseek.com/；wire_api=responses。
+   使用官方 Codex 支持的 env_key；不把教程内直写 bearer token 的示范值复制进仓库。
+   本建议关闭原始思考展示；如已有 [desktop]，在同一表中合并官方 reasoning-effort 映射，不重复声明表。
+   如客户端保留旧的强制登录设定，应对照官方教程/本机版本清理冲突；本包未替你修改登录状态。
+5. 启动 Codex，在空的临时仓库要求创建一个无敏感内容的文本文件，再检查工具动作与模型/provider选择。
+   验收分开记录：客户端版本、配置（无 Key）摘要、模型目录摘要、简单回应、工具动作、失败/429处理。
+   必须实际通过后才能标 codex_verified；本次仅 config_prepared，未运行用户 Codex。
+6. 回滚：关闭会话，恢复自己的备份，移除这个测试 provider 配置或改回原 model_provider。
+   不要运行未经检查的 curl|bash / irm|iex 安装链；本交接采用可审阅的目录提取与手动配置合并。
+
+当前官方教程原生使用 Responses。无需为了这份教程另建 Chat Completions -> Responses 转换代理。
+这不代表两个 API 的载荷可以互换：产品工具回环仍按下一节独立验证。
+
+B. HacKU 产品模型运行时
+入口：tools/run_agent.py；实现：slice04/agent.py；底层沿用 reference/runtime_reference/agent_runtime.py。
+真实运行首先 GET https://api.deepseek.com/models，确认 configured model 在当前账户列表中。
+工具回环采用 Chat Completions。strict=True 使用 https://api.deepseek.com/beta；全部工具参数必填、
+additionalProperties=false，并使用支持的 JSON Schema 子集。strict 只约束参数结构，不证明事实与业务正确。
+本切片只暴露四个只读工具：list_offers / get_quote / assess_candidate / refresh_quote。
+流程：比较 A/B -> 记录初选 -> 刷新 -> 模型收到新事实 -> 补查/改选或停止 -> 后端独立验证最终结果。
+本地计算全部 HKD 分；总费用未知、资格未定、证据失配、无执行权限时不生成可执行快照。
+思考模式工具回环保留 API 所需 reasoning_content；审计保存工具、版本、决定码、用量与延迟，
+不保存或展示私有思考过程。本次 live 缺 Key，运行状态见 evidence/agent_live_status.json。
+
+运行限制：最多12轮、16次工具、每轮4次、单次输出2048 token、整体时间目标180秒。
+这是保护阈值，不是总 token 或金额的严格封顶；上下文输入和在途网络请求仍有成本/延迟。
+上线须增加账户额度、每任务费用预算、输入长度限制、用户取消与超时传播，并验证重试不会重复付款。
+transport 可以有限重试模型请求；任何业务付款重试只由交易 worker 的原单恢复状态机负责。
+替换真实商户 adapter 后，仍需另做端到端验收。真模型+合成工具只证明模型工具调用与行为改变。
+
+C. Harness：隔离的开发/评估选项
+官方 quickstart 从当前目录启动工作区，配置模型后再执行开发任务。可以评估开发效率，
+不能把它直接当消费者付款系统。SAFETY.zh.md 明确实验性质，未审计、非生产用途。
+本次研究固定提交：da00f7f5358f2949383b35c14f548bc20187d80c，MIT。
+仓库 package.json 当时声明 Node ^22.19.0 或 >=24，pnpm 11.7.0；root 版本0.2.0-rc.2，
+不把 root 版本擅自当作 npm 发布版本。采用源码时固定提交，按仓库当前说明安装及运行。
+在无真实客户数据、无 PSP 凭证的独立目录运行，绑定127.0.0.1；审查命令、插件及文件访问。
+需要上线的能力优先迁入自己的窄工具接口和可测业务服务。引入 Harness 不是本期付款闭环的前置条件。
+
+D. 常见误判
+- Codex 会写代码 != 产品已经具有真实 Agent 决策和交易恢复能力。
+- 模型别名调用成功 != 实际用了原始 V4 版本，须看返回与当前账户模型信息。
+- strict 接受参数 != SKU/资格/付款正确，须经过服务门禁。
+- HTTP 超时 != 支付失败；严禁因为模型说“再试一次”就创建新付款。
+- 完成一次 smoke != 通过行为评估；同一场景多次真实运行，失败也计入分母。

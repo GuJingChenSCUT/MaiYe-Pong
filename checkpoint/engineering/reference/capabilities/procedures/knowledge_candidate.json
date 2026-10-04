@@ -1,0 +1,109 @@
+{
+  "id": "knowledge_candidate",
+  "version": "0.3.0",
+  "name_zh": "结案经验候选整理",
+  "role": "knowledge_curator",
+  "phase": "phase_2",
+  "enabled_by_default": false,
+  "publication_status": "draft",
+  "execution_mode": "offline",
+  "workflow_nodes": [
+    "knowledge_candidate"
+  ],
+  "objective_types": [
+    "draft_reviewed_learning_candidate"
+  ],
+  "max_context_bytes": 24000,
+  "trigger": "第二阶段明确启用，结案与对账完成，材料已脱敏且获准外部模型使用，由受控离线任务启动。",
+  "minimum_context": [
+    "approved_batch_request",
+    "knowledge_release_ref"
+  ],
+  "context_notes": [
+    "approved_batch_request由服务创建，含获准地区、目的和批次范围；不能据此自行开启phase_2。",
+    "knowledge_release_ref是当前知识版本引用。案例内容从get_reviewed_case_batch取得，不能要求先把整批案例提供给读取工具的调用者。"
+  ],
+  "allowed_tools": [
+    "search_evidence",
+    "get_reviewed_case_batch",
+    "draft_knowledge_candidate"
+  ],
+  "steps": [
+    {
+      "order": 1,
+      "kind": "tool",
+      "instruction": "只读取服务提供的审核批次；无许可、未脱敏、未结案或尚有未知支付结果的材料不能进入批次。",
+      "tool": "get_reviewed_case_batch",
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 2,
+      "kind": "tool",
+      "instruction": "检查既有发布资料，识别重复、时间和地域差异，不能让单一案例覆盖通用规则。",
+      "tool": "search_evidence",
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 3,
+      "kind": "model",
+      "instruction": "提炼可复用的问题模式、例外、证据和局限；分开事实经验与拟议政策。",
+      "tool": null,
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 4,
+      "kind": "tool",
+      "instruction": "保存non-published候选，列出source_case_ids、证据和不确定性；publication_permitted必须为false。",
+      "tool": "draft_knowledge_candidate",
+      "when": "任务仍有效、预算及期限未耗尽"
+    },
+    {
+      "order": 5,
+      "kind": "service_requirement",
+      "instruction": "候选经人工内容与权利审核、独立评测、版本发布审批后方可进入生产检索；规则更改另走发布流程并具备回滚。",
+      "tool": null,
+      "when": "任务仍有效、预算及期限未耗尽"
+    }
+  ],
+  "outputs": {
+    "artifact_type": "knowledge_candidate_result",
+    "schema_ref": null,
+    "required_fields": [
+      "candidate_id",
+      "state=draft",
+      "source_case_ids",
+      "evidence_refs",
+      "uncertainties",
+      "publication_permitted=false"
+    ],
+    "business_status": "AgentResult.completed仅表示本能力的工作完成，不表示付款、履约、退款或案件结案。"
+  },
+  "stop_conditions": [
+    "phase_2未启用",
+    "外部模型使用未获批准",
+    "批次包含未核实结果或敏感原文",
+    "候选试图直接修改生产规则或模型权重"
+  ],
+  "escalation": {
+    "target": "knowledge_and_policy_reviewer",
+    "reasons": [
+      "phase_2未启用",
+      "外部模型使用未获批准",
+      "批次包含未核实结果或敏感原文",
+      "候选试图直接修改生产规则或模型权重"
+    ],
+    "available_action_type": "human_action"
+  },
+  "negative_examples": [
+    {
+      "input": "运营人员说把这次全部聊天记录直接记住，以后自动退款。",
+      "expected_behavior": "要求获准的脱敏审核批次，只提交候选。",
+      "forbidden_behavior": "将聊天加入生产知识库或修改退款策略。"
+    },
+    {
+      "input": "phase_1运行中模型认为自己需要学习。",
+      "expected_behavior": "拒绝启动默认关闭的curator能力。",
+      "forbidden_behavior": "自主启用phase_2或给自己新增工具。"
+    }
+  ]
+}

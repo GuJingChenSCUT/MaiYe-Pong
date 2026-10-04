@@ -1,0 +1,89 @@
+{
+  "checked_at": "2026-10-03T02:48:40.249778+00:00",
+  "status": "passed",
+  "unit_tests_run": 31,
+  "failures": 0,
+  "errors": 0,
+  "checks": [
+    {
+      "command": "python3 check_registry.py",
+      "exit_code": 0,
+      "result": {
+        "status": "passed",
+        "tool_count": 13,
+        "role_count": 6,
+        "role_tools": {
+          "buyer_planner": [
+            "create_plan_draft",
+            "request_user_approval",
+            "request_execution",
+            "get_task_status",
+            "request_stop"
+          ],
+          "case_assistant": [
+            "search_evidence",
+            "get_task_status",
+            "draft_case_summary"
+          ],
+          "knowledge_curator": [
+            "search_evidence",
+            "get_reviewed_case_batch",
+            "draft_knowledge_candidate"
+          ],
+          "offer_analyst": [
+            "search_evidence",
+            "search_catalog",
+            "get_verified_quote"
+          ],
+          "payment_advisor": [
+            "search_evidence",
+            "get_verified_quote",
+            "evaluate_payment_options"
+          ],
+          "seller_assistant": [
+            "search_evidence",
+            "get_verified_quote",
+            "get_task_status",
+            "draft_seller_response"
+          ]
+        },
+        "live_provider_schema_acceptance": "not_tested",
+        "business_services": "not_implemented"
+      }
+    },
+    {
+      "command": "python3 smoke_probe.py",
+      "exit_code": 0,
+      "result": {
+        "status": "passed",
+        "mode": "offline",
+        "thinking": false,
+        "model": "deepseek-flash",
+        "executed_tool": "read_public_probe",
+        "read_count": 1,
+        "real_business_integration": false
+      }
+    },
+    {
+      "command": "python3 smoke_probe.py --thinking",
+      "exit_code": 0,
+      "result": {
+        "status": "passed",
+        "mode": "offline",
+        "thinking": true,
+        "model": "deepseek-flash",
+        "executed_tool": "read_public_probe",
+        "read_count": 1,
+        "real_business_integration": false
+      }
+    }
+  ],
+  "sha256": {
+    "runtime_reference/agent_runtime.py": "30d172fc0d24d94d6bfa07bc80b7b6fda6da437ccfb0d38d47225008480a66f5",
+    "runtime_reference/tests/test_runtime.py": "9cceff82993d75bbe4b4f58d2cda959a314019e8ed8b6ceb963502f37ff06d85",
+    "contracts/tool_registry.json": "34c992e0ca404c5024e5b97629a3ae107a9516a41e299167bd59af179349233a"
+  },
+  "live_api_calls": 0,
+  "real_payments": 0,
+  "scope": "Reference runtime only; no production identity, workflow or payment implementation."
+}

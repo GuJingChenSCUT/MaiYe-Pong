@@ -1,0 +1,8 @@
+test_direct_human_stop_after_agent_handoff_prevents_simulated_debit (test_reference_composition.ReferenceCompositionTests.test_direct_human_stop_after_agent_handoff_prevents_simulated_debit) ... ok
+test_loaded_capability_tool_call_reaches_persistent_queue_and_settlement (test_reference_composition.ReferenceCompositionTests.test_loaded_capability_tool_call_reaches_persistent_queue_and_settlement) ... ok
+test_unknown_result_reopens_both_databases_and_only_queries_original (test_reference_composition.ReferenceCompositionTests.test_unknown_result_reopens_both_databases_and_only_queries_original) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.041s
+
+OK

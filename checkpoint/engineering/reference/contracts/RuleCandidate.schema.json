@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hacku:contract:RuleCandidate",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "case_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "jurisdiction": {
+      "type": "string",
+      "minLength": 1
+    },
+    "applicability": {
+      "type": "string",
+      "minLength": 1
+    },
+    "proposed_text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_rule_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "rejected",
+        "approved_for_test",
+        "published",
+        "withdrawn"
+      ]
+    },
+    "reviewer_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "regression_suite_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "candidate_id",
+    "case_ids",
+    "jurisdiction",
+    "applicability",
+    "proposed_text",
+    "source_rule_ids",
+    "status",
+    "reviewer_ids",
+    "regression_suite_version"
+  ]
+}

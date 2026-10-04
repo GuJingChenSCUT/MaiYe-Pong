@@ -1,0 +1,4 @@
+# Stop 1 HTTP, sessions, SQLite and research worker use Python standard library.
+# Existing schema/reference validation dependencies:
+jsonschema==4.26.0
+openapi-spec-validator==0.9.0

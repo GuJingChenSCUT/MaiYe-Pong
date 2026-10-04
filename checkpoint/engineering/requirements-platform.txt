@@ -1,0 +1,4 @@
+# Optional OFFLINE platform request-preparation/signature tests only.
+# Stable release verified against https://pypi.org/project/cryptography/ on 2026-10-04.
+# This does not grant an account, install a transport, or enable any application route.
+cryptography==50.0.2

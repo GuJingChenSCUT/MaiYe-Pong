@@ -1,0 +1,68 @@
+# 香港消费案例种子：来源与编码说明
+
+核验日：2026-10-02（Asia/Hong_Kong）。文件：case_seeds.jsonl。
+
+这是一批已对照消委会官方网页核验的 **18 条研究种子**，来自 **7 个来源群组**；不是已经建成的大规模知识库、全港代表性样本或访谈结果。只核验“官方来源如何报道”，未取得当事人的订单、聊天、系统日志、银行流水或法院判词。本轮没有联系消费者、商户或平台。
+
+## 数量与统计单位
+
+- 13 条较完整投诉报道、1 条投诉简述、1 条执法案件报道、3 条研究观察。
+- 研究观察不能计为受害人数或投诉宗数；不与投诉案例一起计算解决率。
+- 同一事件的新闻稿、杂志页面、乐龄页面是同源版本，不新增案例。
+- CC598 的三个受害人属于一个执法案件组，只计一条。
+- 同篇的不同消费者事件分别计案例，但共享 source_group_id；不称为统计独立样本。
+- 同一研究中的麻油在两家超市的例子合并；钱包条款比较也没有按钱包数拆成数条“损失”。
+- published_at 是刊登日，不是交易日。只能确认月份的使用 YYYY-MM，并以 published_at_precision 标记。
+- observed_period_if_known 为 null 表示原文没有足够日期。雪柜与洗衣机案的月日保留，年份不推测。
+- 本批覆盖刊登于2024—2026年的资料，部分交易发生于2024年；不是这三年全部案例的系统抽样。
+
+## 来源登记
+
+| 来源群组 | 纳入条目 | 刊登日期 | 官方主来源 |
+|---|---|---|---|
+| CC586_LOGISTICS_2025 | HKCC-586-01/02/03 | 2025-08-14 | https://www.consumer.org.hk/tc/press-release/p-586-logistic-service-online-shopping |
+| CC598_APPLIANCES_2026 | HKCC-598-01/02/03 | 2026-08-18 | https://www.consumer.org.hk/tc/press-release/p-598-electrical-appliance-complaints |
+| CC588_CROSSBORDER_2025 | HKCC-588-01/02/03 | 2025-10-15 | https://www.consumer.org.hk/tc/press-release/p-588-international-consumer-dispute-referral-cases |
+| CC584_FOOD_2025 | HKCC-584-01/02/03 | 2025-06-16 | https://www.consumer.org.hk/tc/press-release/p-584-food-delivery-platform-complaints |
+| CC599_PRICES_2026 | HKCC-599-R01/R02 | 2026-09-14 | https://www.consumer.org.hk/tc/press-release/p-599-online-supermarket-price-survey |
+| CC594_WALLETS_2026 | HKCC-594-01/R01 | 2026-04（月） | https://www.consumer.org.hk/tc/article/594-digital-wallets/594-digital-wallets-merchant-payment |
+| CC576_QR_2024 | HKCC-576-01/02 | 2024-10（月） | https://www.consumer.org.hk/tc/article/576-safety-tips-for-scanning-qr-code/576-safety-tips-for-scanning-qr-code-safety-risks |
+
+辅助核对网页（不增加案例数）：
+
+- 物流详细案例：https://www.consumer.org.hk/tc/article/586-logistic-service-online-shopping/586-logistic-service-online-shopping-case
+- 家电详细案例：https://www.consumer.org.hk/tc/article/598-electrical-appliance-complaints/598-electrical-appliance-complaints-case
+- 跨境详细案例：https://www.consumer.org.hk/tc/article/588-international-consumer-dispute-referral-cases/588-international-consumer-dispute-referral-cases-cases
+- 价格研究范围与限制：https://www.consumer.org.hk/tc/article/599-online-supermarket-price-survey/599-online-supermarket-price-survey-overview
+- 钱包调查方法：https://www.consumer.org.hk/tc/article/594-digital-wallets/594-digital-wallets-study-overview
+- 钱包刊期：https://www.consumer.org.hk/tc/issue/594
+- 二维码刊期：https://www.consumer.org.hk/tc/issue/576
+
+价格研究为3间超市、222件商品、2025年9月至2026年7月的选定样本；不覆盖所有商户，也不能证明任何消费者真的多花了钱。钱包研究在2026年1月至3月初取得资料，针对已认证成人账户；刊登时的条款不能当成2026年10月现行条款。
+
+## 双方陈述与不确定性
+
+buyer_claim 记录报道中的投诉人观点；merchant_response_if_reported 只记录确有披露的回应。null 不是商户承认，也不代表商户拒绝回应。reported_outcome 区分确认退款、同意安排退款、和解、未解决与转介。root_cause_hypothesis 一律是研究者待检验的解释，不是官方认定的技术根因或法律责任。
+
+保留以下反例，避免知识库只训练“消费者永远正确／一律退款”：
+
+- HKCC-584-02：商户主张已耗用食材，争议没有调停成功。
+- HKCC-588-03：规格未书面确认；商户已提供度尺设计服务，双方最终接受部分退订金。
+- HKCC-576-01：原因不明且仅转介，不能标成已证实诈骗。
+- HKCC-576-02：消费者最终取票，但具体恢复机制未知。
+- HKCC-598-03：执法结果不代表货款已经追回。
+
+匿名A/B/C/D只在各自文章内有效，跨篇字母相同不代表同一公司。不得据商户类型、物流地点、优惠形式或写作顺序反推淘宝、HKTVmall、外卖平台或银行身份。具名钱包条款研究须与匿名投诉分开。
+
+## 地域与范围边界
+
+jurisdiction 是报道关联地区，不是法律适用结论。新加坡消费者向香港商户购买的保用案不能直接计入“香港居民受害案例”。租车与缴税属于相邻服务／支付场景，已在 tags 和限制中标记，检索“商品购物”时可排除。
+
+## 使用与扩充
+
+本批适合构造失败机制目录、检索演示、标注指南及需要再核验的问题，不能据其估算市场规模、发生率、用户付费意愿或Agent效果。后续扩充应增加具名商户公开回应、正常履约对照、真实交易数据及不同来源，而非只增加同一机构的精选投诉。
+
+建议去重键：source_group_id + 原文个案编号 + 事件签名（商品/服务、金额、事件序列、已知时间）。对新增转载先判同源；对同一纠纷更新 outcome 保留版本，不新增受害记录。
+
+数据仅保存简短释义与来源指针，未复制全文、图片或截图。若建立生产检索库，应另行核查网站授权、引用与抓取条款；当前文件不授予批量转载权。
+

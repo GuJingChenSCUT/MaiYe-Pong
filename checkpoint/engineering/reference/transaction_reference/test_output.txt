@@ -1,0 +1,38 @@
+test_adapter_accepts_finite_float_epoch_and_rejects_expired (test_kernel.KernelTests.test_adapter_accepts_finite_float_epoch_and_rejects_expired) ... ok
+test_adapter_context_expiry_rejects_nonfinite_and_wrong_types (test_kernel.KernelTests.test_adapter_context_expiry_rejects_nonfinite_and_wrong_types) ... ok
+test_after_claim_stop_reports_inflight_payment_can_complete (test_kernel.KernelTests.test_after_claim_stop_reports_inflight_payment_can_complete) ... ok
+test_approval_binds_merchant_digest_version_currency (test_kernel.KernelTests.test_approval_binds_merchant_digest_version_currency) ... ok
+test_atomic_rollback_when_outbox_write_fails (test_kernel.KernelTests.test_atomic_rollback_when_outbox_write_fails) ... ok
+test_conflicting_callback_alerts_and_cannot_change_money (test_kernel.KernelTests.test_conflicting_callback_alerts_and_cannot_change_money) ... ok
+test_cross_tenant_and_out_of_scope_denied (test_kernel.KernelTests.test_cross_tenant_and_out_of_scope_denied) ... ok
+test_decline_releases_budget (test_kernel.KernelTests.test_decline_releases_budget) ... ok
+test_duplicate_callback_and_new_id_duplicate_fact_no_double_spend (test_kernel.KernelTests.test_duplicate_callback_and_new_id_duplicate_fact_no_double_spend) ... ok
+test_expired_mandate_and_stale_authorization_version (test_kernel.KernelTests.test_expired_mandate_and_stale_authorization_version) ... ok
+test_expiry_between_enqueue_and_dispatch_blocks (test_kernel.KernelTests.test_expiry_between_enqueue_and_dispatch_blocks) ... ok
+test_human_approval_cannot_be_given_by_agent (test_kernel.KernelTests.test_human_approval_cannot_be_given_by_agent) ... ok
+test_immutable_plan_database_trigger (test_kernel.KernelTests.test_immutable_plan_database_trigger) ... ok
+test_minimal_runtime_adapter_uses_only_plan_id (test_kernel.KernelTests.test_minimal_runtime_adapter_uses_only_plan_id) ... ok
+test_missing_provider_record_does_not_release_or_resubmit (test_kernel.KernelTests.test_missing_provider_record_does_not_release_or_resubmit) ... ok
+test_money_rejects_float_and_boolean (test_kernel.KernelTests.test_money_rejects_float_and_boolean) ... ok
+test_new_key_same_plan_rejected (test_kernel.KernelTests.test_new_key_same_plan_rejected) ... ok
+test_no_approval_no_execution (test_kernel.KernelTests.test_no_approval_no_execution) ... ok
+test_principal_expiry_rejects_nonfinite_and_wrong_types (test_kernel.KernelTests.test_principal_expiry_rejects_nonfinite_and_wrong_types) ... ok
+test_refund_cannot_change_original_ref_or_amount (test_kernel.KernelTests.test_refund_cannot_change_original_ref_or_amount) ... ok
+test_refund_original_payment_and_reward_reversal_idempotent (test_kernel.KernelTests.test_refund_original_payment_and_reward_reversal_idempotent) ... ok
+test_restart_new_process_queries_original_payment (test_kernel.KernelTests.test_restart_new_process_queries_original_payment) ... ok
+test_same_command_key_idempotent (test_kernel.KernelTests.test_same_command_key_idempotent) ... ok
+test_same_key_different_plan_rejected (test_kernel.KernelTests.test_same_key_different_plan_rejected) ... ok
+test_stop_before_dispatch_releases_budget (test_kernel.KernelTests.test_stop_before_dispatch_releases_budget) ... ok
+test_stop_before_enqueue_prevents_first_debit (test_kernel.KernelTests.test_stop_before_enqueue_prevents_first_debit) ... ok
+test_success_reserves_then_settles_exact_cash (test_kernel.KernelTests.test_success_reserves_then_settles_exact_cash) ... ok
+test_total_cash_includes_fixture_additional_amount (test_kernel.KernelTests.test_total_cash_includes_fixture_additional_amount) ... ok
+test_two_connections_race_budget_only_one_succeeds (test_kernel.KernelTests.test_two_connections_race_budget_only_one_succeeds) ... ok
+test_two_connections_stop_and_dispatch_are_serialized (test_kernel.KernelTests.test_two_connections_stop_and_dispatch_are_serialized) ... ok
+test_unknown_keeps_reservation_no_new_key_and_reconcile_after_revoke (test_kernel.KernelTests.test_unknown_keeps_reservation_no_new_key_and_reconcile_after_revoke) ... ok
+test_wrong_callback_signature_amount_and_payee_rejected (test_kernel.KernelTests.test_wrong_callback_signature_amount_and_payee_rejected) ... ok
+test_wrong_role_and_human_cannot_call_agent_port (test_kernel.KernelTests.test_wrong_role_and_human_cannot_call_agent_port) ... ok
+
+----------------------------------------------------------------------
+Ran 33 tests in 0.100s
+
+OK

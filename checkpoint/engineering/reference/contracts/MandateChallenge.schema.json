@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hacku:contract:MandateChallenge",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "challenge_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "bound_plan_digest": {
+      "type": "string",
+      "minLength": 1
+    },
+    "bound_authorization_digest": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "challenge_id",
+    "expires_at",
+    "bound_plan_digest",
+    "bound_authorization_digest"
+  ]
+}

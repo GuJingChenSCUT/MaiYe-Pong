@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#2456e8">
+  <title>買嘢幫 · 香港受控購物代理</title>
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body data-view="entry" data-role="guest">
+  <a class="skip-link" href="#main">跳至主要內容</a>
+  <div class="app-shell">
+  <div class="workbench">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="買嘢幫購物交託首頁"><img class="brand-logo" src="/assets/maiyepong-logo-v2.png" alt="MaiYePong — Your Shopping, Your Say." width="2172" height="724"><span class="brand-chinese">買嘢幫</span></a>
+    <div class="header-right"><label class="sr-only" for="theme-select">外觀模式</label><select id="theme-select" class="theme-select" aria-label="外觀模式"><option value="system">跟隨系統</option><option value="light">淺色模式</option><option value="dark">深色模式</option></select><details id="preview-details" class="preview-details"><summary aria-label="查看預覽模式說明">預覽</summary><section id="environment-strip" class="environment-strip" aria-label="目前驗證環境"><strong>本地預覽</strong><p>商品為演練資料，付款僅本地模擬。沒有真實下單或扣款。</p><span id="model-badge" class="badge">模型狀態待確認</span></section></details><button id="compose-button" class="button button-secondary compose-button" type="button" hidden>＋ 新委託</button><button id="logout-button" class="text-button" type="button" hidden>登出</button></div>
+  </header>
+
+  <main id="main" class="page-shell">
+    <div id="welcome-panel" hidden><h1 id="page-title">買嘢幫</h1><span id="welcome-title"></span></div>
+
+    <div id="notice" class="notice" role="status" hidden></div>
+    <div id="connection-status" class="connection-status" role="status" hidden></div>
+    <div id="service-health" class="notice is-error" role="alert" hidden></div>
+
+    <section id="login-panel" class="panel login-panel" aria-labelledby="login-title" hidden>
+      <div><h2 id="login-title">登入買嘢幫</h2><p class="muted">登入後，開始你的購物委託。</p></div><div id="social-login-options" class="social-login-options"></div><p id="social-login-note" class="field-help" hidden></p>
+      <div class="login-divider"><span>或者</span></div>
+      <form id="login-form"><label for="access-code">存取碼</label><div class="login-code-fields"><input id="access-code" name="access_code" type="password" autocomplete="current-password" required placeholder="輸入你的存取碼"><button class="button button-primary" type="submit">登入</button></div><p id="login-feedback" class="field-help" role="status"></p></form>
+    </section>
+
+    <div id="workspace" class="workspace" hidden>
+      <aside class="sidebar" aria-label="任務導覽">
+        <details id="history-details" class="history-details"><summary><span id="identity-label">我的任務</span><span class="history-caption">查看過往委託</span></summary><div class="history-body">
+        <div class="sidebar-heading"><span>過往委託</span><button id="new-task-button" class="icon-button" type="button" aria-label="建立新任務">＋</button></div>
+        <button id="refresh-list-button" class="text-button small" type="button">重新整理任務</button>
+        <nav id="task-list" class="task-list" aria-label="已儲存的任務"></nav>
+        </div></details>
+      </aside>
+
+      <div class="main-column">
+        <section id="new-task-panel" class="panel composer-panel" aria-labelledby="new-task-title">
+          <div class="section-heading"><div><h2 id="new-task-title">想買甚麼？</h2><p class="composer-help">說清楚商品、預算和送貨要求。</p></div></div>
+          <form id="task-form">
+            <div class="prompt-canvas"><label for="task-text" class="sr-only">用你的話告訴我們購物需要</label><textarea id="task-text" rows="4" name="text" required maxlength="3000" placeholder="想買甚麼、預算幾多？&#10;例如：想補購洗衣液，HK$150 以內，送到觀塘。"></textarea><div class="composer-footer"><span id="composer-model-label" class="composer-model-label">模式待確認</span><button class="button button-primary" id="create-task-button" type="submit">幫我看看 <span aria-hidden="true">↗</span></button></div></div>
+            
+            <details id="purchase-details" class="detail-section"><summary>購買條件 <span>選填</span></summary>
+            <div class="form-grid">
+              <div><label for="purchase-quantity">購買數量 <span>幾件包裝</span></label><input id="purchase-quantity" type="number" inputmode="numeric" min="1" max="100" step="1" placeholder="例如 2"></div>
+              <div><label for="cash-cap">最高現金支出 <span>HK$，含運費</span></label><input id="cash-cap" type="number" inputmode="decimal" min="0.01" max="100000" step="0.01" placeholder="例如 150.00"></div>
+              <div><label for="destination">香港收貨地點</label><input id="destination" type="text" maxlength="180" placeholder="例如：九龍觀塘（演練請勿填真實門牌）"></div>
+              <div><label for="preference">符合條件後，最重視</label><select id="preference"><option value="lowest_cost">現金支出較低</option><option value="fastest_delivery">較早送達</option><option value="easiest_returns">退貨較方便</option></select></div>
+            </div>
+            <div class="form-grid"><div><label for="require-returns">無理由退貨要求</label><select id="require-returns"><option value="false">不作硬性要求，仍需核對售後</option><option value="true">必須支援無理由退貨</option></select></div><div><label for="delivery-deadline">最遲送達時間 <span>香港時間，選填</span></label><input id="delivery-deadline" type="datetime-local"></div></div><details class="detail-section"><summary>補充商品規格 <span>未填清楚的地方，會再問你</span></summary><div class="form-grid three-column">
+              <div><label for="product-brand">品牌</label><input id="product-brand" type="text" maxlength="100" placeholder="商品品牌"></div>
+              <div><label for="product-variant">款式／型號</label><input id="product-variant" type="text" maxlength="140" placeholder="完整款式或型號"></div>
+              <div><label for="net-content">每件淨含量</label><input id="net-content" type="number" min="1" step="1" placeholder="例如 500"></div>
+              <div><label for="content-unit">淨含量單位</label><select id="content-unit"><option value="">請選擇</option><option value="g">克（g）</option><option value="ml">毫升（ml）</option><option value="item">個（item）</option></select></div>
+              <div><label for="pack-count">每件包裝內數量</label><input id="pack-count" type="number" min="1" step="1" placeholder="例如 1"></div>
+              <div><label for="product-packaging">包裝形式</label><input id="product-packaging" type="text" maxlength="100" placeholder="例如：瓶裝"></div>
+              <div><label for="product-origin">產地要求</label><input id="product-origin" type="text" maxlength="100" placeholder="例如：香港；不限請填不限"></div>
+              <div><label for="region-version">商品地區版本</label><input id="region-version" type="text" maxlength="100" placeholder="例如：香港版"></div>
+            </div></details></details>
+            <details id="advanced-options" class="detail-section advanced-options"><summary>進階設定</summary>
+            <p id="composer-mode-note" class="field-help composer-mode-note">先整理需求與比較；確認方案前不會進入執行。</p><fieldset class="mode-fieldset"><legend>這次如何驗證</legend><div class="mode-options"><label class="mode-option"><input type="radio" name="mode" value="scripted" checked><span><strong>本地流程演練</strong><small>固定演練邏輯，沒有呼叫模型</small></span></label><label class="mode-option"><input type="radio" name="mode" value="live"><span><strong>真實 DeepSeek</strong><small>實際呼叫模型；未配置時會停止並提示</small></span></label></div></fieldset>
+            <details class="detail-section scenario-details"><summary>條件變化演練</summary><label for="scenario">指定本地測試情境</label><select id="scenario"><option value="normal">正常商品條件</option><option value="shipping_increase">運費上升</option><option value="injection">商品文案要求忽略預算</option><option value="both_unavailable">兩家都無法供貨</option></select><p class="field-help">這些是明確注入的測試條件，不是已發生的市場變動。</p></details>
+            <button id="demo-template-button" class="text-button small" type="button" hidden>填入合成商品演練</button><p class="field-help">首次設定的偏好為「現金支出較低」。演練不會向商戶下單。</p></details>
+          </form>
+          
+        </section>
+
+        <section id="task-panel" class="task-panel" hidden aria-label="目前購物任務">
+          <div class="panel task-summary"><div class="section-heading"><div><h2 id="task-title">購物任務</h2><details class="task-reference"><summary>任務編號</summary><p id="task-id-label" class="technical-label"></p></details></div><span id="task-status" class="status-pill"></span></div><p id="task-description" class="task-description"></p><div id="task-facts" class="fact-chips"></div><ol id="task-progress" class="task-progress" aria-label="任務進度"></ol><div class="task-action-row"><p id="task-action-hint" class="muted"></p><div id="stop-feedback" class="notice" role="status" aria-live="polite" hidden></div><div class="button-row"><button id="repeat-task-button" class="button button-secondary" type="button" hidden>按這次需求再委託</button><button id="edit-task-button" class="button button-secondary" type="button">修改條件</button><button id="resume-button" class="button button-secondary" type="button" hidden>繼續處理</button><button id="stop-button" class="button button-danger" type="button">停止這次委託</button></div></div></div>
+
+          <section id="clarification-panel" class="panel" hidden aria-labelledby="clarification-title"><h2 id="clarification-title">補充這幾項</h2><p class="muted">已確認的內容會保留。補答後，舊條件的方案不會繼續執行。</p><form id="answers-form"><div id="question-fields" class="form-grid"></div><div class="form-footer"><p id="clarification-help"></p><button class="button button-primary" type="submit">儲存補充資料並繼續</button></div></form></section>
+
+          <section id="comparison-panel" class="panel" hidden aria-labelledby="comparison-title"><div class="section-heading"><div><h2 id="comparison-title">比較方案</h2></div><span class="subtle-tag">演練商品</span></div><p id="comparison-explanation" class="muted"></p><div class="quote-navigation"><p class="scroll-hint">左右滑動比較</p><div><button id="quote-prev" class="icon-button" type="button" aria-label="上一件商品">←</button><span id="quote-position" aria-live="off"></span><button id="quote-next" class="icon-button" type="button" aria-label="下一件商品">→</button></div></div><div id="quote-grid" class="quote-grid" tabindex="0" role="region" aria-label="左右滑動比較商品方案"></div><div id="recommendation" class="recommendation" hidden></div></section>
+
+          <section id="payment-options-panel" class="panel payment-options-panel" hidden aria-labelledby="payment-options-title"><div class="section-heading"><div><h2 id="payment-options-title">付款方式</h2></div><span class="subtle-tag">目前僅本地演練</span></div><p class="muted">本地模擬，不會扣款。</p><div id="payment-option-list" class="payment-option-list"></div><details class="detail-section"><summary>後續接入</summary><div class="wallet-availability"><strong>首發方向：淘寶 ＋ WeChat Pay HK</strong><p>接口與商戶資格仍待核驗，尚不可使用。淘寶訂單須由官方結帳；不會以自家微信收款代收淘寶貨款。</p></div></details><details class="detail-section"><summary>優惠與權益</summary><div id="payment-benefits" class="payment-benefits"></div></details></section>
+
+          <section id="confirmation-panel" class="panel confirmation-panel" hidden aria-labelledby="confirmation-title"><div class="section-heading"><h2 id="confirmation-title">確認這份方案</h2><span class="subtle-tag">本地演練</span></div><p class="muted">核對後建立本地委託；不會真實下單或扣款。</p><div id="confirmation-details"></div><div class="confirmation-consent"><input id="approve-consent" type="checkbox"><label for="approve-consent">已核對商品、數量、收款方及總額，同意本地演練。</label></div><button id="approve-button" class="button button-primary button-full" type="button" disabled>確認方案並入隊（本地演練）</button></section>
+
+          <section id="operation-panel" class="panel" hidden aria-labelledby="operation-title"><h2 id="operation-title">執行進度</h2><div id="operation-details"></div><div class="operation-actions"><button id="refresh-operation-button" class="button button-secondary" type="button">重新讀取服務端狀態</button><button id="inspect-operation-button" class="text-button" type="button">查看原任務與操作記錄</button></div><p class="field-help">這裡只讀取已保存的本地狀態，沒有向支付機構發起查單。付款結果、商戶接單與退款分開確認。</p><details class="detail-section"><summary>人工跟進</summary><div class="support-boundary"><strong>需要人工接管？</strong><p>可先查看並保留原任務與操作編號。目前尚未配置客服或商戶聯絡人，也未接入取消外部付款、退款申請或案件受理。</p></div></details></section>
+
+          <section id="user-value-panel" class="panel user-value-panel" hidden aria-labelledby="user-value-title"><details id="value-details" class="compact-details"><summary><h2 id="user-value-title">操作統計</h2></summary><div id="user-value-counts" class="value-counts"></div><p class="field-help">只統計已被服務端接納的交代、補答和確認。主動核對、登入、錢包確認、跳轉、糾錯與接管須另外記錄；這不是總操作步數，也不能據此宣稱節省時間。</p></details></section>
+
+          <section id="records-panel" class="panel records-panel" aria-labelledby="records-title"><details id="activity-details" class="compact-details"><summary><h2 id="records-title">任務記錄</h2></summary><div class="records-toolbar"><button id="refresh-task-button" class="text-button" type="button">重新讀取狀態</button></div><ol id="event-list" class="event-list"></ol><details id="execution-records" class="technical-details"><summary>查看對應記錄與執行證據</summary><p class="field-help">只顯示服務端授權此身分查看的資料；模型呼叫、商品來源和本地模擬會分開標明。</p><div id="evidence-summary"></div><pre id="task-record"></pre></details></details></section>
+        </section>
+        <section id="empty-state" class="panel empty-state" hidden><h2>查看與你相關的任務</h2><p class="muted">展開過往委託，選擇要查看的任務。此身分只能查看服務端授權的資料。</p></section>
+      </div>
+    </div>
+  </main>
+  <footer class="site-footer"><span>買嘢幫 · MaiYePong</span><span>Your Shopping, Your Say.</span></footer>
+  </div></div>
+  <dialog id="stop-dialog"><form method="dialog"><div class="dialog-icon" aria-hidden="true">Ⅱ</div><h2 id="stop-dialog-title">停止這次委託？</h2><p id="stop-dialog-message">停止要求會直達後端。尚未派發的命令會被阻止；若已派發，須核實原操作的付款結果。此原型尚未接入外部會話取消或退款。</p><p class="field-help">最終結果以服務端回應為準；關閉網頁或停止代辦不會自動撤銷外部付款。</p><div class="button-row"><button class="button button-secondary" value="cancel">繼續查看</button><button class="button button-danger" id="confirm-stop-button" value="stop">送出停止要求</button></div></form></dialog>
+</body>
+</html>
