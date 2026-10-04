@@ -10,4 +10,4 @@ WeChat Pay HK：支付适配器仍禁用，没有真实 PSP 签名/验签/查单
 
 用户表示部分注册资料待提供、两个平台申请中；本轮没有登录控制台核验申请状态。已有 90 项接入离线测试和 39 项本地登录测试是之前证据，不能替代真实平台验收。本轮全套测试复验由主任务另行记录。
 
-准确资料名称、官方 URL、时间戳、源代码 SHA256 及逐平台状态见 platform_readiness.json；HTTP 探测见 platform_public_probes.json；配置证据仅布尔，见 platform_config_presence.json。没有读取凭据文件或记录密钥值，没有修改应用源码、重启主站。
+公开验收摘要见 docs/verification/latest.json。完整 platform_readiness.json、platform_public_probes.json 与仅含布尔值的 platform_config_presence.json 保留在本机 verification/recheck_20261004，未上传私人证据目录。此项只读核查没有读取凭据文件、记录密钥值或调用平台授权接口；后续工程改动另行记录。

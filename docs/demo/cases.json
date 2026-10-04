@@ -172,5 +172,10 @@
         "explanation": "更新後兩家均無貨，停止且不產生付款授權。"
       }
     }
+  ],
+  "local_demo_actor_ids": [
+    "local-demo-buyer",
+    "local-demo-buyer-0001",
+    "local-demo-buyer-0002"
   ]
 }

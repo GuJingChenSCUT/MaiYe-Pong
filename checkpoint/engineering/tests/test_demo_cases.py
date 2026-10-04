@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from app.auth import APIError
 from app.demo_cases import CASES, case_fields, resolve_demo_case
+from app.local_demo_auth import LOCAL_DEMO_ACTORS
 from app.agent_worker import AgentWorker
 from app.task_service import TaskService
 from app.task_store import TaskStore
@@ -43,6 +44,26 @@ class ExactDemoParsingTests(unittest.TestCase):
                             (dict(DEMO, role='merchant'), 'scripted'), (DEMO, 'live'), ({}, 'scripted')]:
             with self.subTest(actor=actor, mode=mode):
                 self.assertIsNone(self.resolve(actor=actor, mode=mode))
+
+    def test_both_server_registered_short_code_buyers_can_use_exact_demo_cases(self):
+        self.assertEqual(len(LOCAL_DEMO_ACTORS), 2)
+        for actor_id in LOCAL_DEMO_ACTORS:
+            actor = dict(DEMO, actor_id=actor_id)
+            for case in CASES:
+                with self.subTest(actor=actor_id, case=case.case_id):
+                    self.assertEqual(self.resolve(case.case_id, actor=actor)['case_id'], case.case_id)
+
+    def test_new_buyers_do_not_relax_scope_or_explicit_constraints(self):
+        for actor_id in LOCAL_DEMO_ACTORS:
+            actor = dict(DEMO, actor_id=actor_id)
+            self.assertIsNone(self.resolve(actor=actor, mode='live'))
+            self.assertIsNone(self.resolve(actor=dict(actor, tenant_id='another')))
+            self.assertIsNone(self.resolve(actor=dict(actor, role='merchant')))
+            self.assertIsNone(self.resolve(actor=actor, text='0001'))
+            with self.assertRaises(APIError):
+                self.resolve(actor=actor, fields={'cash_cap_minor': 4000})
+        for actor_id in ('0001', '0002', 'local-demo-buyer-0003'):
+            self.assertIsNone(self.resolve(actor=dict(DEMO, actor_id=actor_id)))
 
     def test_near_match_injection_and_unrelated_text_are_not_expanded(self):
         prompt = BY_ID['normal'].prompt
@@ -135,6 +156,17 @@ class PersistedDemoTests(unittest.TestCase):
         event = next(e for e in result['events'] if e['kind'] == 'user_input')
         self.assertEqual(event['details']['demo_case_id'], 'normal')
         self.assertEqual(event['details']['field_origin'], 'explicit_with_demo_exact_match')
+
+    def test_short_code_buyers_keep_separate_task_ownership(self):
+        actors = [dict(DEMO, actor_id=name) for name in sorted(LOCAL_DEMO_ACTORS)]
+        first, second = [self.create('clarification', actor=actor) for actor in actors]
+        self.assertNotEqual(first['task_id'], second['task_id'])
+        for actor, owned, other in ((actors[0], first, second), (actors[1], second, first)):
+            self.assertEqual(self.service.get(actor, owned['task_id'])['draft']['product'], V1_PRODUCT)
+            with self.assertRaises(APIError):
+                self.service.get(actor, other['task_id'])
+        with self.store.connection() as conn:
+            self.assertEqual(conn.execute('SELECT count(*) FROM s1_mandates').fetchone()[0], 0)
 
     def test_missing_budget_requests_only_budget_without_fabrication(self):
         result = self.process(self.create('clarification'))

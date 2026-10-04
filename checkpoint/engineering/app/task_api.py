@@ -10,6 +10,7 @@ from pathlib import Path
 from urllib.parse import urlsplit, parse_qs
 from app.auth import APIError, Auth
 from app.social_auth import SocialAuth
+from app.local_demo_auth import LOCAL_DEMO_ACTORS, LOCAL_DEMO_TENANT
 from app.task_service import TaskService
 from app.task_store import TaskStore, StorageUnavailable, encode
 from app.agent_worker import AgentWorker
@@ -160,6 +161,55 @@ class Handler(BaseHTTPRequestHandler):
             raise APIError(401, "INVALID_SESSION_COOKIE")
         return cookie[name].value if name in cookie else ""
 
+    def _auth_peer(self):
+        # Weak local-demo credentials are not supported through a reverse proxy.
+        # These headers can only disable that path, never supply a trusted peer.
+        if any(name in self.headers for name in ("Forwarded", "X-Forwarded-For", "X-Real-IP")):
+            return None
+        return self.client_address[0]
+
+    def _demo_payment_image(self, actor, task_id):
+        unavailable = APIError(404, "DEMO_IMAGE_UNAVAILABLE")
+        if (not self.server.auth._local_demo_allowed(self._auth_peer())
+                or actor.get("role") != "buyer" or actor.get("tenant_id") != LOCAL_DEMO_TENANT
+                or actor.get("actor_id") not in LOCAL_DEMO_ACTORS):
+            raise unavailable
+        task = self.server.service.get(actor, task_id)
+        if task.get("status") != "AWAITING_APPROVAL" or not task.get("proposal"):
+            raise unavailable
+        snapshot = task["proposal"].get("snapshot")
+        with self.server.store.read_transaction() as conn:
+            row = self.server.service.authorize(conn, actor, task_id)
+            if (row["mode"] != "scripted" or row["status"] != "AWAITING_APPROVAL"
+                    or row["state_version"] != task["state_version"]):
+                raise unavailable
+            try:
+                kernel = self.server.service.kernel(conn)
+                current = kernel.inspect(task_id, actor)
+                kernel._validate_snapshot(snapshot)
+                kernel._binding_matches(dict(current["current_bindings"], stopped=current["stopped"]), snapshot)
+                challenge = current["challenge"]
+                if (current["operation"] or not challenge or challenge["state"] != "PENDING"
+                        or challenge["snapshot_id"] != snapshot["snapshot_id"]
+                        or challenge["expires_at"] <= self.server.store.now()):
+                    raise unavailable
+            except (DomainRejected, KernelRejected, KeyError, TypeError, ValueError):
+                raise unavailable from None
+            # This private contact illustration is deliberately outside WEB.
+            # Never accept a filename/query parameter or follow a linked file.
+            directory = Path(self.server.store.path).parent.resolve()
+            file = directory / "payment-demo-contact.jpg"
+            try:
+                if file.is_symlink() or file.resolve().parent != directory or not file.is_file():
+                    raise unavailable
+                with file.open("rb") as handle:
+                    raw = handle.read(3 * 1024 * 1024 + 1)
+                if len(raw) > 3 * 1024 * 1024 or not raw.startswith(b"\xff\xd8\xff") or not raw.endswith(b"\xff\xd9"):
+                    raise unavailable
+            except OSError:
+                raise unavailable from None
+        return self._reply(200, raw, content_type="image/jpeg")
+
     def _handle(self):
         path = urlsplit(self.path).path
         method = self.command
@@ -178,7 +228,9 @@ class Handler(BaseHTTPRequestHandler):
                 content_type += "; charset=utf-8"
             return self._reply(200, file.read_bytes(), content_type=content_type)
         if method == "GET" and path == "/api/v1/config":
-            return self._reply(200, self.server.service.config())
+            config = self.server.service.config()
+            config["local_demo_short_codes_enabled"] = self.server.auth.local_demo_short_codes_enabled
+            return self._reply(200, config)
         if method == "GET" and path == "/api/v1/health":
             health = self.server.health()
             return self._reply(200 if health["status"] == "ready" else 503, health)
@@ -218,10 +270,11 @@ class Handler(BaseHTTPRequestHandler):
             body = self._body()
             if set(body) != {"access_code"}:
                 raise APIError(400, "ACCESS_CODE_ONLY")
-            token, result = self.server.auth.login(body["access_code"])
+            token, result = self.server.auth.login(body["access_code"], peer_address=self._auth_peer())
             return self._reply(200, result, cookie=f"hacku_session={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800")
         token = self._token()
-        identity = self.server.auth.session(token, csrf=self.headers.get("X-CSRF-Token"), mutate=method != "GET")
+        identity = self.server.auth.session(token, csrf=self.headers.get("X-CSRF-Token"),
+                                            mutate=method != "GET", peer_address=self._auth_peer())
         actor = identity["actor"]
         if path == "/api/v1/session":
             if method == "GET":
@@ -238,6 +291,10 @@ class Handler(BaseHTTPRequestHandler):
         parts = path.strip("/").split("/")
         if len(parts) in {4, 5} and parts[:3] == ["api", "v1", "tasks"]:
             task_id = parts[3]
+            if method == "GET" and len(parts) == 5 and parts[4] == "demo-payment-image":
+                if urlsplit(self.path).query:
+                    raise APIError(400, "DEMO_IMAGE_QUERY_UNSUPPORTED")
+                return self._demo_payment_image(actor, task_id)
             if len(parts) == 4 and method == "GET":
                 return self._reply(200, self.server.service.get(actor, task_id))
             if len(parts) == 5 and method == "POST":

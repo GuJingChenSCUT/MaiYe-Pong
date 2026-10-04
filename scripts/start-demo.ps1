@@ -5,8 +5,7 @@ param([switch]$CheckOnly)
 $ErrorActionPreference = 'Stop'
 $workspacePath = Split-Path -Parent $PSScriptRoot
 $pythonPath = Join-Path $workspacePath 'checkpoint\engineering\.venv\Scripts\python.exe'
-$statePath = Join-Path $workspacePath 'local_state'
-$demoScriptPath = Join-Path $PSScriptRoot 'demo-account.py'
+$demoScriptPath = Join-Path $PSScriptRoot 'demo-short-accounts.py'
 $demoOrigin = 'http://127.0.0.1:8765'
 
 function Test-DemoPortListening {
@@ -65,18 +64,20 @@ if ($serviceStatus -eq 'absent') {
     # Use a child shell so Offline does not change this shell's model environment.
     $shellPath = Join-Path $PSHOME 'powershell.exe'
     if (-not (Test-Path -LiteralPath $shellPath)) { $shellPath = (Get-Process -Id $PID).Path }
-    & $shellPath -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'start-local.ps1') -Port 8765 -Offline -NoOpen
+    & $shellPath -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'start-local.ps1') -Port 8765 -Offline -NoOpen -EnableDemoShortCodes
     if ($LASTEXITCODE -ne 0) { throw 'The offline local preview could not start. No replacement service will be launched.' }
     if ((Get-DemoServiceStatus) -ne 'ready') { throw 'The local preview did not become ready.' }
 } else {
     Write-Output 'Reusing the healthy local preview; its model configuration is unchanged.'
 }
 
-# The helper owns private-file validation. No code is read into shell variables,
-# command-line arguments, a URL, or a log; mismatched identity/state fails closed.
-& $pythonPath $demoScriptPath --state-dir $statePath > $null
-if ($LASTEXITCODE -ne 0) { throw 'The dedicated demo buyer is unavailable. No substitute identity will be created.' }
+$demoConfig = Invoke-RestMethod -Uri ($demoOrigin + '/api/v1/config') -TimeoutSec 3 -MaximumRedirection 0
+if ($demoConfig.local_demo_short_codes_enabled -ne $true) {
+    throw 'Short demo codes are disabled on the existing service. Restart it explicitly with scripts\start-local.ps1 -EnableDemoShortCodes. No service was restarted or changed.'
+}
+# Fixed test codes appear only in the requested UI, never in a URL or log.
+# The server provisions and validates their separate buyer bindings atomically.
 Start-Process -FilePath ($demoOrigin + '/?demo=start')
-Write-Output 'Paste the code from the dedicated buyer window into the local access-code field.'
-& $pythonPath $demoScriptPath --state-dir $statePath --show > $null
-if ($LASTEXITCODE -ne 0) { throw 'The dedicated buyer window could not open. See docs\DEMO_READ_FIRST.txt for the local fallback.' }
+Write-Output 'Choose one local buyer from the demo window and enter its code on the page.'
+& $pythonPath $demoScriptPath --show > $null
+if ($LASTEXITCODE -ne 0) { throw 'The local demo buyer window could not open. See docs\DEMO_READ_FIRST.txt for the documented test codes.' }

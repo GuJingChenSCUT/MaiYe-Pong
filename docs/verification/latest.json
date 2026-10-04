@@ -312,5 +312,70 @@
     "scripts/demo-account.py": "b2a1a25787df531c2914259ba04524388013235df2fe922a069c94b2a8071dc4",
     "scripts/start-demo.ps1": "780ed948f5527c973ec57ff9430eb8e31283781ba1ec0100f537c5bae5bb6d15"
   },
-  "disclosure": "Raw sessions, credentials, database files, prompts from real users and private local evidence are excluded from the public repository. Demonstration cases are synthetic and exact-match gated."
+  "disclosure": "Raw sessions, credentials, database files, prompts from real users and private local evidence are excluded from the public repository. Demonstration cases are synthetic and exact-match gated.",
+  "latest_increment": {
+    "recorded_at_utc": "2026-10-04T06:28:45.005121+00:00",
+    "short_codes": [
+      "0001",
+      "0002"
+    ],
+    "enabled_on_main_loopback": true,
+    "isolated_buyers": true,
+    "unit_runs": {
+      "new_short_login_image": 22,
+      "http_regression": 11,
+      "social_auth_regression": 39,
+      "observation_preparation": 17,
+      "demo_case_regression": 20
+    },
+    "counting_note": "109 executed checks across these suites; repeated old tests are not new unique coverage. Earlier 417 baseline is not a full rerun of this increment.",
+    "main_http_checks": {
+      "main_service": true,
+      "two_codes_login": true,
+      "distinct_buyers": true,
+      "exact_demo_case": "AWAITING_APPROVAL",
+      "image_matches_user_upload": true,
+      "no_store": true,
+      "cross_user_rejected": true,
+      "anonymous_rejected": true,
+      "stopped_image_rejected": true,
+      "test_task_stopped": true,
+      "no_payment_or_order": true,
+      "user_task_modified": false
+    },
+    "browser_checks": {
+      "0002_login": true,
+      "laundry_suggestions_visible": true,
+      "budget_150_hkd_from_explicit_text": true,
+      "quantity_1_pack_count_1": true,
+      "no_auto_submit": true,
+      "three_payment_cards": true,
+      "contact_image_loaded": true,
+      "contact_image_labeled_non_payment": true,
+      "close_and_stop_clear_image": true,
+      "expired_snapshot_closes_dialog": true,
+      "user_task_modified": false
+    },
+    "taobao_browser": {
+      "edge_unavailable": true,
+      "user_authorized_in_app_fallback": true,
+      "status": "awaiting_user_login",
+      "products_collected": 0,
+      "authenticated_merchant_api": false
+    },
+    "historical_storage_incident_closed": false,
+    "initial_test_failure": "One image test used a frozen time inconsistent with live fixture timestamps; initial failure log preserved. Only test clock corrected; final 22 passed.",
+    "observation_module_wired_to_product_runtime": false,
+    "evidence_sha256": {
+      "local_demo_auth_tests.log": "991b1df1f7537e6cade9aaf9f675e3109f5fbe2f1879fb28a843ab186c0c56fa",
+      "local_demo_auth_tests_initial.log": "922eb227fe7d1ffffa40095003919ee5fb2bb8115be7090c461bd9e6423312d1",
+      "shortcode_task_api_regression.log": "1e275038ada6e2ef0ce8d66332c6fd5c4f90194c46180aa765164c4c7080450c",
+      "shortcode_social_auth_regression.log": "e432c0f84d3bd919fe164de60f2ff72a6cceb2406ef409a651b8f14e0efebf28",
+      "browser_observations_validation.json": "ed5caa41261e76ef1664c96760ac08b1471b61ae43e0f3a74d745ddcc19d74b6",
+      "demo_short_code_tests.log": "4aed184b98443395ecd62dda7dbd15f3d0532794384c4841e72a345680fd36f5",
+      "main_shortcode_checks.json": "101c4dd18f446722e001c796f9661feadd5eaeac545926ee258efe4e3d522008",
+      "defaults-browser.jpg": "341893c129ab3a978afe60d25bd50c58ff73882c0454ccda588c74edbdc9db79",
+      "browser_observations_scanner_fix_tests.log": "8d1fb59c349975256aa87b676988d3750bd099b5e7e4b240fa350e56986d6b51"
+    }
+  }
 }

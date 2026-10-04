@@ -3,8 +3,10 @@
 (() => {
   const $ = id => document.getElementById(id);
   const state = { identity: null, csrf: null, config: {}, task: null, tasks: [], busy: false, poll: null, questionKey: null, editing: false, retry: null,
-    sessionEpoch: 0, viewEpoch: 0, mutationToken: 0, listRequest: 0, stopSequence: 0, taskCache: new Map(), stops: new Map(), stopDialog: null, healthUnavailable: false, comparisonKey: null };
+    sessionEpoch: 0, viewEpoch: 0, mutationToken: 0, listRequest: 0, stopSequence: 0, taskCache: new Map(), stops: new Map(), stopDialog: null, demoPaymentDialog: null, healthUnavailable: false, comparisonKey: null };
   const API = "/api/v1";
+  const DEMO_BUYER_IDS = new Set(["local-demo-buyer", "local-demo-buyer-0001", "local-demo-buyer-0002"]);
+  const DEMO_IMAGE_BUYER_IDS = new Set(["local-demo-buyer-0001", "local-demo-buyer-0002"]);
   const roleNames = { buyer: "我的任務", merchant: "商戶任務", operator: "異常與任務" };
   const preferences = { lowest_cost: "現金支出較低", fastest_delivery: "較早送達", easiest_returns: "退貨較方便" };
   const statuses = { draft: "正在整理需求", planning: "正在核對條件", queued: "等待派發", running: "正在核對", clarifying: "等你補充資料", needs_clarification: "等你補充資料", ready: "可繼續處理", proposed: "方案待你確認", awaiting_approval: "方案待你確認", approved: "已確認方案", enqueued: "已入隊", stopped: "委託已停止", stopped_before_dispatch: "已在派發前停止", cancelled: "已取消", blocked: "暫未能繼續", failed: "需要跟進", completed: "處理完成", unknown: "結果待核實", dispatch_committed: "已取得派發權", succeeded: "本地付款模擬完成", stop_requested: "已要求停止" };
@@ -42,7 +44,7 @@
   function money(minor, currency = "HKD") { if (minor === null || minor === undefined || minor === "" || !Number.isFinite(Number(minor))) return "金額待核實"; return new Intl.NumberFormat("zh-HK", { style: "currency", currency, currencyDisplay: "narrowSymbol" }).format(Number(minor) / 100); }
   function timestamp(value, full = false) { if (!value) return "—"; const date = new Date(typeof value === "number" ? value * 1000 : value); if (Number.isNaN(date.getTime())) return "—"; return new Intl.DateTimeFormat("zh-HK", { timeZone: "Asia/Hong_Kong", ...(full ? { month: "2-digit", day: "2-digit" } : {}), hour: "2-digit", minute: "2-digit", hour12: false }).format(date); }
   function buyer() { return state.identity?.role === "buyer"; }
-  function demoBuyer() { return buyer() && state.identity?.tenant_id === "local-hk" && state.identity?.actor_id === "local-demo-buyer"; }
+  function demoBuyer() { return buyer() && state.identity?.tenant_id === "local-hk" && DEMO_BUYER_IDS.has(state.identity?.actor_id); }
   function syncView() {
     document.body.dataset.view = !state.identity ? "entry" : state.task ? "task" : "compose";
     document.body.dataset.role = state.identity?.role || "guest";
@@ -176,6 +178,7 @@
   }
   async function mutate(path, body, onSuccess, method = "POST", original = null) {
     if (state.busy || (path.startsWith("/tasks/") && stopUnresolved())) return;
+    dismissDemoPaymentDialog();
     const token = ++state.mutationToken, sessionEpoch = state.sessionEpoch, viewEpoch = state.viewEpoch;
     const match = path.match(/^\/tasks\/([^/]+)\//), taskId = match ? decodeURIComponent(match[1]) : null;
     const stopBefore = stopEntry(taskId)?.sequence;
@@ -202,12 +205,14 @@
   }
   async function sendStop(taskId, original = null) {
     if (!buyer() || !taskId || stopEntry(taskId)?.status === "pending") return;
+    dismissDemoPaymentDialog();
     if (original && (original.sessionEpoch !== state.sessionEpoch || state.stops.get(taskId) !== original)) return;
     const entry = original || stopEntry(taskId) || { taskId, sessionEpoch: state.sessionEpoch, path: `/tasks/${encodeURIComponent(taskId)}/stop`, request: null };
     if (entry.status === "completed") return;
     entry.sequence = ++state.stopSequence;
     entry.status = "pending"; entry.message = "正在送出停止要求；尚未收到後端確認。";
     state.stops.set(taskId, entry); busy(state.busy);
+    if (state.task?.task_id === taskId) renderPaymentOptions(state.task);
     try {
       entry.request ||= await keyFor(entry.path, {});
       if (entry.sessionEpoch !== state.sessionEpoch) return;
@@ -228,6 +233,7 @@
     } finally { if (entry.sessionEpoch === state.sessionEpoch) busy(state.busy); }
   }
   function showLogin() {
+    dismissDemoPaymentDialog();
     state.sessionEpoch += 1; state.viewEpoch += 1; state.mutationToken += 1;
     state.taskCache.clear(); state.stops.clear(); dismissStopDialog();
     state.identity = null; state.csrf = null; state.task = null; state.tasks = []; state.questionKey = null; state.editing = false;
@@ -243,6 +249,7 @@
     busy(false);
   }
   async function setSession(result, restoreTask = false) {
+    dismissDemoPaymentDialog();
     state.sessionEpoch += 1; state.taskCache.clear(); state.stops.clear();
     state.identity = identityFrom(result); state.csrf = csrfFrom(result);
     if (!state.identity || !state.csrf) throw new Error("登入回應缺少有效身分或防偽權杖，暫不能操作任務。");
@@ -292,7 +299,7 @@
       });
       container.append(button);
     }
-    $("social-login-note").textContent = unavailable.length ? `${unavailable.join(" 及 ")}登入暫未開通，請先使用存取碼。` : "";
+    $("social-login-note").textContent = unavailable.length ? "亦可使用存取碼登入。" : "";
     $("social-login-note").hidden = !unavailable.length;
   }
   function setModelBadge(task) {
@@ -329,6 +336,7 @@
   }
   async function selectTask(taskId) {
     if (state.busy) return;
+    dismissDemoPaymentDialog();
     const viewEpoch = ++state.viewEpoch, sessionEpoch = state.sessionEpoch;
     dismissStopDialog();
     state.editing = false; state.questionKey = null;
@@ -340,6 +348,7 @@
     if (!state.identity) return;
     task = rememberTask(task);
     const changedSnapshot = getSnapshot(state.task).snapshot_id !== getSnapshot(task).snapshot_id;
+    if (state.task?.task_id !== task.task_id || state.task?.state_version !== task.state_version || changedSnapshot) dismissDemoPaymentDialog();
     state.task = task;
     syncView();
     for (const button of $("task-list").querySelectorAll("[data-task-id]")) {
@@ -361,6 +370,7 @@
   function schedulePoll() { if (state.poll) clearTimeout(state.poll); if (state.identity && state.task) state.poll = setTimeout(() => { if (!document.hidden) refreshTask(); else schedulePoll(); }, 2500); }
   function resetNewTask() {
     if (!buyer()) return;
+    dismissDemoPaymentDialog();
     state.viewEpoch += 1; dismissStopDialog(); state.task = null; state.editing = false; state.questionKey = null; state.comparisonKey = null;
     if (state.poll) clearTimeout(state.poll);
     localSet(`hacku.task.${state.identity.actor_id}`, null); $("task-form").reset(); defaultComposerMode();
@@ -423,6 +433,27 @@
     }
     return [...new Set(result)];
   }
+  function questionSuggestions(text) {
+    // Editable form suggestions only: no draft mutation, product evidence,
+    // mandate or automatic submission. Unknown budgets remain blank.
+    const suggestions = { purchase_quantity: 1, "product.pack_count": 1 };
+    const input = typeof text === "string" ? text : "";
+    const amounts = new Set();
+    const currency = /(?:^|[^\d.,+\-])(?:HK\$\s*(\d+(?:\.\d{1,2})?)(?![\d.,])|(\d+(?:\.\d{1,2})?)\s*HKD(?![A-Za-z]))/gi;
+    for (const match of input.matchAll(currency)) {
+      const [whole, fraction = ""] = (match[1] || match[2]).split(".");
+      const minor = Number(whole) * 100 + Number((fraction + "00").slice(0, 2));
+      if (Number.isSafeInteger(minor) && minor > 0 && minor <= 10 ** 12) amounts.add(minor);
+    }
+    if (amounts.size === 1) suggestions.cash_cap_minor = [...amounts][0];
+    const destination = input.match(/(?:送到|送往)\s*([^，,。；;！!？?\n]+?)[。.!！?？]?\s*$/u);
+    if (destination?.[1].trim()) suggestions.destination_ref = destination[1].trim();
+    if (input.includes("洗衣液") && !/(?:不要|不買|不买|唔要|唔買|不是|唔係)\s*洗衣液/u.test(input)) {
+      Object.assign(suggestions, { "product.brand": "不限", "product.variant": "洗衣液",
+        "product.net_content": 1000, "product.unit": "ml", "product.packaging": "瓶裝" });
+    }
+    return suggestions;
+  }
   function renderQuestions(task) {
     const missing = missingFields(task);
     const editable = buyer() && !getOperation(task) && !["stopped", "cancelled", "completed"].includes(taskStatus(task));
@@ -433,7 +464,16 @@
     $("clarification-title").textContent = state.editing ? "想修改哪些購買條件？" : "還差這幾項，就可以繼續";
     const key = `${task.task_id}|${task.constraints_version}|${state.editing}|${list.join(",")}`;
     if (state.questionKey === key) return;
+    const container = $("question-fields"), edited = new Map();
+    if (container.dataset.taskId === task.task_id) {
+      for (const input of container.querySelectorAll("[data-field]")) {
+        if (input.dataset.userEdited === "true") edited.set(input.dataset.field, input.value);
+      }
+    }
+    const suggestions = questionSuggestions(task.draft?.text);
+    let suggested = false;
     state.questionKey = key; clear($("question-fields"));
+    container.dataset.taskId = task.task_id;
     for (const name of list) {
       const definition = fields[name] || { label: name, type: "text" };
       const questions = task.questions || [];
@@ -447,14 +487,19 @@
       if (definition.min) input.min = definition.min; if (definition.step) input.step = definition.step; if (definition.placeholder) input.placeholder = definition.placeholder;
       input.required = !state.editing || missing.includes(name);
       const current = valueAt(task.draft || {}, name);
-      if (current !== null && current !== undefined) {
-        if (definition.money) input.value = (Number(current) / 100).toFixed(2);
-        else if (definition.epoch) input.value = new Date((Number(current) + 8 * 3600) * 1000).toISOString().slice(0, 16);
-        else input.value = String(current);
+      const value = current !== null && current !== undefined && current !== "" ? current : suggestions[name];
+      if (edited.has(name)) {
+        input.value = edited.get(name); input.dataset.userEdited = "true";
+      } else if (value !== null && value !== undefined) {
+        if (definition.money) input.value = (Number(value) / 100).toFixed(2);
+        else if (definition.epoch) input.value = new Date((Number(value) + 8 * 3600) * 1000).toISOString().slice(0, 16);
+        else input.value = String(value);
+        if (current === null || current === undefined || current === "") suggested = true;
       }
+      for (const event of ["input", "change"]) input.addEventListener(event, () => { input.dataset.userEdited = "true"; });
       wrapper.append(label, input); $("question-fields").append(wrapper);
     }
-    $("clarification-help").textContent = `更新以條件版本 ${task.constraints_version} 為準；舊方案會失效。`;
+    $("clarification-help").textContent = `${suggested ? "已帶入可修改的建議值，請確認後繼續。 " : ""}更新以條件版本 ${task.constraints_version} 為準；舊方案會失效。`;
   }
   function quoteCandidates(task) {
     const comparison = task.comparison || task.run?.comparison || {};
@@ -575,10 +620,84 @@
       method.provenance === "synthetic_fixture" && method.source_ref === "fixture://local-psp" &&
       typeof method.observed_at === "number" && Number.isFinite(method.observed_at));
   }
+  function canShowDemoPayments(task) {
+    const snapshot = task?.proposal?.snapshot;
+    return demoBuyer() && !!snapshot?.snapshot_id && task.capabilities?.model === "scripted"
+      && task.capabilities?.goods === "synthetic_fixture" && task.capabilities?.payment === "local_simulator"
+      && snapshot.quote?.environment === "local_simulator" && snapshot.quote?.provenance === "synthetic_fixture"
+      && snapshot.task_id === task.task_id && snapshot.constraints_version === task.constraints_version
+      && Number.isFinite(snapshot.expires_at) && snapshot.expires_at * 1000 > Date.now()
+      && !["stopped", "stopped_before_dispatch", "cancelled", "blocked", "failed"].includes(taskStatus(task))
+      && !["STOPPED", "STOPPED_BEFORE_DISPATCH", "CANCELLED"].includes(paymentStatus(task))
+      && !stopEntry(task.task_id) && !(task.events || []).some(event => event.kind === "user_stop_requested");
+  }
+  function canShowDemoPaymentImage(task) {
+    return canShowDemoPayments(task) && state.config?.local_demo_short_codes_enabled === true
+      && DEMO_IMAGE_BUYER_IDS.has(state.identity?.actor_id) && taskStatus(task) === "awaiting_approval";
+  }
+  function currentDemoPaymentDialog(entry) {
+    return state.demoPaymentDialog === entry && entry.sessionEpoch === state.sessionEpoch
+      && entry.viewEpoch === state.viewEpoch && entry.taskId === state.task?.task_id
+      && entry.stateVersion === state.task?.state_version
+      && entry.snapshotId === getSnapshot(state.task).snapshot_id && canShowDemoPaymentImage(state.task);
+  }
+  function dismissDemoPaymentDialog() {
+    const entry = state.demoPaymentDialog;
+    state.demoPaymentDialog = null;
+    if (entry) {
+      entry.controller.abort(); clearTimeout(entry.expiryTimer);
+      if (entry.reader) { entry.reader.onload = null; entry.reader.onerror = null; if (entry.reader.readyState === FileReader.LOADING) entry.reader.abort(); entry.reader = null; }
+    }
+    const image = $("demo-payment-image");
+    image.onload = null; image.onerror = null; image.removeAttribute("src"); image.hidden = true;
+    $("demo-payment-feedback").textContent = "";
+    const dialog = $("demo-payment-dialog");
+    if (dialog.open) dialog.close();
+  }
+  async function showDemoPaymentImage() {
+    if (state.busy || !canShowDemoPaymentImage(state.task)) return;
+    dismissDemoPaymentDialog();
+    const task = state.task, snapshot = getSnapshot(task);
+    const entry = { taskId: task.task_id, snapshotId: snapshot.snapshot_id, stateVersion: task.state_version,
+      sessionEpoch: state.sessionEpoch, viewEpoch: state.viewEpoch, controller: new AbortController(), reader: null, expiryTimer: null };
+    state.demoPaymentDialog = entry;
+    entry.expiryTimer = setTimeout(() => { if (state.demoPaymentDialog === entry) { dismissDemoPaymentDialog(); if (state.task) renderPaymentOptions(state.task); } }, Math.max(0, snapshot.expires_at * 1000 - Date.now()));
+    const image = $("demo-payment-image"), feedback = $("demo-payment-feedback");
+    const unavailable = () => { if (currentDemoPaymentDialog(entry)) { image.removeAttribute("src"); image.hidden = true; feedback.textContent = "圖片暫時無法顯示"; } };
+    feedback.textContent = "正在載入圖片…";
+    $("demo-payment-dialog").showModal();
+    try {
+      // This authenticated, uncached GET displays a contact image only. It
+      // neither creates a payment nor interprets an image as payment evidence.
+      const response = await fetch(`${API}/tasks/${encodeURIComponent(entry.taskId)}/demo-payment-image`, {
+        method: "GET", credentials: "same-origin", cache: "no-store", redirect: "error",
+        signal: AbortSignal.any([entry.controller.signal, AbortSignal.timeout(15000)]) });
+      if (!response.ok || !["image/jpeg", "image/png", "image/webp"].includes(response.headers.get("Content-Type")?.split(";")[0].trim())) {
+        await response.body?.cancel(); unavailable(); return;
+      }
+      const blob = await response.blob();
+      if (!currentDemoPaymentDialog(entry)) return;
+      if (!blob.size || blob.size > 10 * 1024 * 1024) { unavailable(); return; }
+      // Existing CSP permits data: images; do not widen it or persist the image.
+      const reader = new FileReader(); entry.reader = reader;
+      reader.onerror = () => { entry.reader = null; unavailable(); };
+      reader.onload = () => {
+        entry.reader = null;
+        if (!currentDemoPaymentDialog(entry)) return;
+        image.onload = () => { if (currentDemoPaymentDialog(entry)) feedback.textContent = ""; };
+        image.onerror = unavailable;
+        image.src = String(reader.result); image.hidden = false;
+      };
+      reader.readAsDataURL(blob);
+    } catch { unavailable(); }
+  }
   function renderPaymentOptions(task) {
     const quote = getQuote(task); const snapshot = getSnapshot(task);
     const show = buyer() && !!snapshot.snapshot_id;
     $("payment-options-panel").hidden = !show;
+    $("demo-payment-methods").hidden = !canShowDemoPayments(task);
+    $("view-wechat-demo-button").hidden = !canShowDemoPaymentImage(task);
+    if (state.demoPaymentDialog && !currentDemoPaymentDialog(state.demoPaymentDialog)) dismissDemoPaymentDialog();
     if (!show) return;
     clear($("payment-option-list")); clear($("payment-benefits"));
     const methods = verifiedLocalOptions(quote);
@@ -593,7 +712,7 @@
       else pair(card, "付款費用", "尚未提供可核實的單獨費用");
       pair(card, "收款方記錄（合成）", asText(snapshot.payee_ref || quote.payee_ref));
       const evidence = el("details", null, "quote-evidence");
-      evidence.append(el("summary", "來源記錄"), el("p", `${method.source_ref} · ${timestamp(method.observed_at, true)}（香港時間）。不是官方支付沙盒，沒有錢包開通證據。`)); card.append(evidence);
+      evidence.append(el("summary", "來源記錄"), el("p", `${method.source_ref} · ${timestamp(method.observed_at, true)}（香港時間）。合成來源，只記錄本地演練。`)); card.append(evidence);
       $("payment-option-list").append(card);
     }
     $("payment-benefits").append(el("h3", "優惠與未來權益，分開看"));
@@ -657,7 +776,7 @@
     detail(list, "實際購買", `${asText(quote.purchase_quantity)} 件包裝 · 每件 ${asText(quote.product?.pack_count)} 個裝`);
     detail(list, "收款方（合成）", asText(snapshot.payee_ref || quote.payee_ref));
     detail(list, "收貨地點", asText(quote.destination_ref || snapshot.draft?.destination_ref));
-    detail(list, "付款方式", verifiedLocalOptions(quote).length ? "LocalPSP 本地演練" : "待核實");
+    detail(moreList, "本地執行記錄", verifiedLocalOptions(quote).length ? "LocalPSP 本地演練" : "待核實");
     detail(list, "商品金額", money(calculation.goods_minor ?? quote.line_subtotal_minor));
     detail(list, "費用／即時優惠", `${money(calculation.fees_minor)} ／ −${money(calculation.discount_minor)}`);
     detail(list, "本次批准的現金總額", money(calculation.cash_minor ?? calculation.cash_total_minor, quote.currency), true);
@@ -853,6 +972,10 @@
   $("refresh-operation-button").addEventListener("click", () => refreshTask(true));
   $("inspect-operation-button").addEventListener("click", () => { if ($("activity-details")) $("activity-details").open = true; $("execution-records").open = true; $("records-panel").scrollIntoView({ behavior: "smooth", block: "start" }); $("execution-records").querySelector("summary").focus(); });
   $("demo-template-button").addEventListener("click", applyTemplate);
+  $("view-wechat-demo-button").addEventListener("click", showDemoPaymentImage);
+  $("close-demo-payment-button").addEventListener("click", dismissDemoPaymentDialog);
+  $("demo-payment-dialog").addEventListener("cancel", event => { event.preventDefault(); dismissDemoPaymentDialog(); });
+  $("demo-payment-dialog").addEventListener("close", () => { if (!$("demo-payment-dialog").open) dismissDemoPaymentDialog(); });
   document.addEventListener("visibilitychange", () => { if (!document.hidden && state.task) refreshTask(); });
 
   async function init() {

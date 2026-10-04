@@ -11,7 +11,10 @@ import copy
 from dataclasses import dataclass
 
 from app.auth import APIError
+from app.local_demo_auth import LOCAL_DEMO_ACTORS, LOCAL_DEMO_TENANT
 from slice04.fixtures import V1_PRODUCT
+
+DEMO_ACTORS = LOCAL_DEMO_ACTORS | {'local-demo-buyer'}
 
 
 @dataclass(frozen=True)
@@ -54,8 +57,8 @@ stock case may route it. Any non-normal explicit scenario must agree. Explicit
 fields must agree with facts fixed by the matched prompt; unknown facts such as
 the clarification case's budget may be supplied, and are kept unchanged.
 """
-    if (not isinstance(actor, dict) or actor.get('tenant_id') != 'local-hk'
-            or actor.get('actor_id') != 'local-demo-buyer' or actor.get('role') != 'buyer'
+    if (not isinstance(actor, dict) or actor.get('tenant_id') != LOCAL_DEMO_TENANT
+            or actor.get('actor_id') not in DEMO_ACTORS or actor.get('role') != 'buyer'
             or mode != 'scripted'):
         return None
     case = next((item for item in CASES if item.prompt == text), None)

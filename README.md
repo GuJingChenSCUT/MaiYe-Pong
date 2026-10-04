@@ -16,11 +16,12 @@
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\setup-local.ps1
-powershell -ExecutionPolicy Bypass -File scripts\start-local.ps1 -Offline -NoOpen
-checkpoint\engineering\.venv\Scripts\python.exe scripts\demo-account.py --show
+powershell -ExecutionPolicy Bypass -File scripts\start-local.ps1 -Offline -NoOpen -EnableDemoShortCodes
 ```
 
-打开 http://127.0.0.1:8765/ ，将窗口中的专用 `demo-buyer` 存取码填入登录页。只需填写存取码，不需要填写用户名。账号只有 buyer 权限；每台电脑随机生成，不在仓库提供公共密码。也可查看本机 `local_state/demo_account_private.txt`。不要上传或分享该文件。
+打开 http://127.0.0.1:8765/ ，使用 `0001` 或 `0002` 登录两个独立的演示买家。短码只在显式启用的 loopback 服务有效，登录和会话都校验实际连接来源与固定 buyer 绑定；不是公开网站的账号方案。每个身份只能读取自己的任务，不具有商户或运营权限。
+
+原随机长码演示买家仍可通过 `scripts/demo-account.py --show` 使用，其私人文件不上传仓库。私人联系图片也仅保留本机 `local_state/payment-demo-contact.jpg`，由受限接口提供，不属于仓库素材。
 
 脚本只在已有应用数据库上创建模拟买家；凭据与数据库不匹配时明确拒绝，不重建数据库、不恢复已撤销权限。重复运行保留同一身份。开发者现有三角色存取码仍可通过 `scripts/show-access.ps1` 查看。
 
@@ -34,7 +35,9 @@ checkpoint\engineering\.venv\Scripts\python.exe scripts\demo-account.py --show
 4. 停止委托 → 查看派发前停止结果 → 刷新，状态继续保留。Esc 或关闭停止弹窗不提交停止请求。
 5. 案例清单不出现在首页。未匹配的输入按常规流程处理，不偷偷替换成示例商品；切换真实模型模式后不会命中演示规则。未知费用不按零，未来积分不抵消现金预算。
 
-完整操作说明见 [DEMO_READ_FIRST](docs/DEMO_READ_FIRST.txt)。[微信付款效果图](docs/demo/payment-concept-test-only.png) 已标注「防止信息泄露，测试专用」，仅供展示，无收款二维码，不会扣款；图中金额也是示意数值。
+完整操作说明见 [DEMO_READ_FIRST](docs/DEMO_READ_FIRST.txt)。付款区展示八达通、支付宝、微信（香港），统一标注「測試專用，不會扣款」。用户提供的本机微信图是添加朋友二维码，弹窗明确标注非收款码；只对两个短码身份自己的有效待确认方案提供，停止后拒绝读取。仓库中的[独立付款概念图](docs/demo/payment-concept-test-only.png)也只供展示，图中金额为示意数值。
+
+补充资料表单带入可编辑建议值，优先保留已确认和手动填写的信息；只有用户确认后才提交。建议规格不代表真实商品事实。真实页面观察校验模块目前未接入商品目录或交易；淘宝页面需要用户完成登录后才能核对资料。
 
 ## 登录和平台接入
 

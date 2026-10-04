@@ -7,6 +7,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import secrets
+from app.local_demo_auth import demo_actor_for_hash, is_loopback_address, valid_demo_binding
 
 
 class APIError(Exception):
@@ -22,6 +23,21 @@ def hashed(value):
 class Auth:
     def __init__(self, store):
         self.store = store
+        self._local_demo_binding = None
+
+    def enable_local_demo_short_codes(self, *, bind_address):
+        """Opt in only from the loopback launcher, never from browser input."""
+        if not is_loopback_address(bind_address):
+            raise ValueError("Short demo codes require an actual loopback binding")
+        self._local_demo_binding = bind_address
+
+    def _local_demo_allowed(self, peer_address):
+        return (is_loopback_address(self._local_demo_binding)
+                and is_loopback_address(peer_address))
+
+    @property
+    def local_demo_short_codes_enabled(self):
+        return is_loopback_address(self._local_demo_binding)
 
     def provision(self, *, actor_id, tenant_id="local-hk", role="buyer", merchant_id=None):
         if role not in {"buyer", "merchant", "operator"} or (role == "merchant" and not merchant_id):
@@ -32,12 +48,18 @@ class Auth:
                          (hashed(code), tenant_id, actor_id, role, merchant_id))
         return code
 
-    def login(self, code):
-        if not isinstance(code, str) or not 16 <= len(code) <= 200:
+    def login(self, code, *, peer_address=None):
+        if not isinstance(code, str):
+            raise APIError(401, "INVALID_ACCESS_CODE")
+        demo = demo_actor_for_hash(hashed(code)) if len(code) == 4 else None
+        if demo:
+            if not self._local_demo_allowed(peer_address):
+                raise APIError(401, "INVALID_ACCESS_CODE")
+        elif not 16 <= len(code) <= 200:
             raise APIError(401, "INVALID_ACCESS_CODE")
         with self.store.transaction() as conn:
             row = conn.execute("SELECT * FROM app_access_codes WHERE code_hash=? AND active=1", (hashed(code),)).fetchone()
-            if row is None:
+            if row is None or (demo and not valid_demo_binding(row)):
                 raise APIError(401, "INVALID_ACCESS_CODE")
             token, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(24)
             conn.execute("INSERT INTO app_sessions VALUES(?,?,?,?)",
@@ -51,7 +73,7 @@ class Auth:
             actor["merchant_id"] = row["merchant_id"]
         return actor
 
-    def session(self, token, *, csrf=None, mutate=False):
+    def session(self, token, *, csrf=None, mutate=False, peer_address=None):
         if not isinstance(token, str) or not token:
             raise APIError(401, "SESSION_REQUIRED")
         with self.store.connection() as conn:
@@ -59,6 +81,9 @@ class Auth:
              JOIN app_access_codes c ON c.code_hash=s.code_hash
              WHERE s.session_hash=? AND c.active=1""", (hashed(token),)).fetchone()
         if row is None or row["expires_at"] <= self.store.now():
+            raise APIError(401, "SESSION_EXPIRED")
+        if demo_actor_for_hash(row["code_hash"]) and (
+                not self._local_demo_allowed(peer_address) or not valid_demo_binding(row)):
             raise APIError(401, "SESSION_EXPIRED")
         if mutate and (not isinstance(csrf, str) or not hmac.compare_digest(csrf, row["csrf"])):
             raise APIError(403, "CSRF_REJECTED")

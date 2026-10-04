@@ -46,7 +46,7 @@
           <div class="section-heading"><div><h2 id="new-task-title">想買甚麼？</h2><p class="composer-help">說清楚商品、預算和送貨要求。</p></div></div>
           <form id="task-form">
             <div class="prompt-canvas"><label for="task-text" class="sr-only">用你的話告訴我們購物需要</label><textarea id="task-text" rows="4" name="text" required maxlength="3000" placeholder="想買甚麼、預算幾多？&#10;例如：想補購洗衣液，HK$150 以內，送到觀塘。"></textarea><div class="composer-footer"><span id="composer-model-label" class="composer-model-label">模式待確認</span><button class="button button-primary" id="create-task-button" type="submit">幫我看看 <span aria-hidden="true">↗</span></button></div></div>
-            
+
             <details id="purchase-details" class="detail-section"><summary>購買條件 <span>選填</span></summary>
             <div class="form-grid">
               <div><label for="purchase-quantity">購買數量 <span>幾件包裝</span></label><input id="purchase-quantity" type="number" inputmode="numeric" min="1" max="100" step="1" placeholder="例如 2"></div>
@@ -69,7 +69,7 @@
             <details class="detail-section scenario-details"><summary>條件變化演練</summary><label for="scenario">指定本地測試情境</label><select id="scenario"><option value="normal">正常商品條件</option><option value="shipping_increase">運費上升</option><option value="injection">商品文案要求忽略預算</option><option value="both_unavailable">兩家都無法供貨</option></select><p class="field-help">這些是明確注入的測試條件，不是已發生的市場變動。</p></details>
             <button id="demo-template-button" class="text-button small" type="button" hidden>填入合成商品演練</button><p class="field-help">首次設定的偏好為「現金支出較低」。演練不會向商戶下單。</p></details>
           </form>
-          
+
         </section>
 
         <section id="task-panel" class="task-panel" hidden aria-label="目前購物任務">
@@ -79,7 +79,7 @@
 
           <section id="comparison-panel" class="panel" hidden aria-labelledby="comparison-title"><div class="section-heading"><div><h2 id="comparison-title">比較方案</h2></div><span class="subtle-tag">演練商品</span></div><p id="comparison-explanation" class="muted"></p><div class="quote-navigation"><p class="scroll-hint">左右滑動比較</p><div><button id="quote-prev" class="icon-button" type="button" aria-label="上一件商品">←</button><span id="quote-position" aria-live="off"></span><button id="quote-next" class="icon-button" type="button" aria-label="下一件商品">→</button></div></div><div id="quote-grid" class="quote-grid" tabindex="0" role="region" aria-label="左右滑動比較商品方案"></div><div id="recommendation" class="recommendation" hidden></div></section>
 
-          <section id="payment-options-panel" class="panel payment-options-panel" hidden aria-labelledby="payment-options-title"><div class="section-heading"><div><h2 id="payment-options-title">付款方式</h2></div><span class="subtle-tag">目前僅本地演練</span></div><p class="muted">本地模擬，不會扣款。</p><div id="payment-option-list" class="payment-option-list"></div><details class="detail-section"><summary>後續接入</summary><div class="wallet-availability"><strong>首發方向：淘寶 ＋ WeChat Pay HK</strong><p>接口與商戶資格仍待核驗，尚不可使用。淘寶訂單須由官方結帳；不會以自家微信收款代收淘寶貨款。</p></div></details><details class="detail-section"><summary>優惠與權益</summary><div id="payment-benefits" class="payment-benefits"></div></details></section>
+          <section id="payment-options-panel" class="panel payment-options-panel" hidden aria-labelledby="payment-options-title"><div class="section-heading"><div><h2 id="payment-options-title">付款方式</h2></div><span class="subtle-tag">方式展示</span></div><p class="payment-test-label">測試專用，不會扣款</p><div id="demo-payment-methods" class="demo-wallet-grid" hidden><article class="payment-method-card demo-wallet-card" data-wallet="octopus"><span class="demo-wallet-mark" aria-hidden="true">八</span><h3>八達通</h3><p class="muted">付款方式示意</p></article><article class="payment-method-card demo-wallet-card" data-wallet="alipay"><span class="demo-wallet-mark" aria-hidden="true">支</span><h3>支付寶</h3><p class="muted">付款方式示意</p></article><article class="payment-method-card demo-wallet-card" data-wallet="wechat-hk"><span class="demo-wallet-mark" aria-hidden="true">微</span><h3>微信（香港）</h3><p class="muted">付款方式示意</p><button id="view-wechat-demo-button" class="text-button" type="button" hidden>查看微信示意</button></article></div><details class="detail-section"><summary>LocalPSP 本地演練記錄</summary><div id="payment-option-list" class="payment-option-list"></div></details><details class="detail-section"><summary>優惠與權益</summary><div id="payment-benefits" class="payment-benefits"></div></details></section>
 
           <section id="confirmation-panel" class="panel confirmation-panel" hidden aria-labelledby="confirmation-title"><div class="section-heading"><h2 id="confirmation-title">確認這份方案</h2><span class="subtle-tag">本地演練</span></div><p class="muted">核對後建立本地委託；不會真實下單或扣款。</p><div id="confirmation-details"></div><div class="confirmation-consent"><input id="approve-consent" type="checkbox"><label for="approve-consent">已核對商品、數量、收款方及總額，同意本地演練。</label></div><button id="approve-button" class="button button-primary button-full" type="button" disabled>確認方案並入隊（本地演練）</button></section>
 
@@ -96,5 +96,6 @@
   <footer class="site-footer"><span>買嘢幫 · MaiYePong</span><span>Your Shopping, Your Say.</span></footer>
   </div></div>
   <dialog id="stop-dialog"><form method="dialog"><div class="dialog-icon" aria-hidden="true">Ⅱ</div><h2 id="stop-dialog-title">停止這次委託？</h2><p id="stop-dialog-message">停止要求會直達後端。尚未派發的命令會被阻止；若已派發，須核實原操作的付款結果。此原型尚未接入外部會話取消或退款。</p><p class="field-help">最終結果以服務端回應為準；關閉網頁或停止代辦不會自動撤銷外部付款。</p><div class="button-row"><button class="button button-secondary" value="cancel">繼續查看</button><button class="button button-danger" id="confirm-stop-button" value="stop">送出停止要求</button></div></form></dialog>
+  <dialog id="demo-payment-dialog" class="demo-payment-dialog" aria-labelledby="demo-payment-title" aria-describedby="demo-payment-caption"><div class="section-heading"><h2 id="demo-payment-title">微信示意</h2><button id="close-demo-payment-button" class="text-button" type="button" autofocus>關閉</button></div><p class="payment-test-label">測試專用，不會扣款</p><figure><figcaption id="demo-payment-caption" class="demo-payment-caption">聯絡二維碼展示，非收款碼</figcaption><img id="demo-payment-image" alt="微信聯絡二維碼，非收款碼，僅供測試展示" referrerpolicy="no-referrer" hidden></figure><p id="demo-payment-feedback" role="status" aria-live="polite"></p></dialog>
 </body>
 </html>

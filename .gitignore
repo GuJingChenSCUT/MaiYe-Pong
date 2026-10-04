@@ -21,6 +21,8 @@ source_review/
 # Runtime, private exports and historical local-only evidence
 hacku_deepseek/
 verification/
+!docs/verification/
+!docs/verification/latest.json
 deliverables/
 *.sqlite3
 *.db

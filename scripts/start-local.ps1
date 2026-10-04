@@ -1,4 +1,4 @@
-param([int]$Port = 8765, [switch]$NoOpen, [switch]$Offline)
+param([int]$Port = 8765, [switch]$NoOpen, [switch]$Offline, [switch]$EnableDemoShortCodes)
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSHOME 'Modules\Microsoft.PowerShell.Security\Microsoft.PowerShell.Security.psd1') -Force
 $workspacePath = Split-Path -Parent $PSScriptRoot
@@ -24,9 +24,14 @@ if ($existing -and ($existing.capabilities.goods -ne 'synthetic_fixture' -or $ex
 if ($existing -and $Offline -and $existing.capabilities.model -ne 'blocked') {
     throw 'The existing server may use DeepSeek. Offline mode needs another port or an explicit server restart.'
 }
+if ($existing -and $EnableDemoShortCodes -and $existing.local_demo_short_codes_enabled -ne $true) {
+    throw 'The existing server has short demo codes disabled. Restart it explicitly with -EnableDemoShortCodes; this command did not replace it.'
+}
 if (-not $existing) {
     $runnerPath = Join-Path $PSScriptRoot 'run-local.py'
-    $serviceProcess = Start-Process -FilePath $pythonPath -WindowStyle Hidden -ArgumentList @(('"' + $runnerPath + '"'), '--port', $Port) -PassThru -RedirectStandardOutput (Join-Path $runtimePath 'server.log') -RedirectStandardError (Join-Path $runtimePath 'server-error.log')
+    $runnerArguments = @(('"' + $runnerPath + '"'), '--port', $Port)
+    if ($EnableDemoShortCodes) { $runnerArguments += '--enable-demo-short-codes' }
+    $serviceProcess = Start-Process -FilePath $pythonPath -WindowStyle Hidden -ArgumentList $runnerArguments -PassThru -RedirectStandardOutput (Join-Path $runtimePath 'server.log') -RedirectStandardError (Join-Path $runtimePath 'server-error.log')
     [IO.File]::WriteAllText((Join-Path $runtimePath 'server.pid'), [string]$serviceProcess.Id)
     for ($i=0; $i -lt 30; $i++) {
         Start-Sleep -Milliseconds 300
