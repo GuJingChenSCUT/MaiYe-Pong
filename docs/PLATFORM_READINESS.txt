@@ -1,0 +1,13 @@
+平台接入复核（2026-10-04，香港时间约 12:05）
+
+结论：目前不能宣称真实平台已接通。12 个官方公共资源和 1 个本机状态接口均返回 HTTP 200；这只证明本次公开资源可达。没有交换 OAuth code、查询真实商户、创建订单或付款。
+
+Google：真实登录后端已实现；三个配置项在 Process/User/Machine 均不存在，主站显示 configuration_required。需要 Web OAuth Client ID、登记回调 URI、Audience/测试用户与同意页状态；Client Secret 之后只通过安全配置提供。
+微信网站登录：后端适配已准备，三个配置项均不存在；还需要开放平台获批网站应用、微信登录权限和正式 HTTPS 回调域名。当前 HTTP 本机服务即使补齐密钥，也不开放微信登录。微信支付商户资格不能替代网站登录资格。
+淘宝 TOP：两个卖家只读方法可离线准备签名；没有真实凭据 loader、网络 transport 或主站路由。需要 AppKey 对应应用类型/权限清单、卖家 OAuth 授权范围及期限、每方法签名政策。消费者下单权限没有得到证明。
+HKTVmall：四个商户管理 GET 可离线准备签名；没有真实 transport。需要 Open API 批准、店面 storeCode、API UUID 登记状态、公钥指纹/绑定和只读权限。官方没有独立 sandbox；下一步只读联调也将针对生产环境。这不是消费者 checkout 接口。
+WeChat Pay HK：支付适配器仍禁用，没有真实 PSP 签名/验签/查单实现。需要具体收单方、HK 钱包与 HKD 交易/结算批准、收款商户映射、正式协议及测试环境政策。用户给出的普通内地 JSAPI v3 文档不能直接用于 HKD。
+
+用户表示部分注册资料待提供、两个平台申请中；本轮没有登录控制台核验申请状态。已有 90 项接入离线测试和 39 项本地登录测试是之前证据，不能替代真实平台验收。本轮全套测试复验由主任务另行记录。
+
+准确资料名称、官方 URL、时间戳、源代码 SHA256 及逐平台状态见 platform_readiness.json；HTTP 探测见 platform_public_probes.json；配置证据仅布尔，见 platform_config_presence.json。没有读取凭据文件或记录密钥值，没有修改应用源码、重启主站。

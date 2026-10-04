@@ -1,0 +1,74 @@
+买嘢帮：Google／微信登录交接
+核对日期：2026-10-04（Asia/Shanghai）
+
+当前交付状态
+
+本轮代码加入后端社交登录适配层及 HTTP 接线。尚未配置团队的 Google／微信应用资料，尚未完成真实平台登录联调。用户已说明登录资料稍后提供。不能将离线测试或按钮出现称为 Google／微信登录已经上线。
+
+当前应用仍仅监听 127.0.0.1，使用本机 HTTP。Google 的本机登录可在平台注册正确 Web OAuth 客户端及回调后验收；微信网站登录要求合适的域名和资格，当前本机入口保持关闭。公开 HTTPS 部署属于下一阶段，不能只换环境变量就宣布部署完成。
+
+已读的代码
+
+- checkpoint/engineering/app/social_auth.py：提供方配置、请求白名单、令牌交换、身份验证、持久化授权尝试与身份映射。
+- checkpoint/engineering/app/task_api.py：登录状态、开始和回调路由、浏览器 Cookie、会话切换。
+- checkpoint/engineering/requirements-auth.txt：可选 google-auth==2.59.1。
+- scripts/run-local.py、scripts/start-local.ps1：本机服务入口；子进程继承启动环境。OAuth 密钥并没有自动存入 DeepSeek 的 DPAPI 文件。
+
+六项环境配置
+
+MAIYEBANG_GOOGLE_LOGIN_ENABLED：必须为 1 才申请启用；默认关闭。
+MAIYEBANG_GOOGLE_CLIENT_ID：Google Web OAuth client ID。
+MAIYEBANG_GOOGLE_CLIENT_SECRET：对应客户端密钥，只供后端。
+MAIYEBANG_WECHAT_LOGIN_ENABLED：必须为 1 才申请启用；默认关闭。
+MAIYEBANG_WECHAT_CLIENT_ID：已获批微信网站应用的 AppID。
+MAIYEBANG_WECHAT_CLIENT_SECRET：同一网站应用的 AppSecret，只供后端。
+
+凭据须通过受控的本机配置方式提供，不能写进源码、共享截图、交付 ZIP、浏览器脚本、模型提示、命令行参数或聊天记录。现有 DeepSeek API key 与以上两种登录凭据无关。本轮没有新增 OAuth 凭据存储弹窗，也没有实际读取用户提供的社交登录密钥。
+
+Google 本机接入步骤
+
+1. 在 Google Cloud 创建 Web application 类型的 OAuth client，完成所需的品牌/同意页和测试用户配置。
+2. 为当前 8765 服务登记精确回调 URI：
+   http://127.0.0.1:8765/api/v1/auth/google/callback
+   不可替换为 localhost、不同端口、其他路径或带尾随斜线的版本后仍期望匹配。
+3. 在工程虚拟环境安装可选 requirements-auth.txt。已有基础安装仍可使用本地访问码登录，不必强装此依赖。
+4. 后端配置三项 Google 环境值，再通过受控方式重启目标服务，使其加载新配置。start-local.ps1 如果发现原端口已有本服务会复用进程，单纯再次打开网页不等于配置已重新加载。
+5. 查看 /api/v1/auth/providers 的 available/reason。available 仅代表配置与依赖满足本地检查，不证明平台批准或登录成功。
+6. 实测同意、取消、超时后重试、退出和再次登录，确认稳定返回同一内部 buyer 身份且没有进入其他用户的任务。
+
+Google 实际实现
+
+仅申请 openid，当前不读取昵称、头像或 email。Authorization Code 使用 state、nonce 和 PKCE S256；后端交换令牌，通过官方 google-auth 验证签名、issuer、audience 和时间，再校验 nonce/azp，使用 sub 作为身份。库当前使用固定的官方 v1/certs X.509 端点；这与 Google discovery 的 v3/certs JWKS 地址形式不同，属于库支持的正式接口，并非任意 token 指定的 URL。
+
+微信网站接入边界
+
+需要微信开放平台已审核的网站应用、该应用 AppID/AppSecret，以及获批微信登录权限。网站登录入口是 qrconnect，scope=snsapi_login，回调域名需与审核配置一致。微信网站 code 官方有效期为 10 分钟，但本应用登录尝试和绑定 Cookie 只保留 5 分钟；后者是更短的应用安全窗口，并非修改平台协议。
+
+当前 ApplicationServer 固定构造 http://127.0.0.1:端口 作为 origin；SocialAuth 会拒绝在此 HTTP origin 开启微信登录，即使填写了 AppID/AppSecret。它没有接收代理公开域名或提供 TLS 的部署能力。本轮不伪造 HTTPS，也不把获批网站扫码协议称为手机微信内一键登录。
+
+微信内服务号网页授权是另一套入口和资格：通常要求已认证服务号，使用 connect/oauth2/authorize 及 snsapi_base/snsapi_userinfo；当前官方文档另列部分已认证政府、事业单位、媒体公众号例外。该流程 code 为 5 分钟一次性，AppID 不能用网站应用的替代。本轮没有实现此服务号流程。
+
+微信后端令牌接口按官方协议使用 GET，secret 在查询参数中。实现只允许固定 HTTPS 端点、禁止跳转，错误响应不带上游原文或请求 URL；日志不能把这类完整 URL、code 或 token 写出。当前只用服务端交换返回的 openid 绑定该 AppID 下的身份，不按 UnionID、昵称或 email 自动合并账号。
+
+身份和会话
+
+- app_login_attempts 保存 state/browser 哈希、provider、client ID、nonce、PKCE verifier、固定回调和 300 秒有效期；回调在交换前原子消费，失败需重新开始。
+- 使用各提供方独立、HttpOnly、SameSite=Lax 的短时 Cookie 绑定跨站回调。业务会话仍为 HttpOnly、SameSite=Strict。
+- 回调路由允许来自提供方的跨站导航，但仍限制 Host，校验单值参数及服务端 state 绑定。开始路由要求标准 127.0.0.1 地址及空 JSON 对象。
+- 登录成功新建业务会话及 CSRF，使用 provider+client ID+sub/openid 映射内部随机 buyer。不会自动继承演示用户或其他用户的任务记录。
+- 新社交账号只能是 buyer；没有 merchant/operator 提权，也没有钱包扣款、商户授权、支付成功或会员资格的含义。
+- 登录访问 token/refresh token 不持久化；不会把身份令牌交给 DeepSeek。微信支付仍需独立商业资格、接口权限和支付安全流程。
+
+尚待真实验收
+
+团队提供正确应用资料后，记录提供方、时间、回调结果、内部 actor 隔离、取消/超时/重放处理和手机体验；证据不得含 code、token 或客户端密钥。Google 与微信需分别通过真实链路，不以其中一项替代另一项。公开部署另需 HTTPS、批准回调域名、Secure Cookie、可信代理/Host 配置和部署验收。
+
+官方依据与完整研究
+
+Google OIDC：https://developers.google.com/identity/openid-connect/openid-connect
+Google Web server：https://developers.google.com/identity/protocols/oauth2/web-server
+Google discovery：https://accounts.google.com/.well-known/openid-configuration
+微信网站登录：https://developers.weixin.qq.com/doc/oplatform/Website_App/WeChat_Login/Wechat_Login.html
+微信授权后接口：https://developers.weixin.qq.com/doc/oplatform/Website_App/WeChat_Login/Authorized_Interface_Calling_UnionID.html
+微信服务号网页授权：https://developers.weixin.qq.com/doc/service/guide/h5/auth.html
+本地证据：verification/login_ui_20261004/research.json。

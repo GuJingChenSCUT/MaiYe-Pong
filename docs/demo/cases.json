@@ -1,0 +1,176 @@
+{
+  "format_version": 1,
+  "title": "買嘢幫 / MaiYePong — 五個本機合成演練案例",
+  "source_recorded_at_utc": "2026-10-04T04:35:43.894925+00:00",
+  "scope": {
+    "tenant_id": "local-hk",
+    "actor_id": "local-demo-buyer",
+    "role": "buyer",
+    "mode": "scripted",
+    "goods": "synthetic_fixture",
+    "payment": "local_simulator",
+    "real_model_calls": 0,
+    "real_platform_calls": 0,
+    "automatic_authority_or_payment": false
+  },
+  "currency": "HKD",
+  "matching": "精確比對完整原始文字，包含標點；不做模糊搜尋、修正或默認商品。未匹配仍走既有流程。",
+  "explicit_fields": "已填欄位不被覆蓋；與案例固定條件衝突則409 DEMO_CASE_CONFLICT；缺預算案例可保留使用者明確補入的预算。",
+  "scenario_routing": "既有表單的normal或省略值可路由為匹配案例場景；非normal明確場景若不一致則拒絕。",
+  "ui_rule": "不在首頁展示案例清單或預置商品結果。僅使用者輸入後出現檢索/比較/澄清/停止結果；保留演練標示。",
+  "credential_included": false,
+  "payment_image_is_concept_only": true,
+  "instructions": [
+    "使用專用本機 demo-buyer 登入，保持 scripted 本地流程演練模式。",
+    "每條案例使用新的空白委託；保持選填欄位空白及預設場景。",
+    "逐字複製 prompt（含標點），手動提交後才檢索本地合成目錄。",
+    "普通買家、live 模式或未精確匹配的文字不啟用此案例展開。",
+    "本資料沒有存取碼、真人地址、外部商戶訂單或付款憑證；不代表真實行情。"
+  ],
+  "cases": [
+    {
+      "title": "正常比較，等你確認",
+      "case_id": "normal",
+      "prompt": "幫我補購1件100克原味番梘，送到九龍，連運費預算HK$100，揀總價最低嘅方案。",
+      "scenario": "normal",
+      "expanded_fields": {
+        "product": {
+          "brand": "SYNTHETIC",
+          "variant": "plain-soap",
+          "net_content": 100,
+          "unit": "g",
+          "pack_count": 1,
+          "packaging": "single_bar",
+          "origin": "synthetic_fixture",
+          "region_version": "HK-demo"
+        },
+        "purchase_quantity": 1,
+        "destination_ref": "HK-DEMO-KOWLOON",
+        "preference": "lowest_cost",
+        "requires_change_of_mind_return": false,
+        "cash_cap_minor": 10000
+      },
+      "expected": {
+        "status": "AWAITING_APPROVAL",
+        "selected_quote_id": "fixture-A",
+        "cash_minor": 5000,
+        "explanation": "比較兩家後提出HK$50合成方案，等待用戶明確確認；不自動授權付款。"
+      }
+    },
+    {
+      "title": "缺少預算，先問清楚",
+      "case_id": "clarification",
+      "prompt": "幫我補購1件100克原味番梘，送到九龍，揀總價最低嘅方案，預算我想先確認。",
+      "scenario": "normal",
+      "expanded_fields": {
+        "product": {
+          "brand": "SYNTHETIC",
+          "variant": "plain-soap",
+          "net_content": 100,
+          "unit": "g",
+          "pack_count": 1,
+          "packaging": "single_bar",
+          "origin": "synthetic_fixture",
+          "region_version": "HK-demo"
+        },
+        "purchase_quantity": 1,
+        "destination_ref": "HK-DEMO-KOWLOON",
+        "preference": "lowest_cost",
+        "requires_change_of_mind_return": false
+      },
+      "expected": {
+        "status": "CLARIFYING",
+        "missing_fields": [
+          "cash_cap_minor"
+        ],
+        "explanation": "只問缺少的付款預算；不虛構預算、不產生可批准方案。"
+      }
+    },
+    {
+      "title": "運費變更，重新比較",
+      "case_id": "shipping_increase",
+      "prompt": "幫我補購1件100克原味番梘，送到九龍，連運費預算HK$60；如果運費加咗，重新比較兩家。",
+      "scenario": "shipping_increase",
+      "expanded_fields": {
+        "product": {
+          "brand": "SYNTHETIC",
+          "variant": "plain-soap",
+          "net_content": 100,
+          "unit": "g",
+          "pack_count": 1,
+          "packaging": "single_bar",
+          "origin": "synthetic_fixture",
+          "region_version": "HK-demo"
+        },
+        "purchase_quantity": 1,
+        "destination_ref": "HK-DEMO-KOWLOON",
+        "preference": "lowest_cost",
+        "requires_change_of_mind_return": false,
+        "cash_cap_minor": 6000
+      },
+      "expected": {
+        "status": "AWAITING_APPROVAL",
+        "selected_quote_id": "fixture-B",
+        "cash_minor": 5500,
+        "replanning_demonstrated": true,
+        "explanation": "A的合成總額由HK$50隨運費上調到HK$70，超過HK$60；重新比較後提議B的HK$55方案。"
+      }
+    },
+    {
+      "title": "超出預算，強制停止",
+      "case_id": "low_budget",
+      "prompt": "幫我補購1件100克原味番梘，送到九龍，連運費最多HK$40，超過就停低。",
+      "scenario": "normal",
+      "expanded_fields": {
+        "product": {
+          "brand": "SYNTHETIC",
+          "variant": "plain-soap",
+          "net_content": 100,
+          "unit": "g",
+          "pack_count": 1,
+          "packaging": "single_bar",
+          "origin": "synthetic_fixture",
+          "region_version": "HK-demo"
+        },
+        "purchase_quantity": 1,
+        "destination_ref": "HK-DEMO-KOWLOON",
+        "preference": "lowest_cost",
+        "requires_change_of_mind_return": false,
+        "cash_cap_minor": 4000
+      },
+      "expected": {
+        "status": "STOPPED",
+        "blocker": "BUDGET_EXCEEDED",
+        "explanation": "HK$40不足以支付任何完整方案，規則強制停止，不產生付款授權。"
+      }
+    },
+    {
+      "title": "兩家缺貨，停止執行",
+      "case_id": "both_unavailable",
+      "prompt": "幫我補購1件100克原味番梘，送到九龍，連運費預算HK$100；如果兩家都冇貨，就停低。",
+      "scenario": "both_unavailable",
+      "expanded_fields": {
+        "product": {
+          "brand": "SYNTHETIC",
+          "variant": "plain-soap",
+          "net_content": 100,
+          "unit": "g",
+          "pack_count": 1,
+          "packaging": "single_bar",
+          "origin": "synthetic_fixture",
+          "region_version": "HK-demo"
+        },
+        "purchase_quantity": 1,
+        "destination_ref": "HK-DEMO-KOWLOON",
+        "preference": "lowest_cost",
+        "requires_change_of_mind_return": false,
+        "cash_cap_minor": 10000
+      },
+      "expected": {
+        "status": "STOPPED",
+        "blocker": "STOCK_UNCONFIRMED",
+        "explanation": "更新後兩家均無貨，停止且不產生付款授權。"
+      }
+    }
+  ]
+}

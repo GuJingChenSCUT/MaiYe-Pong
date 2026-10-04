@@ -12,13 +12,47 @@ import shutil
 import sqlite3
 import subprocess
 import sys
+import time
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def positive_seconds(value):
+    seconds = int(value)
+    if seconds <= 0:
+        raise argparse.ArgumentTypeError('timeout must be a positive number of seconds')
+    return seconds
+
+
+def run_check(name, command, *, out, env, timeout_seconds):
+    started = time.monotonic()
+    timed_out = False
+    try:
+        result = subprocess.run(command, cwd=ROOT, env=env, capture_output=True,
+                                text=True, encoding='utf-8', timeout=timeout_seconds)
+        stdout, stderr, exit_code = result.stdout, result.stderr, result.returncode
+    except subprocess.TimeoutExpired as error:
+        # TimeoutExpired may carry bytes even when text=True was requested.
+        def captured_text(value):
+            return value.decode('utf-8', errors='replace') if isinstance(value, bytes) else (value or '')
+        stdout, stderr = captured_text(error.stdout), captured_text(error.stderr)
+        exit_code, timed_out = 124, True
+    log = stdout + '\n' + stderr
+    if timed_out:
+        log += '\n' + json.dumps({'timeout': True, 'timeout_seconds': timeout_seconds,
+                                  'exit_code': exit_code, 'captured_output_may_be_partial': True}) + '\n'
+    (out / (name + '.log')).write_text(log, encoding='utf-8')
+    count = re.search(r'Ran (\d+) tests?', stderr)
+    return {'check': name, 'exit_code': exit_code, 'timeout': timed_out,
+            'timeout_seconds': timeout_seconds, 'elapsed_seconds': round(time.monotonic() - started, 3),
+            'unit_tests': int(count.group(1)) if count else 0, 'log': name + '.log'}
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--out', required=True)
+    parser.add_argument('--timeout-seconds', type=positive_seconds, default=240,
+                        help='Maximum time per check; default 240 seconds. Use 600 for a longer diagnostic run.')
     args = parser.parse_args()
     out = Path(args.out).resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -40,25 +74,25 @@ def main():
              for s in ('shipping_increase', 'both_unavailable', 'no_change', 'injection')]
     results = []
     for name, command in jobs:
-        result = subprocess.run([sys.executable, *command], cwd=ROOT, env=env,
-                                capture_output=True, text=True, encoding='utf-8', timeout=240)
-        (out / (name + '.log')).write_text(result.stdout + '\n' + result.stderr, encoding='utf-8')
-        count = re.search(r'Ran (\d+) tests?', result.stderr)
-        record = {'check': name, 'exit_code': result.returncode,
-                  'unit_tests': int(count.group(1)) if count else 0, 'log': name + '.log'}
+        record = run_check(name, [sys.executable, *command], out=out, env=env,
+                           timeout_seconds=args.timeout_seconds)
         results.append(record)
         print(json.dumps(record), flush=True)
     node = shutil.which('node')
-    js_result = subprocess.run([node, '--check', 'app/web/app.js'], cwd=ROOT,
-                               capture_output=True, text=True, encoding='utf-8') if node else None
-    (out / 'javascript_syntax.log').write_text(js_result.stdout + js_result.stderr if js_result else 'node unavailable', encoding='utf-8')
-    results.append({'check': 'javascript_syntax', 'exit_code': js_result.returncode if js_result else 127,
-                    'unit_tests': 0, 'log': 'javascript_syntax.log'})
+    if node:
+        results.append(run_check('javascript_syntax', [node, '--check', 'app/web/app.js'],
+                                 out=out, env=env, timeout_seconds=args.timeout_seconds))
+    else:
+        (out / 'javascript_syntax.log').write_text('node unavailable', encoding='utf-8')
+        results.append({'check': 'javascript_syntax', 'exit_code': 127, 'timeout': False,
+                        'timeout_seconds': args.timeout_seconds, 'unit_tests': 0,
+                        'log': 'javascript_syntax.log'})
     files = [p for p in ROOT.rglob('*') if p.is_file() and p.suffix in {'.py', '.js', '.html', '.css', '.json'}
              and not any(x in p.parts for x in ('.venv', '__pycache__', 'evidence'))]
     report = {'checked_at_utc': datetime.now(timezone.utc).isoformat(),
               'status': 'passed' if all(x['exit_code'] == 0 for x in results) else 'failed',
               'unit_tests': sum(x['unit_tests'] for x in results), 'checks': results,
+              'timeout_seconds_per_check': args.timeout_seconds,
               'python': sys.version, 'platform': platform.platform(), 'sqlite': sqlite3.sqlite_version,
               'dependencies': {x.metadata['Name']: x.version for x in importlib.metadata.distributions()},
               'live_model_calls': 0, 'real_payments': 0, 'official_psp_verified': False,

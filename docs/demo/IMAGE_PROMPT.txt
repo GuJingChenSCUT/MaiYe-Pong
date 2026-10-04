@@ -1,0 +1,19 @@
+Generated with built-in imagegen, 2026-10-04. Concept illustration only; not an official wallet page, API result or payment receipt.
+Workspace output: docs/demo/payment-concept-test-only.png
+
+Use case: ui-mockup.
+Create a polished portrait mobile payment concept image for the Hong Kong controlled shopping assistant 買嘢幫 / MaiYePong. White interface, refined teal-blue accents and subtle Hong Kong harbour background, one elegant phone screen centered with readable Chinese UI. This is a clearly labelled conceptual TEST illustration, not an official WeChat page and not a payment receipt.
+Exact prominent heading: "買嘢幫 · 付款確認"
+Exact persistent banner across the top: "防止信息泄露，测试专用"
+Exact caption below banner: "效果圖 · 不會真實扣款"
+Payment method line: "WeChat Pay HK（接入示意）"
+Merchant line: "示例商戶"
+Item: "原味番梘 100g × 1"
+Subtotal line: "商品金額 HK$50.00"
+Shipping line: "運費 HK$8.00"
+Large total: "示例總額 HK$58.00"
+Status: "待用戶確認"
+Rounded primary button: "前往官方錢包（示意）"
+Small caption: "不收集密碼、驗證碼或支付憑證"
+Footer: "僅供測試展示，非官方付款頁"
+Use crisp, perfectly spelled typography, generous whitespace and a premium finished application aesthetic. No scannable QR code, no barcode, no real name, no phone number, no bank/card/account number, no payment successful mark, no transaction number, no official endorsement claim. Make the test banner legible and impossible to mistake for real payment evidence.

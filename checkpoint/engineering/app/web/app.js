@@ -42,6 +42,7 @@
   function money(minor, currency = "HKD") { if (minor === null || minor === undefined || minor === "" || !Number.isFinite(Number(minor))) return "金額待核實"; return new Intl.NumberFormat("zh-HK", { style: "currency", currency, currencyDisplay: "narrowSymbol" }).format(Number(minor) / 100); }
   function timestamp(value, full = false) { if (!value) return "—"; const date = new Date(typeof value === "number" ? value * 1000 : value); if (Number.isNaN(date.getTime())) return "—"; return new Intl.DateTimeFormat("zh-HK", { timeZone: "Asia/Hong_Kong", ...(full ? { month: "2-digit", day: "2-digit" } : {}), hour: "2-digit", minute: "2-digit", hour12: false }).format(date); }
   function buyer() { return state.identity?.role === "buyer"; }
+  function demoBuyer() { return buyer() && state.identity?.tenant_id === "local-hk" && state.identity?.actor_id === "local-demo-buyer"; }
   function syncView() {
     document.body.dataset.view = !state.identity ? "entry" : state.task ? "task" : "compose";
     document.body.dataset.role = state.identity?.role || "guest";
@@ -55,8 +56,9 @@
       : "先試一次購物委託。";
   }
   function defaultComposerMode() {
-    const configured = state.config?.capabilities?.model === "configuration_present_unverified";
+    const configured = !demoBuyer() && state.config?.capabilities?.model === "configuration_present_unverified";
     document.querySelectorAll('input[name="mode"]').forEach(input => { input.checked = input.value === (configured ? "live" : "scripted"); });
+    $("demo-template-button").hidden = demoBuyer() || !state.config?.demo_template;
     updateComposerMode();
   }
   function taskStatus(task) { return normalized(task?.status || task?.state); }
@@ -394,7 +396,7 @@
     $("stop-button").textContent = stopCopy(task).button;
     $("edit-task-button").hidden = !buyer() || !!operation || terminated;
     $("resume-button").hidden = !buyer() || !["blocked", "failed", "ready"].includes(status) || !!operation;
-    $("task-action-hint").textContent = !buyer() ? "此身分只可查看已授權的任務資料。" : operation ? stopCopy(task).summary : terminated ? "這次委託已停止或結束。" : task.model_result?.reason || task.run?.reason || task.reason || "條件有變，可修改或停止委託。";
+    $("task-action-hint").textContent = !buyer() ? "此身分只可查看已授權的任務資料。" : operation ? stopCopy(task).summary : terminated ? "這次委託已停止或結束。" : ["clarifying", "needs_clarification"].includes(status) ? "補充以下資料後，我們會繼續核對。" : task.model_result?.reason || task.run?.reason || task.reason || "條件有變，可修改或停止委託。";
     renderQuestions(task);
     renderComparison(task);
     renderPaymentOptions(task);
@@ -862,6 +864,11 @@
     try { await setSession(await request("/session"), true); }
     catch (error) { showLogin(); if (error.status !== 401) $("login-feedback").textContent = error.message; }
     const locationUrl = new URL(window.location.href);
+    if (locationUrl.searchParams.get("demo") === "start") {
+      if (demoBuyer()) resetNewTask();
+      locationUrl.searchParams.delete("demo");
+      history.replaceState(null, "", locationUrl.pathname + locationUrl.search + locationUrl.hash);
+    }
     if (locationUrl.searchParams.has("login")) {
       if (locationUrl.searchParams.get("login") === "retry") $("login-feedback").textContent = "登入未完成，請重新選擇登入方式。";
       locationUrl.searchParams.delete("login");

@@ -6,6 +6,7 @@ import json
 import os
 import secrets
 from app.auth import APIError
+from app.demo_cases import resolve_demo_case
 from app.task_store import encode
 from slice04.domain import Rejected, validate_task_v1, freeze_v1, digest
 from reference.transaction_reference.kernel import StageOneKernel
@@ -148,6 +149,11 @@ class TaskService:
         if mode not in MODES or scenario not in SCENARIOS:
             raise APIError(400, "INVALID_RUN_MODE_OR_SCENARIO")
         draft = self._merge({"text": text}, body.get("fields", {}))
+        demo = resolve_demo_case(actor, mode=mode, text=text, fields=body.get("fields", {}),
+                                 scenario=body.get("scenario"))
+        if demo:
+            draft = self._merge({"text": text}, demo["fields"])
+            scenario = demo["scenario"]
         task_id, now = opaque("task_"), self.store.now()
         conn.execute("""INSERT INTO app_tasks(task_id,tenant_id,owner_id,state_version,constraints_version,
           status,draft_json,missing_json,questions_json,mode,scenario,created_at,updated_at)
@@ -155,7 +161,11 @@ class TaskService:
           (task_id, actor["tenant_id"], actor["actor_id"], encode(draft), encode(validate_task_v1(draft)), mode, scenario, now, now))
         self.kernel(conn).update_current_bindings(task_id, actor, constraints_version=1, fact_version=0,
                                                   payee_ref=None, payee_mapping_version=None)
-        self.store.event(conn, task_id, "user_input", {"mode": mode, "draft": draft, "field_origin": "explicit"})
+        details = {"mode": mode, "draft": draft, "field_origin": "explicit"}
+        if demo:
+            details.update(field_origin="explicit_with_demo_exact_match", demo_case_id=demo["case_id"],
+                           capability_label="synthetic_fixture")
+        self.store.event(conn, task_id, "user_input", details)
         self._enqueue(conn, task_id, 1)
         return task_id
 
